@@ -94,24 +94,21 @@
             <Setter Property="Foreground" Value="White" />
             <Setter Property="Padding" Value="10,4" />
         </Style>
-        <Style x:Key="CompactInputTextBoxStyle" TargetType="TextBox">
+        <Style x:Key="CompactInputTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignFilledTextBox}">
             <Setter Property="Background" Value="{DynamicResource VsPanelAltBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource VsBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="6,4" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="8,4" />
             <Setter Property="FontSize" Value="12" />
+            <Setter Property="MinHeight" Value="30" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
-        <Style x:Key="CompactInputComboBoxStyle" TargetType="ComboBox">
+        <Style x:Key="CompactInputComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignFilledComboBox}">
             <Setter Property="Background" Value="{DynamicResource VsPanelAltBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource VsBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="6,3" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="8,4" />
             <Setter Property="FontSize" Value="12" />
-            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="MinHeight" Value="30" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
         <Style TargetType="DataGrid">
             <Setter Property="Background" Value="{DynamicResource VsPanelBrush}" />
