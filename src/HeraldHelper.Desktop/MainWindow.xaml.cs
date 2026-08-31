@@ -48,11 +48,8 @@ public partial class MainWindow : Window
     private ShardType _shardType;
     private int _resistPercent;
     private OcrEngineMode _ocrEngineMode;
-    private ShardType _abilityProfileShard = ShardType.Default;
-    private string? _abilityProfileClass;
-    private string _abilityProfileCharacter = string.Empty;
     private readonly ObservableCollection<ConfigEntry> _cfgEntries = [];
-    private readonly ObservableCollection<AbilityEditorRow> _abilityEntries = [];
+    private readonly AbilityProfileController _abilityProfileController;
     private readonly DaocCharacterDiscoveryService _daocCharacterDiscovery = new();
     private readonly Dictionary<ShardType, WpfComboBox> _daocCharacterSelectors = new();
     private readonly Dictionary<ShardType, System.Windows.Controls.Button> _daocWindowButtons = new();
@@ -73,6 +70,7 @@ public partial class MainWindow : Window
         _store.Initialize();
         _settingsController = new SettingsController(_store);
         _overlaySettingsController = new OverlaySettingsController(_settingsController);
+        _abilityProfileController = new AbilityProfileController(_store, _store, _settingsController);
         _httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(8)
@@ -127,7 +125,7 @@ public partial class MainWindow : Window
 
         RebuildRuntimeFromFiles();
         ConfigGrid.ItemsSource = _cfgEntries;
-        AbilitiesGrid.ItemsSource = _abilityEntries;
+        AbilitiesGrid.ItemsSource = _abilityProfileController.AbilityEntries;
         InitializeAbilityProfileControls();
         ReloadEditorData();
         LoadDaocCharacterProfiles();
@@ -191,7 +189,8 @@ public partial class MainWindow : Window
             _cfgEntries.Add(entry);
         }
 
-        ReloadAbilityEditorRows();
+        _abilityProfileController.ReloadRows();
+        AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
 
         RefreshDaocCharacterSelectors();
     }
@@ -201,15 +200,15 @@ public partial class MainWindow : Window
         _isBindingControls = true;
         try
         {
-            AbilityProfileServerCombo.ItemsSource = new[]
-            {
-                ShardType.Default,
-                ShardType.Eden,
-                ShardType.Blackthorn
-            };
-            _abilityProfileShard = SupportsAbilityProfiles(_shardType) ? _shardType : ShardType.Default;
-            AbilityProfileServerCombo.SelectedItem = _abilityProfileShard;
-            RefreshAbilityProfileClasses();
+            AbilityProfileServerCombo.ItemsSource = _abilityProfileController.ServerItems;
+            var initialShard = _abilityProfileController.GetInitialShard(_shardType);
+            _abilityProfileController.RefreshClasses(initialShard);
+            AbilityProfileServerCombo.SelectedItem = _abilityProfileController.Shard;
+            AbilityProfileClassCombo.ItemsSource = _abilityProfileController.ClassItems;
+            AbilityProfileClassCombo.SelectedItem = _abilityProfileController.Class;
+            AbilityProfileClassCombo.IsEnabled = _abilityProfileController.IsClassEnabled;
+            AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
+            _abilityProfileController.ReloadRows();
         }
         finally
         {
@@ -217,83 +216,11 @@ public partial class MainWindow : Window
         }
     }
 
-    private void RefreshAbilityProfileClasses()
-    {
-        if (_abilityProfileShard == ShardType.Default)
-        {
-            AbilityProfileClassCombo.ItemsSource = Array.Empty<string>();
-            AbilityProfileClassCombo.SelectedItem = null;
-            AbilityProfileClassCombo.IsEnabled = false;
-            _abilityProfileClass = null;
-            _abilityProfileCharacter = string.Empty;
-            return;
-        }
-
-        var classes = AbilityProfileCatalog.GetClasses(_abilityProfileShard);
-        var settings = _settingsController.LoadMap();
-        _abilityProfileCharacter = ReadOrDefault(
-            settings,
-            $"daoc.character.{_abilityProfileShard.ToString().ToLowerInvariant()}",
-            string.Empty);
-        var selectedClass = ReadOrDefault(
-            settings,
-            AbilityProfileClassSettingKey(_abilityProfileShard, _abilityProfileCharacter),
-            ReadOrDefault(settings, LegacyAbilityProfileClassSettingKey(_abilityProfileShard), string.Empty));
-        _abilityProfileClass = classes.FirstOrDefault(x =>
-            string.Equals(x, selectedClass, StringComparison.OrdinalIgnoreCase));
-        AbilityProfileClassCombo.ItemsSource = classes;
-        AbilityProfileClassCombo.SelectedItem = _abilityProfileClass;
-        AbilityProfileClassCombo.IsEnabled = true;
-    }
-
-    private void ReloadAbilityEditorRows()
-    {
-        _abilityEntries.Clear();
-        var entries = _abilityProfileShard != ShardType.Default && !string.IsNullOrWhiteSpace(_abilityProfileClass)
-            ? _store.LoadAbilityProfile(_abilityProfileShard, _abilityProfileCharacter, _abilityProfileClass)
-            : _store.LoadAbilities();
-        foreach (var entry in entries)
-        {
-            _abilityEntries.Add(entry);
-        }
-
-        AbilityProfileSummaryText.Text = _abilityProfileShard == ShardType.Default
-            ? $"Manual fallback: {_abilityEntries.Count} entries"
-            : string.IsNullOrWhiteSpace(_abilityProfileClass)
-                ? "Choose a class to activate its profile."
-                : $"{_abilityProfileShard} / {DisplayProfileCharacter(_abilityProfileCharacter)} / {_abilityProfileClass}: {_abilityEntries.Count(x => x.IsEnabled)} of {_abilityEntries.Count} enabled";
-    }
-
-    private static bool SupportsAbilityProfiles(ShardType shard)
-    {
-        return shard is ShardType.Eden or ShardType.Blackthorn;
-    }
-
-    private static string AbilityProfileClassSettingKey(ShardType shard, string characterName)
-    {
-        var characterKey = NormalizeSettingSegment(characterName);
-        if (string.IsNullOrWhiteSpace(characterKey))
-        {
-            characterKey = "default";
-        }
-        return $"ability.profile.class.{shard.ToString().ToLowerInvariant()}.{characterKey}";
-    }
-
     private static string NormalizeSettingSegment(string? value)
     {
         return string.IsNullOrWhiteSpace(value)
             ? string.Empty
             : new string(value.Trim().ToLowerInvariant().Select(x => char.IsLetterOrDigit(x) ? x : '_').ToArray());
-    }
-
-    private static string LegacyAbilityProfileClassSettingKey(ShardType shard)
-    {
-        return $"ability.profile.class.{shard.ToString().ToLowerInvariant()}";
-    }
-
-    private static string DisplayProfileCharacter(string characterName)
-    {
-        return string.IsNullOrWhiteSpace(characterName) ? "Default character" : characterName;
     }
 
     private void LoadDaocCharacterProfiles()
@@ -510,10 +437,15 @@ public partial class MainWindow : Window
             new ConfigEntry { Key = $"daoc.character.{shard.ToString().ToLowerInvariant()}", Value = profile.CharacterName }
         ]);
 
-        if (_abilityProfileShard == shard)
+        if (_abilityProfileController.Shard == shard)
         {
-            SelectAbilityProfileShard(shard);
-            ReloadAbilityEditorRows();
+            _abilityProfileController.RefreshClasses(shard);
+            AbilityProfileServerCombo.SelectedItem = _abilityProfileController.Shard;
+            AbilityProfileClassCombo.ItemsSource = _abilityProfileController.ClassItems;
+            AbilityProfileClassCombo.SelectedItem = _abilityProfileController.Class;
+            AbilityProfileClassCombo.IsEnabled = _abilityProfileController.IsClassEnabled;
+            AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
+            _abilityProfileController.ReloadRows();
         }
 
         if (_shardType == shard)
@@ -724,7 +656,13 @@ public partial class MainWindow : Window
         _settingsController.Save([
             new ConfigEntry { Key = "server", Value = _shardType.ToString().ToLowerInvariant() }
         ]);
-        SelectAbilityProfileShard(SupportsAbilityProfiles(selected) ? selected : ShardType.Default);
+        _abilityProfileController.RefreshClasses(selected);
+        AbilityProfileServerCombo.SelectedItem = _abilityProfileController.Shard;
+        AbilityProfileClassCombo.ItemsSource = _abilityProfileController.ClassItems;
+        AbilityProfileClassCombo.SelectedItem = _abilityProfileController.Class;
+        AbilityProfileClassCombo.IsEnabled = _abilityProfileController.IsClassEnabled;
+        AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
+        _abilityProfileController.ReloadRows();
         ReloadEditorData();
         UpdateRegionText();
         RebuildRuntimeFromFiles();
@@ -849,7 +787,12 @@ public partial class MainWindow : Window
     private void ReloadAbilityCatalogs_Click(object sender, RoutedEventArgs e)
     {
         AbilityProfileCatalog.Refresh();
-        SelectAbilityProfileShard(_abilityProfileShard);
+        _abilityProfileController.RefreshClasses(_abilityProfileController.Shard);
+        AbilityProfileServerCombo.SelectedItem = _abilityProfileController.Shard;
+        AbilityProfileClassCombo.ItemsSource = _abilityProfileController.ClassItems;
+        AbilityProfileClassCombo.SelectedItem = _abilityProfileController.Class;
+        AbilityProfileClassCombo.IsEnabled = _abilityProfileController.IsClassEnabled;
+        AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
         ReloadEditorData();
         RebuildRuntimeFromFiles();
         OutputBox.Text = "Local Eden and Blackthorn catalogs reloaded.";
@@ -874,7 +817,8 @@ public partial class MainWindow : Window
             _edenBrowserWindow?.Close();
             AbilityProfileCatalog.Refresh();
             RebuildRuntimeFromFiles();
-            ReloadAbilityEditorRows();
+            _abilityProfileController.ReloadRows();
+            AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
             OutputBox.Text = result;
         }
         catch (Exception ex)
@@ -885,37 +829,16 @@ public partial class MainWindow : Window
 
     private void SaveAbilities_Click(object sender, RoutedEventArgs e)
     {
-        if (_abilityProfileShard != ShardType.Default && !string.IsNullOrWhiteSpace(_abilityProfileClass))
-        {
-            _store.SaveAbilityProfile(_abilityProfileShard, _abilityProfileCharacter, _abilityProfileClass, _abilityEntries);
-        }
-        else
-        {
-            _store.SaveAbilities(_abilityEntries);
-        }
-
+        _abilityProfileController.Save();
         ReloadEditorData();
         RebuildRuntimeFromFiles();
-        OutputBox.Text = _abilityProfileShard == ShardType.Default
-            ? "Manual abilities saved and parser refreshed."
-            : $"Ability profile saved for {_abilityProfileShard} / {_abilityProfileClass} and parser refreshed.";
+        OutputBox.Text = _abilityProfileController.GetSaveMessage();
     }
 
     private void AddAbility_Click(object sender, RoutedEventArgs e)
     {
-        _abilityEntries.Add(new AbilityEditorRow
-        {
-            IsEnabled = true,
-            Server = _abilityProfileShard == ShardType.Default
-                ? string.Empty
-                : _abilityProfileShard.ToString().ToLowerInvariant(),
-            ClassName = _abilityProfileClass ?? string.Empty,
-            CharacterName = _abilityProfileCharacter,
-            SourceAbilityName = string.Empty,
-            SourceEffectType = "s",
-            Category = _abilityProfileShard == ShardType.Default ? string.Empty : "Custom",
-            IsCustom = _abilityProfileShard != ShardType.Default
-        });
+        _abilityProfileController.Add();
+        AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
     }
 
     private void RemoveAbility_Click(object sender, RoutedEventArgs e)
@@ -925,15 +848,8 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (_abilityProfileShard != ShardType.Default && !selected.IsCustom)
-        {
-            selected.IsEnabled = false;
-            AbilitiesGrid.Items.Refresh();
-            AbilityProfileSummaryText.Text = $"{_abilityProfileShard} / {DisplayProfileCharacter(_abilityProfileCharacter)} / {_abilityProfileClass}: {_abilityEntries.Count(x => x.IsEnabled)} of {_abilityEntries.Count} enabled";
-            return;
-        }
-
-        _abilityEntries.Remove(selected);
+        _abilityProfileController.Remove(selected);
+        AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
     }
 
     private void AbilityProfileServerCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -943,49 +859,31 @@ public partial class MainWindow : Window
             return;
         }
 
-        SelectAbilityProfileShard(shard);
-        ReloadAbilityEditorRows();
+        _abilityProfileController.RefreshClasses(shard);
+        AbilityProfileServerCombo.SelectedItem = _abilityProfileController.Shard;
+        AbilityProfileClassCombo.ItemsSource = _abilityProfileController.ClassItems;
+        AbilityProfileClassCombo.SelectedItem = _abilityProfileController.Class;
+        AbilityProfileClassCombo.IsEnabled = _abilityProfileController.IsClassEnabled;
+        AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
+        _abilityProfileController.ReloadRows();
     }
 
     private void AbilityProfileClassCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_isBindingControls || _abilityProfileShard == ShardType.Default ||
+        if (_isBindingControls || _abilityProfileController.Shard == ShardType.Default ||
             AbilityProfileClassCombo.SelectedItem is not string className)
         {
             return;
         }
 
-        _abilityProfileClass = className;
-        _settingsController.Save([
-            new ConfigEntry
-            {
-                Key = AbilityProfileClassSettingKey(_abilityProfileShard, _abilityProfileCharacter),
-                Value = className
-            }
-        ]);
+        _abilityProfileController.SelectClass(className);
         ReloadEditorData();
-        if (_abilityProfileShard == _shardType)
+        if (_abilityProfileController.Shard == _shardType)
         {
             RebuildRuntimeFromFiles();
         }
 
-        OutputBox.Text = $"Active ability profile: {_abilityProfileShard} / {DisplayProfileCharacter(_abilityProfileCharacter)} / {className}.";
-    }
-
-    private void SelectAbilityProfileShard(ShardType shard)
-    {
-        var previousBinding = _isBindingControls;
-        _isBindingControls = true;
-        try
-        {
-            _abilityProfileShard = SupportsAbilityProfiles(shard) ? shard : ShardType.Default;
-            AbilityProfileServerCombo.SelectedItem = _abilityProfileShard;
-            RefreshAbilityProfileClasses();
-        }
-        finally
-        {
-            _isBindingControls = previousBinding;
-        }
+        OutputBox.Text = $"Active ability profile: {_abilityProfileController.Shard} / {_abilityProfileController.Character} / {className}.";
     }
 
     private async void RefreshAuthCurrent_Click(object sender, RoutedEventArgs e)
