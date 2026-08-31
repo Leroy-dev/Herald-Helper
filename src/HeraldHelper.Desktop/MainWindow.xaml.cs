@@ -534,15 +534,20 @@ public partial class MainWindow : Window
 
     private void ToggleLoop_Click(object sender, RoutedEventArgs e)
     {
-        if (_loopTimer.IsEnabled)
+        if (_loopTimer?.IsEnabled == true)
         {
             _loopTimer.Stop();
-            ToggleLoopButton.Content = "Start Loop";
+            ToggleLoopIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Run;
+            ToggleLoopText.Text = "Start";
             return;
         }
 
-        _loopTimer.Start();
-        ToggleLoopButton.Content = "Stop Loop";
+        _loopTimer?.Start();
+        if (_loopTimer is not null)
+        {
+            ToggleLoopIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Stop;
+            ToggleLoopText.Text = "Stop";
+        }
     }
 
     private void OpenSpellBrowser_Click(object sender, RoutedEventArgs e)

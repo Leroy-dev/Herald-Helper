@@ -201,8 +201,8 @@
                     </Button>
                     <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Name="ToggleLoopButton" Click="ToggleLoop_Click" ToolTip="Start or stop the background loop">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Run" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
-                            <TextBlock Text="Loop" VerticalAlignment="Center" />
+                            <materialDesign:PackIcon Name="ToggleLoopIcon" Kind="Run" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Name="ToggleLoopText" Text="Start" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
                     <Button Style="{StaticResource ToolbarButtonStyle}" Click="OpenSpellBrowser_Click" ToolTip="Open the spell catalog browser">
