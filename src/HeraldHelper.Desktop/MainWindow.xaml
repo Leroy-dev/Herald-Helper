@@ -140,11 +140,17 @@
                            FontSize="16"
                            FontWeight="SemiBold"
                            Text="HeraldHelper" />
-                <Button Grid.Column="2"
-                        Name="ThemeToggleButton"
-                        Style="{StaticResource ToolbarButtonStyle}"
-                        Content="Light Mode"
-                        Click="ToggleTheme_Click" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Name="ThemeToggleButton"
+                            Style="{StaticResource ToolbarButtonStyle}"
+                            Content="Light Mode"
+                            Click="ToggleTheme_Click" />
+                    <Button Style="{StaticResource ToolbarButtonStyle}"
+                            Click="OpenAppearanceSettings_Click"
+                            ToolTip="Appearance settings">
+                        <materialDesign:PackIcon Kind="Cog" Width="20" Height="20" />
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
 

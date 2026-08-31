@@ -4,7 +4,7 @@ using HeraldHelper.Infrastructure.Auth;
 
 namespace HeraldHelper.Desktop.Controllers;
 
-internal sealed class SettingsController
+public sealed class SettingsController
 {
     private readonly ISettingsRepository _settingsRepository;
 

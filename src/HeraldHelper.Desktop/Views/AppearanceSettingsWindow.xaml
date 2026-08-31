@@ -1,0 +1,133 @@
+<Window x:Class="HeraldHelper.Desktop.Views.AppearanceSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="Appearance"
+        Width="520"
+        Height="420"
+        MinWidth="480"
+        MinHeight="360"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResizeWithGrip"
+        Background="{DynamicResource VsWindowBackgroundBrush}"
+        TextElement.Foreground="{DynamicResource VsTextBrush}"
+        TextElement.FontSize="13">
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+        </Style>
+        <Style TargetType="GroupBox">
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource VsBorderBrush}" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+            <Setter Property="Padding" Value="8" />
+        </Style>
+    </Window.Resources>
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Text="Appearance" />
+        <TextBlock Grid.Row="1"
+                   Margin="0,4,0,16"
+                   Foreground="{DynamicResource VsMutedTextBrush}"
+                   Text="Customize colors and theme. These settings are saved automatically."
+                   TextWrapping="Wrap" />
+
+        <GroupBox Grid.Row="2" Header="Theme">
+            <ComboBox Name="ThemeCombo"
+                      materialDesign:HintAssist.Hint="Theme"
+                      Background="{DynamicResource VsPanelAltBrush}"
+                      Foreground="{DynamicResource VsTextBrush}"
+                      BorderBrush="{DynamicResource VsBorderBrush}"
+                      Width="200"
+                      HorizontalAlignment="Left">
+                <ComboBoxItem Content="Dark" Tag="dark" />
+                <ComboBoxItem Content="Light" Tag="light" />
+                <ComboBoxItem Content="Follow system" Tag="system" />
+            </ComboBox>
+        </GroupBox>
+
+        <GroupBox Grid.Row="3" Header="Accent color">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <WrapPanel Name="PresetPanel" Grid.Row="0" Margin="0,0,0,10">
+                    <Button Margin="0,0,8,8" Padding="0" Width="32" Height="32" BorderThickness="1" BorderBrush="{DynamicResource VsBorderBrush}" Click="PresetColor_Click" Tag="#007ACC" Background="#007ACC" ToolTip="Blue" />
+                    <Button Margin="0,0,8,8" Padding="0" Width="32" Height="32" BorderThickness="1" BorderBrush="{DynamicResource VsBorderBrush}" Click="PresetColor_Click" Tag="#E51400" Background="#E51400" ToolTip="Red" />
+                    <Button Margin="0,0,8,8" Padding="0" Width="32" Height="32" BorderThickness="1" BorderBrush="{DynamicResource VsBorderBrush}" Click="PresetColor_Click" Tag="#009900" Background="#009900" ToolTip="Green" />
+                    <Button Margin="0,0,8,8" Padding="0" Width="32" Height="32" BorderThickness="1" BorderBrush="{DynamicResource VsBorderBrush}" Click="PresetColor_Click" Tag="#FF8C00" Background="#FF8C00" ToolTip="Orange" />
+                    <Button Margin="0,0,8,8" Padding="0" Width="32" Height="32" BorderThickness="1" BorderBrush="{DynamicResource VsBorderBrush}" Click="PresetColor_Click" Tag="#9B59B6" Background="#9B59B6" ToolTip="Purple" />
+                    <Button Margin="0,0,8,8" Padding="0" Width="32" Height="32" BorderThickness="1" BorderBrush="{DynamicResource VsBorderBrush}" Click="PresetColor_Click" Tag="#00B7C3" Background="#00B7C3" ToolTip="Cyan" />
+                    <Button Margin="0,0,8,8" Padding="0" Width="32" Height="32" BorderThickness="1" BorderBrush="{DynamicResource VsBorderBrush}" Click="PresetColor_Click" Tag="#FFCC00" Background="#FFCC00" ToolTip="Yellow" />
+                    <Button Margin="0,0,8,8" Padding="0" Width="32" Height="32" BorderThickness="1" BorderBrush="{DynamicResource VsBorderBrush}" Click="PresetColor_Click" Tag="#FF4081" Background="#FF4081" ToolTip="Pink" />
+                </WrapPanel>
+
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <TextBox Name="CustomColorText"
+                             Width="180"
+                             materialDesign:HintAssist.Hint="Custom color (#RRGGBB)"
+                             Background="{DynamicResource VsPanelAltBrush}"
+                             Foreground="{DynamicResource VsTextBrush}"
+                             BorderBrush="{DynamicResource VsBorderBrush}"
+                             TextChanged="CustomColorText_TextChanged" />
+                    <Border Name="ColorPreview"
+                            Margin="8,0,0,0"
+                            Width="32"
+                            Height="32"
+                            BorderBrush="{DynamicResource VsBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Background="{DynamicResource VsAccentBrush}" />
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+
+        <Border Grid.Row="4"
+                Margin="0,0,0,12"
+                Padding="12"
+                Background="{DynamicResource VsPanelBrush}"
+                BorderBrush="{DynamicResource VsBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+            <StackPanel>
+                <TextBlock FontWeight="SemiBold" Text="Preview" />
+                <TextBlock Margin="0,8,0,0"
+                           Foreground="{DynamicResource VsAccentBrush}"
+                           Text="Selected accent preview" />
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0"
+                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                    Content="Reset to defaults"
+                    Click="Reset_Click" />
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Margin="0,0,8,0"
+                        Content="Cancel"
+                        Click="Cancel_Click" />
+                <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                        Content="OK"
+                        Click="Ok_Click" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

@@ -971,9 +971,18 @@ public partial class MainWindow : Window
 
     private void ToggleTheme_Click(object sender, RoutedEventArgs e)
     {
-        _themeController.Toggle();
+        _themeController.ToggleDarkLight();
         ThemeToggleButton.Content = _themeController.ToggleButtonContent;
         ReloadEditorData();
+    }
+
+    private void OpenAppearanceSettings_Click(object sender, RoutedEventArgs e)
+    {
+        var window = new Views.AppearanceSettingsWindow(_themeController)
+        {
+            Owner = this
+        };
+        window.ShowDialog();
     }
 
     private void OnResponseDiagnosticLineAdded(string line)
