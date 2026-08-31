@@ -21,6 +21,7 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
     private readonly SqliteSettingsRepository _settingsRepository;
     private readonly SqliteCharacterStatsRepository _characterStatsRepository;
     private readonly SqliteAbilitiesRepository _abilitiesRepository;
+    private readonly SqliteTargetProfileCache _targetProfileCache;
 
     public AppDataStore(string databasePath)
     {
@@ -35,6 +36,7 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
         _settingsRepository = new SqliteSettingsRepository(_connectionFactory);
         _characterStatsRepository = new SqliteCharacterStatsRepository(_connectionFactory);
         _abilitiesRepository = new SqliteAbilitiesRepository(_connectionFactory);
+        _targetProfileCache = new SqliteTargetProfileCache(_connectionFactory);
     }
 
     public void Initialize()
@@ -247,60 +249,12 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
 
     public TargetProfile? Load(ShardType shardType, string targetName)
     {
-        if (string.IsNullOrWhiteSpace(targetName))
-        {
-            return null;
-        }
-
-        using var connection = _connectionFactory.OpenConnection();
-        using var cmd = connection.CreateCommand();
-        cmd.CommandText = """
-            SELECT name, guild_name, class_name, level, realm_rank, solo_kills
-            FROM target_profile_cache
-            WHERE server = $server AND normalized_name = $name;
-            """;
-        cmd.Parameters.AddWithValue("$server", shardType.ToString().ToLowerInvariant());
-        cmd.Parameters.AddWithValue("$name", NormalizeProfileSegment(targetName));
-        using var reader = cmd.ExecuteReader();
-        return reader.Read()
-            ? new TargetProfile(
-                reader.GetString(0),
-                ReadNullableString(reader, 1),
-                ReadNullableString(reader, 2),
-                ReadNullableInt(reader, 3),
-                ReadNullableString(reader, 4),
-                ReadNullableInt(reader, 5))
-            : null;
+        return _targetProfileCache.Load(shardType, targetName);
     }
 
     public void Save(ShardType shardType, TargetProfile profile)
     {
-        if (string.IsNullOrWhiteSpace(profile.Name))
-        {
-            return;
-        }
-
-        using var connection = _connectionFactory.OpenConnection();
-        using var cmd = connection.CreateCommand();
-        cmd.CommandText = """
-            INSERT INTO target_profile_cache(
-                server, normalized_name, name, guild_name, class_name, level, realm_rank, solo_kills, updated_utc)
-            VALUES($server, $normalized, $name, $guild, $class, $level, $rank, $solo, $updated)
-            ON CONFLICT(server, normalized_name) DO UPDATE SET
-                name=excluded.name, guild_name=excluded.guild_name, class_name=excluded.class_name,
-                level=excluded.level, realm_rank=excluded.realm_rank, solo_kills=excluded.solo_kills,
-                updated_utc=excluded.updated_utc;
-            """;
-        cmd.Parameters.AddWithValue("$server", shardType.ToString().ToLowerInvariant());
-        cmd.Parameters.AddWithValue("$normalized", NormalizeProfileSegment(profile.Name));
-        cmd.Parameters.AddWithValue("$name", profile.Name.Trim());
-        AddNullableString(cmd, "$guild", profile.Guild);
-        AddNullableString(cmd, "$class", profile.Class);
-        AddNullableInt(cmd, "$level", profile.Level);
-        AddNullableString(cmd, "$rank", profile.RealmRank);
-        AddNullableInt(cmd, "$solo", profile.SoloKills);
-        cmd.Parameters.AddWithValue("$updated", DateTimeOffset.UtcNow.ToString("O"));
-        cmd.ExecuteNonQuery();
+        _targetProfileCache.Save(shardType, profile);
     }
 
     private List<CharacterStatsSnapshot> LoadAllCharacterStats()
