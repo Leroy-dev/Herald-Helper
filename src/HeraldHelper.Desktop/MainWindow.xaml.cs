@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 using HeraldHelper.Application.Services;
+using HeraldHelper.Desktop.Controllers;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 using HeraldHelper.Infrastructure.Auth;
@@ -30,6 +31,7 @@ public partial class MainWindow : Window
     private DesktopOverlayRenderer _liveOverlay = null!;
     private ScreenCaptureOcrService _capture = null!;
     private readonly AppDataStore _store;
+    private readonly SettingsController _settingsController;
     private readonly ResponseDiagnosticsBuffer _responseDiagnostics;
     private readonly IShardAuthRefreshService _authRefreshService;
     private readonly HttpClient _httpClient;
@@ -66,6 +68,7 @@ public partial class MainWindow : Window
             "heraldhelper.db");
         _store = new AppDataStore(dbPath);
         _store.Initialize();
+        _settingsController = new SettingsController(_store);
         _responseDiagnostics = new ResponseDiagnosticsBuffer();
         _responseDiagnostics.LineAdded += OnResponseDiagnosticLineAdded;
         _httpClient = new HttpClient
@@ -76,14 +79,14 @@ public partial class MainWindow : Window
         var legacyCfgPath = FindFilePath("cfg.ini");
         var legacyAbilitiesPath = FindFilePath("abilities.txt");
         LegacyTextImporter.ImportIfNeeded(_store, legacyCfgPath, legacyAbilitiesPath);
-        EnsureDefaultAuthSettings();
+        _settingsController.EnsureDefaultAuthSettings();
 
         var profilesRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "HeraldHelper",
             "browser-profiles");
         _authRefreshService = new PlaywrightShardAuthRefreshService(
-            shard => ShardAuthProfileResolver.Resolve(_store.LoadSettingsMap(), shard),
+            shard => ShardAuthProfileResolver.Resolve(_settingsController.LoadMap(), shard),
             OnAuthRefreshed,
             profilesRoot);
 
@@ -131,19 +134,19 @@ public partial class MainWindow : Window
     private void RebuildRuntimeFromFiles()
     {
         _orchestrator?.Dispose();
-        var settingsMap = _store.LoadSettingsMap();
+        var settingsMap = _settingsController.LoadMap();
         var selectedShard = AppRuntimeSettings.FromMap(settingsMap).ShardType;
         var selectedCharacter = ReadOrDefault(
             settingsMap,
             $"daoc.character.{selectedShard.ToString().ToLowerInvariant()}",
             string.Empty);
         var abilities = LoadActiveAbilityDefinitions(settingsMap, selectedShard);
-        _liveOverlay ??= new DesktopOverlayRenderer(() => _store.LoadSettingsMap());
+        _liveOverlay ??= new DesktopOverlayRenderer(() => _settingsController.LoadMap());
         (_orchestrator, _overlay, _runtimeSettings, _capture) = AppComposition.Build(
             settingsMap,
             abilities,
             _httpClient,
-            () => _store.LoadSettingsMap(),
+            () => _settingsController.LoadMap(),
             _authRefreshService,
             _liveOverlay,
             _responseDiagnostics,
@@ -208,7 +211,7 @@ public partial class MainWindow : Window
     private void ReloadEditorData()
     {
         _cfgEntries.Clear();
-        foreach (var entry in _store.LoadConfigEntries())
+        foreach (var entry in _settingsController.LoadEntries())
         {
             _cfgEntries.Add(entry);
         }
@@ -252,7 +255,7 @@ public partial class MainWindow : Window
         }
 
         var classes = AbilityProfileCatalog.GetClasses(_abilityProfileShard);
-        var settings = _store.LoadSettingsMap();
+        var settings = _settingsController.LoadMap();
         _abilityProfileCharacter = ReadOrDefault(
             settings,
             $"daoc.character.{_abilityProfileShard.ToString().ToLowerInvariant()}",
@@ -354,7 +357,7 @@ public partial class MainWindow : Window
 
     private void RepairInvalidSavedCustomWindowRegions()
     {
-        var settings = _store.LoadSettingsMap();
+        var settings = _settingsController.LoadMap();
         var updates = new List<ConfigEntry>();
         foreach (var (shard, profiles) in _daocCharacterProfiles)
         {
@@ -417,7 +420,7 @@ public partial class MainWindow : Window
         {
             return;
         }
-        _store.SaveSettings(MergeWithCurrentSettings(updates));
+        _settingsController.Save(updates);
         RebuildRuntimeFromFiles();
         _responseDiagnostics.Log($"[OCR] repaired {updates.Count} saved custom-window configuration(s) from active UI XML.");
     }
@@ -503,7 +506,7 @@ public partial class MainWindow : Window
         _isBindingControls = true;
         try
         {
-            var settings = _store.LoadSettingsMap();
+            var settings = _settingsController.LoadMap();
             foreach (var shard in Enum.GetValues<ShardType>())
             {
                 if (!_daocCharacterSelectors.TryGetValue(shard, out var combo))
@@ -557,9 +560,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        _store.SaveSettings(MergeWithCurrentSettings([
+        _settingsController.Save([
             new ConfigEntry { Key = $"daoc.character.{shard.ToString().ToLowerInvariant()}", Value = profile.CharacterName }
-        ]));
+        ]);
 
         if (_abilityProfileShard == shard)
         {
@@ -707,13 +710,12 @@ public partial class MainWindow : Window
             {
                 _chatRegion = region;
                 UpdateRegionText();
-                _store.SaveSettings(
-                    MergeWithCurrentSettings([
+                _settingsController.Save([
                         new ConfigEntry { Key = "MX", Value = region.X.ToString() },
                         new ConfigEntry { Key = "MY", Value = region.Y.ToString() },
                         new ConfigEntry { Key = "w", Value = region.Width.ToString() },
                         new ConfigEntry { Key = "h", Value = region.Height.ToString() }
-                    ]));
+                    ]);
                 ReloadEditorData();
                 OutputBox.Text = "Chat area saved to database.";
             }
@@ -727,7 +729,7 @@ public partial class MainWindow : Window
 
     private void SelectStatsArea_Click(object sender, RoutedEventArgs e)
     {
-        var settings = _store.LoadSettingsMap();
+        var settings = _settingsController.LoadMap();
         var character = ReadOrDefault(
             settings,
             $"daoc.character.{_shardType.ToString().ToLowerInvariant()}",
@@ -748,9 +750,9 @@ public partial class MainWindow : Window
             }
             var region = new OcrWatchRegion("character-stats", "Character Stats", selected);
             var key = $"daoc.ocr.stats.{_shardType.ToString().ToLowerInvariant()}.{NormalizeSettingSegment(character)}";
-            _store.SaveSettings(MergeWithCurrentSettings([
+            _settingsController.Save([
                 new ConfigEntry { Key = key, Value = JsonSerializer.Serialize(region) }
-            ]));
+            ]);
             RebuildRuntimeFromFiles();
             OutputBox.Text = $"Stats OCR area saved for {character}. Keep the status window visible when values change.";
         }
@@ -769,9 +771,9 @@ public partial class MainWindow : Window
         }
 
         _shardType = selected;
-        _store.SaveSettings(MergeWithCurrentSettings([
+        _settingsController.Save([
             new ConfigEntry { Key = "server", Value = _shardType.ToString().ToLowerInvariant() }
-        ]));
+        ]);
         SelectAbilityProfileShard(SupportsAbilityProfiles(selected) ? selected : ShardType.Default);
         ReloadEditorData();
         UpdateRegionText();
@@ -792,9 +794,9 @@ public partial class MainWindow : Window
             ResistText.CaretIndex = ResistText.Text.Length;
         }
 
-        _store.SaveSettings(MergeWithCurrentSettings([
+        _settingsController.Save([
             new ConfigEntry { Key = "resis", Value = _resistPercent.ToString() }
-        ]));
+        ]);
         ReloadEditorData();
         UpdateRegionText();
     }
@@ -807,9 +809,9 @@ public partial class MainWindow : Window
         }
 
         _ocrEngineMode = selected;
-        _store.SaveSettings(MergeWithCurrentSettings([
+        _settingsController.Save([
             new ConfigEntry { Key = "ocrEngine", Value = _ocrEngineMode.ToString().ToLowerInvariant() }
-        ]));
+        ]);
         ReloadEditorData();
         RebuildRuntimeFromFiles();
     }
@@ -841,7 +843,7 @@ public partial class MainWindow : Window
 
     private void SaveConfig_Click(object sender, RoutedEventArgs e)
     {
-        _store.SaveSettings(_cfgEntries.Where(x => !string.IsNullOrWhiteSpace(x.Key)));
+        _settingsController.Replace(_cfgEntries.Where(x => !string.IsNullOrWhiteSpace(x.Key)));
         ReloadEditorData();
         RebuildRuntimeFromFiles();
         ReloadOverlaySettingsFromStore();
@@ -1004,13 +1006,13 @@ public partial class MainWindow : Window
         }
 
         _abilityProfileClass = className;
-        _store.SaveSettings(MergeWithCurrentSettings([
+        _settingsController.Save([
             new ConfigEntry
             {
                 Key = AbilityProfileClassSettingKey(_abilityProfileShard, _abilityProfileCharacter),
                 Value = className
             }
-        ]));
+        ]);
         ReloadEditorData();
         if (_abilityProfileShard == _shardType)
         {
@@ -1140,7 +1142,7 @@ public partial class MainWindow : Window
             return "Stats: inactive";
         }
 
-        var map = _store.LoadSettingsMap();
+        var map = _settingsController.LoadMap();
         var character = ReadOrDefault(map, $"daoc.character.{_shardType.ToString().ToLowerInvariant()}", string.Empty);
         var stats = _store.LoadCharacterStats(_shardType, character);
         return stats?.Dexterity is null
@@ -1150,7 +1152,7 @@ public partial class MainWindow : Window
 
     private IReadOnlyList<OcrWatchRegion> LoadSelectedOcrWindows(ShardType shard, string characterName)
     {
-        var settings = _store.LoadSettingsMap();
+        var settings = _settingsController.LoadMap();
         var prefix = $"daoc.ocr.windows.{shard.ToString().ToLowerInvariant()}.";
         var key = prefix + NormalizeSettingSegment(characterName);
         var legacyKey = prefix + characterName.Trim().ToLowerInvariant();
@@ -1177,13 +1179,13 @@ public partial class MainWindow : Window
     {
         var windows = selected.Select(x => new OcrWatchRegion(x.Key, x.Label, x.Region)).ToList();
         var raw = JsonSerializer.Serialize(windows);
-        _store.SaveSettings(MergeWithCurrentSettings([
+        _settingsController.Save([
             new ConfigEntry
             {
                 Key = $"daoc.ocr.windows.{shard.ToString().ToLowerInvariant()}.{NormalizeSettingSegment(characterName)}",
                 Value = raw
             }
-        ]));
+        ]);
     }
 
     private static string FindFilePath(string fileName)
@@ -1209,17 +1211,6 @@ public partial class MainWindow : Window
         return Path.Combine(Directory.GetCurrentDirectory(), fileName);
     }
 
-    private IEnumerable<ConfigEntry> MergeWithCurrentSettings(IEnumerable<ConfigEntry> updates)
-    {
-        var map = _store.LoadSettingsMap();
-        foreach (var update in updates)
-        {
-            map[update.Key] = update.Value;
-        }
-
-        return map.Select(kvp => new ConfigEntry { Key = kvp.Key, Value = kvp.Value });
-    }
-
     private static AbilityDefinition ToAbilityDefinition(AbilityEditorRow row)
     {
         return new AbilityDefinition(
@@ -1236,15 +1227,15 @@ public partial class MainWindow : Window
     private void ToggleTheme_Click(object sender, RoutedEventArgs e)
     {
         ApplyTheme(!_isDarkTheme);
-        _store.SaveSettings(MergeWithCurrentSettings([
+        _settingsController.Save([
             new ConfigEntry { Key = "ui.theme", Value = _isDarkTheme ? "dark" : "light" }
-        ]));
+        ]);
         ReloadEditorData();
     }
 
     private void LoadThemeSetting()
     {
-        var settings = _store.LoadSettingsMap();
+        var settings = _settingsController.LoadMap();
         var theme = settings.TryGetValue("ui.theme", out var themeRaw) ? themeRaw : "dark";
         ApplyTheme(!string.Equals(theme, "light", StringComparison.OrdinalIgnoreCase));
     }
@@ -1307,53 +1298,9 @@ public partial class MainWindow : Window
         });
     }
 
-    private void EnsureDefaultAuthSettings()
-    {
-        var current = _store.LoadSettingsMap();
-        var changed = false;
-        foreach (var entry in ShardAuthProfileResolver.DefaultSettings())
-        {
-            if (current.ContainsKey(entry.Key))
-            {
-                continue;
-            }
-
-            current[entry.Key] = entry.Value;
-            changed = true;
-        }
-
-        if (current.TryGetValue("auth.eden.cookieNames", out var cookieNamesRaw))
-        {
-            var normalized = cookieNamesRaw
-                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Where(x => !x.Equals("POWSESS", StringComparison.OrdinalIgnoreCase))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
-
-            if (normalized.Count == 0)
-            {
-                normalized.AddRange(["eden_daoc_u", "eden_daoc_k", "eden_daoc_sid"]);
-            }
-
-            var normalizedCsv = string.Join(",", normalized);
-            if (!string.Equals(cookieNamesRaw, normalizedCsv, StringComparison.Ordinal))
-            {
-                current["auth.eden.cookieNames"] = normalizedCsv;
-                changed = true;
-            }
-        }
-
-        if (!changed)
-        {
-            return;
-        }
-
-        _store.SaveSettings(current.Select(x => new ConfigEntry { Key = x.Key, Value = x.Value }));
-    }
-
     private void ConfigureAuthRefreshTimer()
     {
-        var settings = _store.LoadSettingsMap();
+        var settings = _settingsController.LoadMap();
         var enabled = !settings.TryGetValue("auth.autoRefreshEnabled", out var enabledRaw)
             || !enabledRaw.Equals("false", StringComparison.OrdinalIgnoreCase);
         var minutes = settings.TryGetValue("auth.autoRefreshMinutes", out var minsRaw) && int.TryParse(minsRaw, out var parsed)
@@ -1386,7 +1333,7 @@ public partial class MainWindow : Window
             updates.Add(new ConfigEntry { Key = "edenHeraldUserAgent", Value = bundle.UserAgent ?? string.Empty });
         }
 
-        _store.SaveSettings(MergeWithCurrentSettings(updates));
+        _settingsController.Save(updates);
     }
 
     private void ReloadOverlaySettings_Click(object sender, RoutedEventArgs e)
@@ -1418,7 +1365,7 @@ public partial class MainWindow : Window
             new() { Key = "ocrReplayEnabled", Value = (OcrReplayCheckbox?.IsChecked ?? false) ? "1" : "0" }
         };
 
-        _store.SaveSettings(MergeWithCurrentSettings(updates));
+        _settingsController.Save(updates);
         SaveCurrentCharacterStatBonuses();
         ReloadEditorData();
         _liveOverlay?.ClearPreview();
@@ -1549,7 +1496,7 @@ public partial class MainWindow : Window
 
     private void ReloadOverlaySettingsFromStore()
     {
-        var map = _store.LoadSettingsMap();
+        var map = _settingsController.LoadMap();
         OverlayXText.Text = ReadOrDefault(map, "overlayX", "1200");
         OverlayYText.Text = ReadOrDefault(map, "overlayY", "900");
         OverlayTimerXText.Text = ReadOrDefault(map, "overlayXTimer", "1580");
@@ -1634,13 +1581,13 @@ public partial class MainWindow : Window
             new() { Key = "estimatedSpellDamageEnabled", Value = (EstimatedSpellDamageCheckbox?.IsChecked ?? false) ? "1" : "0" },
             new() { Key = "ocrReplayEnabled", Value = (OcrReplayCheckbox?.IsChecked ?? false) ? "1" : "0" }
         };
-        _store.SaveSettings(MergeWithCurrentSettings(updates));
+        _settingsController.Save(updates);
         RebuildRuntimeFromFiles();
     }
 
     private void SaveCurrentCharacterStatBonuses()
     {
-        var map = _store.LoadSettingsMap();
+        var map = _settingsController.LoadMap();
         var character = ReadOrDefault(map, $"daoc.character.{_shardType.ToString().ToLowerInvariant()}", string.Empty);
         if (string.IsNullOrWhiteSpace(character))
         {
