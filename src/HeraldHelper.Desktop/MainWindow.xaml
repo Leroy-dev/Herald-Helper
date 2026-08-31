@@ -18,9 +18,41 @@
             <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource VsBorderBrush}" />
         </Style>
-        <Style TargetType="TabControl">
-            <Setter Property="Background" Value="{DynamicResource VsPanelBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource VsBorderBrush}" />
+        <Style x:Key="SidebarListBoxStyle" TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        </Style>
+        <Style x:Key="SidebarListBoxItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border Name="ItemBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{DynamicResource VsAccentBrush}"
+                                BorderThickness="0,0,0,0"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource VsPanelAltBrush}" />
+                                <Setter TargetName="ItemBorder" Property="BorderThickness" Value="2,0,0,0" />
+                                <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource VsPanelBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style TargetType="DataGrid">
             <Setter Property="Background" Value="{DynamicResource VsPanelBrush}" />
@@ -123,9 +155,33 @@
 
             <TextBlock Grid.Row="2" Margin="0,0,0,8" Opacity="0.85" Foreground="{DynamicResource VsMutedTextBrush}" Text="Tip: Overlay positions use cfg-style keys (overlayX, overlayY, overlayXTimer, overlayYTimer, overlayXCast, overlayYCast)." />
 
-            <TabControl Grid.Row="3">
-                <TabItem Header="Live">
-                    <Grid Margin="8">
+            <Grid Grid.Row="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0"
+                        MinWidth="180"
+                        Background="{DynamicResource VsPanelBrush}"
+                        BorderBrush="{DynamicResource VsBorderBrush}"
+                        BorderThickness="0,0,1,0">
+                    <ListBox Name="SidebarList"
+                             Style="{StaticResource SidebarListBoxStyle}"
+                             ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}"
+                             SelectionChanged="SidebarList_SelectionChanged">
+                        <ListBoxItem Content="Live" IsSelected="True" Tag="Live" />
+                        <ListBoxItem Content="Config" Tag="Config" />
+                        <ListBoxItem Content="Abilities" Tag="Abilities" />
+                        <ListBoxItem Content="Overlay" Tag="Overlay" />
+                    </ListBox>
+                </Border>
+
+                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <Grid>
+
+                
+                    <Grid x:Name="LivePanel" Margin="12" Visibility="Visible">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
@@ -159,10 +215,10 @@
                             </Grid>
                         </GroupBox>
                     </Grid>
-                </TabItem>
+                
 
-                <TabItem Header="Config">
-                    <Grid Margin="8">
+                
+                    <Grid x:Name="ConfigPanel" Margin="12" Visibility="Collapsed">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -190,10 +246,10 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
-                </TabItem>
+                
 
-                <TabItem Header="Abilities">
-                    <Grid Margin="8">
+                
+                    <Grid x:Name="AbilitiesPanel" Margin="12" Visibility="Collapsed">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -247,10 +303,10 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
-                </TabItem>
+                
 
-                <TabItem Header="Overlay">
-                    <Grid Margin="8">
+                
+                    <Grid x:Name="OverlayPanel" Margin="12" Visibility="Collapsed">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -331,8 +387,9 @@
                             </materialDesign:Card>
                         </Grid>
                     </Grid>
-                </TabItem>
-            </TabControl>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
         </Grid>
     </DockPanel>
 </Window>

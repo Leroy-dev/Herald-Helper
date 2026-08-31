@@ -956,6 +956,19 @@ public partial class MainWindow : Window
         return Path.Combine(Directory.GetCurrentDirectory(), fileName);
     }
 
+    private void SidebarList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (SidebarList.SelectedItem is not System.Windows.Controls.ListBoxItem item)
+        {
+            return;
+        }
+
+        LivePanel.Visibility = item.Tag is "Live" ? Visibility.Visible : Visibility.Collapsed;
+        ConfigPanel.Visibility = item.Tag is "Config" ? Visibility.Visible : Visibility.Collapsed;
+        AbilitiesPanel.Visibility = item.Tag is "Abilities" ? Visibility.Visible : Visibility.Collapsed;
+        OverlayPanel.Visibility = item.Tag is "Overlay" ? Visibility.Visible : Visibility.Collapsed;
+    }
+
     private void ToggleTheme_Click(object sender, RoutedEventArgs e)
     {
         _themeController.Toggle();
