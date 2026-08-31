@@ -42,4 +42,9 @@ internal abstract class SqliteRepositoryBase
         var v = value.Trim().ToLowerInvariant();
         return v is "m" or "s" or "r" ? v : fallback;
     }
+
+    protected static int ReadIntOrZero(SqliteDataReader reader, int ordinal)
+    {
+        return reader.IsDBNull(ordinal) ? 0 : reader.GetInt32(ordinal);
+    }
 }
