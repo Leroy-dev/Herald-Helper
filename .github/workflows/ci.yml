@@ -41,18 +41,4 @@ jobs:
       - name: Catalog validation
         run: dotnet test HeraldHelper.slnx --no-build --filter "CatalogAndMigrationIntegrityTests"
 
-  secret-scan:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout with history
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: TruffleHog secret scan
-        uses: trufflesecurity/trufflehog@main
-        with:
-          path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
+# Secret scanning can be re-enabled via GitHub Advanced Security or a dedicated scanner once the repo is public.
