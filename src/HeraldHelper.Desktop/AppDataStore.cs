@@ -12,12 +12,14 @@ using Microsoft.Data.Sqlite;
 
 namespace HeraldHelper.Desktop;
 
-public sealed class AppDataStore : ITargetProfileCache
+public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICharacterStatsRepository
 {
     public const int CurrentDatabaseMigrationVersion = 8;
     public const int CurrentBackupFormatVersion = 1;
 
     private readonly SqliteConnectionFactory _connectionFactory;
+    private readonly SqliteSettingsRepository _settingsRepository;
+    private readonly SqliteCharacterStatsRepository _characterStatsRepository;
 
     public AppDataStore(string databasePath)
     {
@@ -29,6 +31,8 @@ public sealed class AppDataStore : ITargetProfileCache
 
         var connectionString = $"Data Source={databasePath}";
         _connectionFactory = new SqliteConnectionFactory(connectionString);
+        _settingsRepository = new SqliteSettingsRepository(_connectionFactory);
+        _characterStatsRepository = new SqliteCharacterStatsRepository(_connectionFactory);
     }
 
     public void Initialize()
@@ -48,56 +52,17 @@ public sealed class AppDataStore : ITargetProfileCache
 
     public Dictionary<string, string> LoadSettingsMap()
     {
-        using var connection = _connectionFactory.OpenConnection();
-        using var cmd = connection.CreateCommand();
-        cmd.CommandText = "SELECT key, value FROM settings;";
-
-        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        using var reader = cmd.ExecuteReader();
-        while (reader.Read())
-        {
-            var key = reader.GetString(0);
-            var value = DecryptIfNeeded(key, reader.GetString(1));
-            map[key] = value;
-        }
-
-        return map;
+        return _settingsRepository.LoadSettingsMap();
     }
 
     public List<ConfigEntry> LoadConfigEntries()
     {
-        return LoadSettingsMap()
-            .Select(x => new ConfigEntry { Key = x.Key, Value = x.Value })
-            .OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        return _settingsRepository.LoadConfigEntries();
     }
 
     public void SaveSettings(IEnumerable<ConfigEntry> entries)
     {
-        var list = entries.Where(x => !string.IsNullOrWhiteSpace(x.Key)).ToList();
-        using var connection = _connectionFactory.OpenConnection();
-        using var tx = connection.BeginTransaction();
-
-        using (var delete = connection.CreateCommand())
-        {
-            delete.Transaction = tx;
-            delete.CommandText = "DELETE FROM settings;";
-            delete.ExecuteNonQuery();
-        }
-
-        foreach (var entry in list)
-        {
-            using var insert = connection.CreateCommand();
-            insert.Transaction = tx;
-            insert.CommandText = "INSERT INTO settings(key, value) VALUES($k, $v);";
-            var key = entry.Key.Trim();
-            var clearValue = entry.Value?.Trim() ?? string.Empty;
-            insert.Parameters.AddWithValue("$k", key);
-            insert.Parameters.AddWithValue("$v", EncryptIfNeeded(key, clearValue));
-            insert.ExecuteNonQuery();
-        }
-
-        tx.Commit();
+        _settingsRepository.SaveSettings(entries);
     }
 
     public List<AbilityEditorRow> LoadAbilities()
@@ -323,74 +288,12 @@ public sealed class AppDataStore : ITargetProfileCache
 
     public CharacterStatsSnapshot? LoadCharacterStats(ShardType shard, string characterName)
     {
-        if (string.IsNullOrWhiteSpace(characterName))
-        {
-            return null;
-        }
-        using var connection = _connectionFactory.OpenConnection();
-        using var cmd = connection.CreateCommand();
-        cmd.CommandText = """
-            SELECT strength, constitution, dexterity, quickness, intelligence, piety, empathy, charisma,
-                   casting_speed_percent, spell_damage_percent, updated_utc
-            FROM character_stats
-            WHERE server = $server AND character_name = $character;
-            """;
-        cmd.Parameters.AddWithValue("$server", shard.ToString().ToLowerInvariant());
-        cmd.Parameters.AddWithValue("$character", NormalizeProfileSegment(characterName));
-        using var reader = cmd.ExecuteReader();
-        if (!reader.Read())
-        {
-            return null;
-        }
-        return new CharacterStatsSnapshot(
-            shard,
-            characterName.Trim(),
-            ReadNullableInt(reader, 0),
-            ReadNullableInt(reader, 1),
-            ReadNullableInt(reader, 2),
-            ReadNullableInt(reader, 3),
-            ReadNullableInt(reader, 4),
-            ReadNullableInt(reader, 5),
-            ReadNullableInt(reader, 6),
-            ReadNullableInt(reader, 7),
-            reader.GetDouble(8),
-            reader.GetDouble(9),
-            DateTimeOffset.Parse(reader.GetString(10), System.Globalization.CultureInfo.InvariantCulture));
+        return _characterStatsRepository.LoadCharacterStats(shard, characterName);
     }
 
     public void SaveCharacterStats(CharacterStatsSnapshot stats)
     {
-        using var connection = _connectionFactory.OpenConnection();
-        using var cmd = connection.CreateCommand();
-        cmd.CommandText = """
-            INSERT INTO character_stats(
-                server, character_name, strength, constitution, dexterity, quickness,
-                intelligence, piety, empathy, charisma, casting_speed_percent,
-                spell_damage_percent, updated_utc)
-            VALUES($server, $character, $str, $con, $dex, $qui, $int, $pie, $emp, $cha, $cast, $damage, $updated)
-            ON CONFLICT(server, character_name) DO UPDATE SET
-                strength=excluded.strength, constitution=excluded.constitution,
-                dexterity=excluded.dexterity, quickness=excluded.quickness,
-                intelligence=excluded.intelligence, piety=excluded.piety,
-                empathy=excluded.empathy, charisma=excluded.charisma,
-                casting_speed_percent=excluded.casting_speed_percent,
-                spell_damage_percent=excluded.spell_damage_percent,
-                updated_utc=excluded.updated_utc;
-            """;
-        cmd.Parameters.AddWithValue("$server", stats.Shard.ToString().ToLowerInvariant());
-        cmd.Parameters.AddWithValue("$character", NormalizeProfileSegment(stats.CharacterName));
-        AddNullableInt(cmd, "$str", stats.Strength);
-        AddNullableInt(cmd, "$con", stats.Constitution);
-        AddNullableInt(cmd, "$dex", stats.Dexterity);
-        AddNullableInt(cmd, "$qui", stats.Quickness);
-        AddNullableInt(cmd, "$int", stats.Intelligence);
-        AddNullableInt(cmd, "$pie", stats.Piety);
-        AddNullableInt(cmd, "$emp", stats.Empathy);
-        AddNullableInt(cmd, "$cha", stats.Charisma);
-        cmd.Parameters.AddWithValue("$cast", stats.CastingSpeedPercent);
-        cmd.Parameters.AddWithValue("$damage", stats.SpellDamagePercent);
-        cmd.Parameters.AddWithValue("$updated", stats.UpdatedUtc.ToString("O"));
-        cmd.ExecuteNonQuery();
+        _characterStatsRepository.SaveCharacterStats(stats);
     }
 
     public TargetProfile? Load(ShardType shardType, string targetName)
@@ -883,7 +786,7 @@ public sealed class AppDataStore : ITargetProfileCache
             DatabaseMigrationVersion = GetDatabaseMigrationVersion(),
             ExportedUtc = DateTimeOffset.UtcNow,
             SecretsExcluded = true,
-            Settings = LoadConfigEntries().Where(x => !IsSensitiveKey(x.Key)).ToList(),
+            Settings = LoadConfigEntries().Where(x => !SqliteSettingsRepository.IsSensitiveKey(x.Key)).ToList(),
             Abilities = LoadAbilities(),
             CatalogEntryOverrides = LoadCatalogEntryOverrides().Values.ToList(),
             AbilityProfileOverrides = LoadAbilityProfileOverrides(),
@@ -933,8 +836,8 @@ public sealed class AppDataStore : ITargetProfileCache
             if (payload.SecretsExcluded)
             {
                 restoredSettings = LoadConfigEntries()
-                    .Where(x => IsSensitiveKey(x.Key))
-                    .Concat(payload.Settings.Where(x => !IsSensitiveKey(x.Key)))
+                    .Where(x => SqliteSettingsRepository.IsSensitiveKey(x.Key))
+                    .Concat(payload.Settings.Where(x => !SqliteSettingsRepository.IsSensitiveKey(x.Key)))
                     .ToList();
             }
             SaveSettings(restoredSettings);
@@ -1057,43 +960,6 @@ public sealed class AppDataStore : ITargetProfileCache
         using var cmd = connection.CreateCommand();
         cmd.CommandText = "DELETE FROM character_stats;";
         cmd.ExecuteNonQuery();
-    }
-
-    private static bool IsSensitiveKey(string key)
-    {
-        var k = key.ToLowerInvariant();
-        return k.Contains("cookie") || k.Contains("token") || k.Contains("sid") || k.Contains("useragent") || k.Contains("powsess");
-    }
-
-    private static string EncryptIfNeeded(string key, string value)
-    {
-        if (!IsSensitiveKey(key) || string.IsNullOrEmpty(value))
-        {
-            return value;
-        }
-
-        var raw = Encoding.UTF8.GetBytes(value);
-        var protectedBytes = ProtectedData.Protect(raw, null, DataProtectionScope.CurrentUser);
-        return "enc:" + Convert.ToBase64String(protectedBytes);
-    }
-
-    private static string DecryptIfNeeded(string key, string storedValue)
-    {
-        if (!IsSensitiveKey(key) || !storedValue.StartsWith("enc:", StringComparison.Ordinal))
-        {
-            return storedValue;
-        }
-
-        try
-        {
-            var cipher = Convert.FromBase64String(storedValue[4..]);
-            var clear = ProtectedData.Unprotect(cipher, null, DataProtectionScope.CurrentUser);
-            return Encoding.UTF8.GetString(clear);
-        }
-        catch
-        {
-            return storedValue;
-        }
     }
 
     private static void EnsureMigrationsTable(SqliteConnection connection)
