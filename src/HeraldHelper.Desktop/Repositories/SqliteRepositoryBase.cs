@@ -32,9 +32,9 @@ internal abstract class SqliteRepositoryBase
         command.Parameters.AddWithValue(name, string.IsNullOrWhiteSpace(value) ? DBNull.Value : value!.Trim());
     }
 
-    protected static string NormalizeProfileSegment(string value)
+    protected static string NormalizeProfileSegment(string? value)
     {
-        return value.Trim().ToLowerInvariant();
+        return value?.Trim().ToLowerInvariant() ?? string.Empty;
     }
 
     protected static string NormalizeCode(string value, string fallback)
