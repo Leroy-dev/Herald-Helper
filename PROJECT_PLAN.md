@@ -405,8 +405,9 @@ Done when:
 
 - Extract runtime/settings/character/profile controllers from `MainWindow`.
 - Split `AppDataStore` into settings (including auth), backup, ability profile, catalog override, stats, target-cache, and database-migrations repositories behind interfaces.
-  - Done: `SqliteConnectionFactory`, `SqliteSettingsRepository`, `SqliteCharacterStatsRepository`, `SqliteAbilitiesRepository`, `SqliteTargetProfileCache`, `SqliteCatalogOverrideRepository`, `SqliteAbilityProfileRepository`, `JsonBackupRepository`, `SqliteDatabaseMigrationsRepository`.
-  - Remaining: controller extraction, loop state split.
+  - Done: all repositories.
+- Extract runtime/settings/character/profile controllers from `MainWindow`.
+  - Started: `SettingsController` now owns settings merge/save, load, and default auth setup.
 - Split loop capture/parse processing from target-resolution state only after stage timings and characterization tests exist.
 - Rename shared browser/editor classes away from Eden-specific names.
 - Add CI for clean build, all tests, generated manifest validation.
