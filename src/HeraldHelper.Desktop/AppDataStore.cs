@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using HeraldHelper.Application.Contracts;
+using HeraldHelper.Desktop.Repositories;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 using HeraldHelper.Infrastructure.Parsing;
@@ -16,7 +17,7 @@ public sealed class AppDataStore : ITargetProfileCache
     public const int CurrentDatabaseMigrationVersion = 8;
     public const int CurrentBackupFormatVersion = 1;
 
-    private readonly string _connectionString;
+    private readonly SqliteConnectionFactory _connectionFactory;
 
     public AppDataStore(string databasePath)
     {
@@ -26,21 +27,20 @@ public sealed class AppDataStore : ITargetProfileCache
             Directory.CreateDirectory(dir);
         }
 
-        _connectionString = $"Data Source={databasePath}";
+        var connectionString = $"Data Source={databasePath}";
+        _connectionFactory = new SqliteConnectionFactory(connectionString);
     }
 
     public void Initialize()
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         EnsureMigrationsTable(connection);
         ApplyMigrations(connection);
     }
 
     public int GetDatabaseMigrationVersion()
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = "SELECT COALESCE(MAX(version), 0) FROM schema_migrations;";
         return Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
@@ -48,8 +48,7 @@ public sealed class AppDataStore : ITargetProfileCache
 
     public Dictionary<string, string> LoadSettingsMap()
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = "SELECT key, value FROM settings;";
 
@@ -76,8 +75,7 @@ public sealed class AppDataStore : ITargetProfileCache
     public void SaveSettings(IEnumerable<ConfigEntry> entries)
     {
         var list = entries.Where(x => !string.IsNullOrWhiteSpace(x.Key)).ToList();
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var tx = connection.BeginTransaction();
 
         using (var delete = connection.CreateCommand())
@@ -104,8 +102,7 @@ public sealed class AppDataStore : ITargetProfileCache
 
     public List<AbilityEditorRow> LoadAbilities()
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = "SELECT ability_name, skill_code, duration_seconds, effect_type FROM abilities ORDER BY id;";
 
@@ -138,8 +135,7 @@ public sealed class AppDataStore : ITargetProfileCache
             })
             .ToList();
 
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var tx = connection.BeginTransaction();
 
         using (var delete = connection.CreateCommand())
@@ -303,8 +299,7 @@ public sealed class AppDataStore : ITargetProfileCache
             }
         }
 
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var tx = connection.BeginTransaction();
         DeleteAbilityProfileOverrides(connection, tx, server, normalizedClass, normalizedCharacter);
         if (!string.IsNullOrWhiteSpace(normalizedCharacter))
@@ -332,8 +327,7 @@ public sealed class AppDataStore : ITargetProfileCache
         {
             return null;
         }
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = """
             SELECT strength, constitution, dexterity, quickness, intelligence, piety, empathy, charisma,
@@ -366,8 +360,7 @@ public sealed class AppDataStore : ITargetProfileCache
 
     public void SaveCharacterStats(CharacterStatsSnapshot stats)
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = """
             INSERT INTO character_stats(
@@ -407,8 +400,7 @@ public sealed class AppDataStore : ITargetProfileCache
             return null;
         }
 
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = """
             SELECT name, guild_name, class_name, level, realm_rank, solo_kills
@@ -436,8 +428,7 @@ public sealed class AppDataStore : ITargetProfileCache
             return;
         }
 
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = """
             INSERT INTO target_profile_cache(
@@ -462,8 +453,7 @@ public sealed class AppDataStore : ITargetProfileCache
 
     private List<CharacterStatsSnapshot> LoadAllCharacterStats()
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = """
             SELECT server, character_name, strength, constitution, dexterity, quickness,
@@ -514,8 +504,7 @@ public sealed class AppDataStore : ITargetProfileCache
         string? className,
         string? characterName)
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = """
             SELECT server, class_name, character_name, source_ability_name, source_effect_type,
@@ -673,8 +662,7 @@ public sealed class AppDataStore : ITargetProfileCache
 
     public bool IsEmpty()
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = """
             SELECT 
@@ -694,8 +682,7 @@ public sealed class AppDataStore : ITargetProfileCache
 
     public IReadOnlyDictionary<string, CatalogEntryOverride> LoadCatalogEntryOverrides()
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = """
             SELECT
@@ -767,8 +754,7 @@ public sealed class AppDataStore : ITargetProfileCache
 
     public void SaveCatalogEntryOverride(CatalogEntryOverride entryOverride)
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = """
             INSERT INTO eden_entry_overrides(
@@ -871,8 +857,7 @@ public sealed class AppDataStore : ITargetProfileCache
 
     public void DeleteCatalogEntryOverride(string entryKey)
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = "DELETE FROM eden_entry_overrides WHERE entry_key = $entry_key;";
         cmd.Parameters.AddWithValue("$entry_key", entryKey);
@@ -1026,8 +1011,7 @@ public sealed class AppDataStore : ITargetProfileCache
 
     private void DeleteAllCatalogEntryOverrides()
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = "DELETE FROM eden_entry_overrides;";
         cmd.ExecuteNonQuery();
@@ -1049,8 +1033,7 @@ public sealed class AppDataStore : ITargetProfileCache
 
     private void RestoreAbilityProfileOverrides(IEnumerable<AbilityProfileOverride> values)
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var tx = connection.BeginTransaction();
         foreach (var value in values)
         {
@@ -1062,8 +1045,7 @@ public sealed class AppDataStore : ITargetProfileCache
 
     private void DeleteAllAbilityProfiles()
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = "DELETE FROM ability_profile_entries; DELETE FROM ability_profile_overrides;";
         cmd.ExecuteNonQuery();
@@ -1071,8 +1053,7 @@ public sealed class AppDataStore : ITargetProfileCache
 
     private void DeleteAllCharacterStats()
     {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        using var connection = _connectionFactory.OpenConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = "DELETE FROM character_stats;";
         cmd.ExecuteNonQuery();
