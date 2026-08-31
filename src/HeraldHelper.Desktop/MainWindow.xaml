@@ -9,7 +9,9 @@
         TextElement.FontWeight="Normal"
         TextOptions.TextFormattingMode="Ideal"
         Title="HeraldHelper" Height="820" Width="1220" MinHeight="720" MinWidth="1080"
-        Background="{DynamicResource VsWindowBackgroundBrush}">
+        Background="{DynamicResource VsWindowBackgroundBrush}"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
     <Window.Resources>
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
@@ -17,6 +19,9 @@
         <Style TargetType="GroupBox">
             <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource VsBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="Margin" Value="0,0,0,10" />
         </Style>
         <Style x:Key="SidebarListBoxStyle" TargetType="ListBox">
             <Setter Property="Background" Value="Transparent" />
@@ -25,7 +30,7 @@
             <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
         </Style>
         <Style x:Key="SidebarListBoxItemStyle" TargetType="ListBoxItem">
-            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="Padding" Value="0" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
@@ -37,7 +42,7 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{DynamicResource VsAccentBrush}"
                                 BorderThickness="0,0,0,0"
-                                Padding="{TemplateBinding Padding}">
+                                Padding="12,10">
                             <ContentPresenter />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -54,6 +59,60 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="ToolbarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="Margin" Value="0,0,2,0" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource VsPanelAltBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.75" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="PrimaryToolbarButtonStyle" TargetType="Button" BasedOn="{StaticResource ToolbarButtonStyle}">
+            <Setter Property="Background" Value="{DynamicResource VsAccentBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="10,4" />
+        </Style>
+        <Style x:Key="CompactInputTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="{DynamicResource VsPanelAltBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource VsBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="6,4" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style x:Key="CompactInputComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="{DynamicResource VsPanelAltBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource VsBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="6,3" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="MinHeight" Value="26" />
+        </Style>
         <Style TargetType="DataGrid">
             <Setter Property="Background" Value="{DynamicResource VsPanelBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
@@ -65,133 +124,156 @@
             <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource VsBorderBrush}" />
         </Style>
     </Window.Resources>
+
     <DockPanel LastChildFill="True" Background="{DynamicResource VsWindowBackgroundBrush}">
+        <!-- Title bar -->
         <Border DockPanel.Dock="Top"
+                Height="42"
                 Background="{DynamicResource VsTitleBarBrush}"
                 BorderBrush="{DynamicResource VsBorderBrush}"
-                BorderThickness="0,0,0,1"
-                Padding="16">
-            <Grid>
+                BorderThickness="0,0,0,1">
+            <Grid Margin="12,0">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock FontSize="26" FontWeight="Bold" Text="HeraldHelper" />
-                    <TextBlock Opacity="0.85" Foreground="{DynamicResource VsMutedTextBrush}" Text="Realtime DAoC OCR, Herald lookups and ingame overlays" />
-                </StackPanel>
-                <Button Grid.Column="1"
+                <TextBlock Grid.Column="0"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Text="HeraldHelper" />
+                <Button Grid.Column="2"
                         Name="ThemeToggleButton"
-                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Style="{StaticResource ToolbarButtonStyle}"
                         Content="Light Mode"
                         Click="ToggleTheme_Click" />
             </Grid>
         </Border>
 
-        <Grid Margin="16">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+        <!-- Status bar -->
+        <Border DockPanel.Dock="Bottom"
+                Height="24"
+                Background="{DynamicResource VsTitleBarBrush}"
+                BorderBrush="{DynamicResource VsBorderBrush}"
+                BorderThickness="0,1,0,0">
+            <TextBlock Name="RegionText"
+                       Margin="12,0"
+                       VerticalAlignment="Center"
+                       FontSize="12"
+                       Foreground="{DynamicResource VsMutedTextBrush}"
+                       TextTrimming="CharacterEllipsis" />
+        </Border>
 
-            <materialDesign:Card Grid.Row="0" Padding="12" Margin="0,0,0,12" Background="{DynamicResource VsPanelBrush}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <WrapPanel Grid.Row="0" Margin="0,0,0,8">
-                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Select Chat Area (Drag)" Click="SelectChatArea_Click" />
-                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Select Stats Area (Drag)" Click="SelectStatsArea_Click" />
-                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignRaisedButton}" Content="Run One Tick" Click="RunTick_Click" />
-                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignRaisedButton}" Name="ToggleLoopButton" Content="Start Loop" Click="ToggleLoop_Click" />
-                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Open Spell Browser" Click="OpenSpellBrowser_Click" />
-                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Browser starten" Click="OpenEdenBrowser_Click" />
-                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Refresh Auth (Shard)" Click="RefreshAuthCurrent_Click" />
-                        <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Refresh Auth (All)" Click="RefreshAuthAll_Click" />
-                    </WrapPanel>
-                    <WrapPanel Grid.Row="1">
-                        <ComboBox Width="180"
-                                  Name="ShardCombo"
-                                  Style="{StaticResource MaterialDesignFilledComboBox}"
-                                  materialDesign:HintAssist.Hint="Mode / Shard"
-                                  Background="{DynamicResource VsPanelAltBrush}"
-                                  Foreground="{DynamicResource VsTextBrush}"
-                                  SelectionChanged="ShardCombo_SelectionChanged" />
-                        <TextBox Margin="8,0,0,0"
-                                 Width="96"
-                                 Name="ResistText"
-                                 Style="{StaticResource MaterialDesignFilledTextBox}"
-                                  materialDesign:HintAssist.Hint="Resist %"
-                                 Background="{DynamicResource VsPanelAltBrush}"
-                                 Foreground="{DynamicResource VsTextBrush}"
-                                 TextChanged="ResistText_TextChanged" />
-                        <TextBox Margin="8,0,0,0"
-                                 Width="110"
-                                 Name="LoopMsText"
-                                 Style="{StaticResource MaterialDesignFilledTextBox}"
-                                 materialDesign:HintAssist.Hint="Loop ms"
-                                 Background="{DynamicResource VsPanelAltBrush}"
-                                 Foreground="{DynamicResource VsTextBrush}"
-                                 Text="350"
-                                 TextChanged="LoopMsText_TextChanged" />
-                        <ComboBox Margin="8,0,0,0"
-                                  Width="150"
-                                  Name="OcrEngineCombo"
-                                  Style="{StaticResource MaterialDesignFilledComboBox}"
-                                  materialDesign:HintAssist.Hint="OCR Engine"
-                                  Background="{DynamicResource VsPanelAltBrush}"
-                                  Foreground="{DynamicResource VsTextBrush}"
-                                  SelectionChanged="OcrEngineCombo_SelectionChanged" />
-                    </WrapPanel>
-                </Grid>
-            </materialDesign:Card>
-
-            <materialDesign:Card Grid.Row="1" Padding="10" Margin="0,0,0,12" Background="{DynamicResource VsPanelBrush}">
-                <TextBlock Name="RegionText" />
-            </materialDesign:Card>
-
-            <TextBlock Grid.Row="2" Margin="0,0,0,8" Opacity="0.85" Foreground="{DynamicResource VsMutedTextBrush}" Text="Tip: Overlay positions use cfg-style keys (overlayX, overlayY, overlayXTimer, overlayYTimer, overlayXCast, overlayYCast)." />
-
-            <Grid Grid.Row="3">
+        <!-- Toolbar -->
+        <Border DockPanel.Dock="Top"
+                Background="{DynamicResource VsPanelBrush}"
+                BorderBrush="{DynamicResource VsBorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="8,6">
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+                <WrapPanel Grid.Column="0" VerticalAlignment="Center">
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Select Chat Area" Click="SelectChatArea_Click" />
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Select Stats Area" Click="SelectStatsArea_Click" />
+                    <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Content="Run One Tick" Click="RunTick_Click" />
+                    <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Name="ToggleLoopButton" Content="Start Loop" Click="ToggleLoop_Click" />
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Spell Browser" Click="OpenSpellBrowser_Click" />
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Browser" Click="OpenEdenBrowser_Click" />
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Refresh Auth (Shard)" Click="RefreshAuthCurrent_Click" />
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Refresh Auth (All)" Click="RefreshAuthAll_Click" />
+                </WrapPanel>
 
-                <Border Grid.Column="0"
-                        MinWidth="180"
-                        Background="{DynamicResource VsPanelBrush}"
-                        BorderBrush="{DynamicResource VsBorderBrush}"
-                        BorderThickness="0,0,1,0">
-                    <ListBox Name="SidebarList"
-                             Style="{StaticResource SidebarListBoxStyle}"
-                             ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}"
-                             SelectionChanged="SidebarList_SelectionChanged">
-                        <ListBoxItem Content="Live" IsSelected="True" Tag="Live" />
-                        <ListBoxItem Content="Config" Tag="Config" />
-                        <ListBoxItem Content="Abilities" Tag="Abilities" />
-                        <ListBoxItem Content="Overlay" Tag="Overlay" />
-                    </ListBox>
-                </Border>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ComboBox Width="150"
+                              Name="ShardCombo"
+                              Style="{StaticResource CompactInputComboBoxStyle}"
+                              materialDesign:HintAssist.Hint="Mode / Shard"
+                              SelectionChanged="ShardCombo_SelectionChanged" />
+                    <TextBox Margin="6,0,0,0"
+                             Width="70"
+                             Name="ResistText"
+                             Style="{StaticResource CompactInputTextBoxStyle}"
+                             materialDesign:HintAssist.Hint="Resist %"
+                             TextChanged="ResistText_TextChanged" />
+                    <TextBox Margin="6,0,0,0"
+                             Width="80"
+                             Name="LoopMsText"
+                             Style="{StaticResource CompactInputTextBoxStyle}"
+                             materialDesign:HintAssist.Hint="Loop ms"
+                             Text="350"
+                             TextChanged="LoopMsText_TextChanged" />
+                    <ComboBox Margin="6,0,0,0"
+                              Width="130"
+                              Name="OcrEngineCombo"
+                              Style="{StaticResource CompactInputComboBoxStyle}"
+                              materialDesign:HintAssist.Hint="OCR Engine"
+                              SelectionChanged="OcrEngineCombo_SelectionChanged" />
+                </StackPanel>
+            </Grid>
+        </Border>
 
-                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <Grid>
+        <!-- Sidebar + content -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-                
-                    <Grid x:Name="LivePanel" Margin="12" Visibility="Visible">
+            <Border Grid.Column="0"
+                    MinWidth="170"
+                    MaxWidth="180"
+                    Background="{DynamicResource VsPanelBrush}"
+                    BorderBrush="{DynamicResource VsBorderBrush}"
+                    BorderThickness="0,0,1,0">
+                <ListBox Name="SidebarList"
+                         Style="{StaticResource SidebarListBoxStyle}"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}"
+                         SelectionChanged="SidebarList_SelectionChanged">
+                    <ListBoxItem Tag="Live" IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="HeartPulse" Width="20" Height="20" Margin="0,0,10,0" Foreground="{DynamicResource VsTextBrush}" />
+                            <TextBlock Text="Live" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="Config">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Cog" Width="20" Height="20" Margin="0,0,10,0" Foreground="{DynamicResource VsTextBrush}" />
+                            <TextBlock Text="Config" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="Abilities">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Flash" Width="20" Height="20" Margin="0,0,10,0" Foreground="{DynamicResource VsTextBrush}" />
+                            <TextBlock Text="Abilities" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem Tag="Overlay">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Eye" Width="20" Height="20" Margin="0,0,10,0" Foreground="{DynamicResource VsTextBrush}" />
+                            <TextBlock Text="Overlay" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Border>
+
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <Grid>
+                    <Grid x:Name="LivePanel" Margin="16" Visibility="Visible">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <GroupBox Grid.Row="0" Margin="0,0,0,8" Header="Status">
+                        <GroupBox Grid.Row="0" Header="Status">
                             <TextBox Name="OutputBox" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
                                      Background="{DynamicResource VsPanelAltBrush}" Foreground="{DynamicResource VsTextBrush}" BorderBrush="{DynamicResource VsBorderBrush}" />
                         </GroupBox>
-                        <GroupBox Grid.Row="1" Margin="0,0,0,8" Header="OCR Diagnostics">
+                        <GroupBox Grid.Row="1" Header="OCR Diagnostics">
                             <TextBox Name="DiagnosticsBox" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
                                      Background="{DynamicResource VsPanelAltBrush}" Foreground="{DynamicResource VsTextBrush}" BorderBrush="{DynamicResource VsBorderBrush}" />
                         </GroupBox>
@@ -202,7 +284,7 @@
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <WrapPanel Margin="0,0,0,6">
-                                    <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Clear Log" Click="ClearResponseDiagnostics_Click" />
+                                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Clear Log" Click="ClearResponseDiagnostics_Click" />
                                 </WrapPanel>
                                 <TextBox Grid.Row="1"
                                          Name="ResponseDiagnosticsBox"
@@ -215,23 +297,21 @@
                             </Grid>
                         </GroupBox>
                     </Grid>
-                
 
-                
-                    <Grid x:Name="ConfigPanel" Margin="12" Visibility="Collapsed">
+                    <Grid x:Name="ConfigPanel" Margin="16" Visibility="Collapsed">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <GroupBox Grid.Row="0" Margin="0,0,0,8" Header="DAoC Characters">
-                            <StackPanel Name="DaocCharacterPanel" Margin="8" />
+                        <GroupBox Grid.Row="0" Header="DAoC Characters">
+                            <StackPanel Name="DaocCharacterPanel" />
                         </GroupBox>
-                        <WrapPanel Grid.Row="1" Margin="0,0,0,8">
-                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Reload Config" Click="ReloadConfig_Click" />
-                            <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="Save Config" Click="SaveConfig_Click" />
-                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Export JSON" Click="ExportJson_Click" />
-                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Import JSON" Click="ImportJson_Click" />
+                        <WrapPanel Grid.Row="1" Margin="0,0,0,10">
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Reload Config" Click="ReloadConfig_Click" />
+                            <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Content="Save Config" Click="SaveConfig_Click" />
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Export JSON" Click="ExportJson_Click" />
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Import JSON" Click="ImportJson_Click" />
                         </WrapPanel>
                         <DataGrid Grid.Row="2"
                                   Name="ConfigGrid"
@@ -246,43 +326,37 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
-                
 
-                
-                    <Grid x:Name="AbilitiesPanel" Margin="12" Visibility="Collapsed">
+                    <Grid x:Name="AbilitiesPanel" Margin="16" Visibility="Collapsed">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <WrapPanel Margin="0,0,0,8">
-                            <ComboBox Width="180"
+                        <WrapPanel Margin="0,0,0,10">
+                            <ComboBox Width="170"
                                       Name="AbilityProfileServerCombo"
-                                      Style="{StaticResource MaterialDesignFilledComboBox}"
+                                      Style="{StaticResource CompactInputComboBoxStyle}"
                                       materialDesign:HintAssist.Hint="Ability Server"
-                                      Background="{DynamicResource VsPanelAltBrush}"
-                                      Foreground="{DynamicResource VsTextBrush}"
                                       SelectionChanged="AbilityProfileServerCombo_SelectionChanged" />
                             <ComboBox Margin="8,0,0,0"
-                                      Width="220"
+                                      Width="200"
                                       Name="AbilityProfileClassCombo"
-                                      Style="{StaticResource MaterialDesignFilledComboBox}"
+                                      Style="{StaticResource CompactInputComboBoxStyle}"
                                       materialDesign:HintAssist.Hint="Active Class"
-                                      Background="{DynamicResource VsPanelAltBrush}"
-                                      Foreground="{DynamicResource VsTextBrush}"
                                       SelectionChanged="AbilityProfileClassCombo_SelectionChanged" />
                             <TextBlock Margin="12,0,0,0"
                                        Name="AbilityProfileSummaryText"
                                        VerticalAlignment="Center"
                                        Foreground="{DynamicResource VsMutedTextBrush}" />
                         </WrapPanel>
-                        <WrapPanel Grid.Row="1" Margin="0,0,0,8">
-                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Reload Abilities" Click="ReloadAbilities_Click" />
-                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Reload Local Catalogs" Click="ReloadAbilityCatalogs_Click" />
-                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Update Catalogs Online" Click="UpdateCatalogsOnline_Click" />
-                            <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="Save Abilities" Click="SaveAbilities_Click" />
-                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Add Ability" Click="AddAbility_Click" />
-                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Remove Selected" Click="RemoveAbility_Click" />
+                        <WrapPanel Grid.Row="1" Margin="0,0,0,10">
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Reload Abilities" Click="ReloadAbilities_Click" />
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Reload Local Catalogs" Click="ReloadAbilityCatalogs_Click" />
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Update Catalogs Online" Click="UpdateCatalogsOnline_Click" />
+                            <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Content="Save Abilities" Click="SaveAbilities_Click" />
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Add Ability" Click="AddAbility_Click" />
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Remove Selected" Click="RemoveAbility_Click" />
                         </WrapPanel>
                         <DataGrid Grid.Row="2"
                                   Name="AbilitiesGrid"
@@ -303,21 +377,19 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
-                
 
-                
-                    <Grid x:Name="OverlayPanel" Margin="12" Visibility="Collapsed">
+                    <Grid x:Name="OverlayPanel" Margin="16" Visibility="Collapsed">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <WrapPanel Grid.Row="0" Margin="0,0,0,10">
-                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Reload Overlay Settings" Click="ReloadOverlaySettings_Click" />
-                            <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="Save Overlay Settings" Click="SaveOverlaySettings_Click" />
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Reload Overlay Settings" Click="ReloadOverlaySettings_Click" />
+                            <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Content="Save Overlay Settings" Click="SaveOverlaySettings_Click" />
                         </WrapPanel>
 
-                        <GroupBox Grid.Row="1" Margin="0,0,0,10" Header="Overlay Elements">
+                        <GroupBox Grid.Row="1" Header="Overlay Elements">
                             <WrapPanel Margin="8">
                                 <CheckBox Name="ShowTargetCheckbox" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Target" />
                                 <CheckBox Name="ShowTimersCheckbox" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Timers" />
@@ -328,9 +400,9 @@
                                           ToolTip="Show a rough pre-resist estimate based on catalog damage, class acuity and the configured spell-damage bonus." />
                                 <CheckBox Name="OcrReplayCheckbox" Margin="0,0,16,0" VerticalAlignment="Center" Content="Record OCR Replay"
                                           ToolTip="Keep a bounded local history of changed OCR frames, recognized text and parser results for troubleshooting." />
-                                <TextBox Width="110" Name="CastingSpeedBonusText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Cast Speed %"
+                                <TextBox Width="90" Name="CastingSpeedBonusText" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Cast Speed %"
                                          ToolTip="Enter the item or status-window casting-speed bonus. OCR keeps this value when the bonus is not visible." />
-                                <TextBox Margin="8,0,0,0" Width="120" Name="SpellDamageBonusText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Spell Damage %"
+                                <TextBox Margin="8,0,0,0" Width="100" Name="SpellDamageBonusText" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Spell Damage %"
                                          ToolTip="Enter the item spell-damage bonus used by the optional rough damage estimate." />
                             </WrapPanel>
                         </GroupBox>
@@ -341,55 +413,54 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <materialDesign:Card Grid.Column="0" Margin="0,0,8,0" Padding="10" Background="{DynamicResource VsPanelBrush}">
+                            <Border Grid.Column="0" Margin="0,0,8,0" Padding="10" Background="{DynamicResource VsPanelBrush}" BorderBrush="{DynamicResource VsBorderBrush}" BorderThickness="1" CornerRadius="4">
                                 <StackPanel>
                                     <TextBlock Margin="0,0,0,8" FontWeight="SemiBold" Text="Position / Size" />
                                     <WrapPanel Margin="0,0,0,8">
-                                        <TextBox Width="110" Name="OverlayXText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Target X" />
-                                        <TextBox Margin="8,0,0,0" Width="110" Name="OverlayYText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Target Y" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Drag Target" Click="PickTargetOverlayPosition_Click" />
+                                        <TextBox Width="90" Name="OverlayXText" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target X" />
+                                        <TextBox Margin="8,0,0,0" Width="90" Name="OverlayYText" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target Y" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Drag" Click="PickTargetOverlayPosition_Click" />
                                     </WrapPanel>
                                     <WrapPanel Margin="0,0,0,8">
-                                        <TextBox Width="110" Name="OverlayTimerXText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Timer X" />
-                                        <TextBox Margin="8,0,0,0" Width="110" Name="OverlayTimerYText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Timer Y" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Drag Timers" Click="PickTimerOverlayPosition_Click" />
+                                        <TextBox Width="90" Name="OverlayTimerXText" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Timer X" />
+                                        <TextBox Margin="8,0,0,0" Width="90" Name="OverlayTimerYText" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Timer Y" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Drag" Click="PickTimerOverlayPosition_Click" />
                                     </WrapPanel>
                                     <WrapPanel>
-                                        <TextBox Width="110" Name="OverlayFontSizeText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Target Font" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Resize Target" Click="PickTargetSize_Click" />
-                                        <TextBox Margin="8,0,0,0" Width="110" Name="OverlayTimerSizeText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Timer Font" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Resize Timers" Click="PickTimerSize_Click" />
+                                        <TextBox Width="90" Name="OverlayFontSizeText" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target Font" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Resize" Click="PickTargetSize_Click" />
+                                        <TextBox Margin="8,0,0,0" Width="90" Name="OverlayTimerSizeText" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Timer Font" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Resize" Click="PickTimerSize_Click" />
                                     </WrapPanel>
                                     <WrapPanel Margin="0,8,0,0">
-                                        <TextBox Width="110" Name="OverlayCastXText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Spellbar X" />
-                                        <TextBox Margin="8,0,0,0" Width="110" Name="OverlayCastYText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Spellbar Y" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Drag Spellbar" Click="PickCastOverlayPosition_Click" />
+                                        <TextBox Width="90" Name="OverlayCastXText" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Spellbar X" />
+                                        <TextBox Margin="8,0,0,0" Width="90" Name="OverlayCastYText" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Spellbar Y" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Drag" Click="PickCastOverlayPosition_Click" />
                                     </WrapPanel>
                                 </StackPanel>
-                            </materialDesign:Card>
+                            </Border>
 
-                            <materialDesign:Card Grid.Column="1" Margin="8,0,0,0" Padding="10" Background="{DynamicResource VsPanelBrush}">
+                            <Border Grid.Column="1" Margin="8,0,0,0" Padding="10" Background="{DynamicResource VsPanelBrush}" BorderBrush="{DynamicResource VsBorderBrush}" BorderThickness="1" CornerRadius="4">
                                 <StackPanel>
                                     <TextBlock Margin="0,0,0,8" FontWeight="SemiBold" Text="Colors" />
                                     <WrapPanel Margin="0,0,0,8">
-                                        <TextBox Width="190" Name="TargetColorText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Target Color (#RRGGBB)" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Pick" Click="PickTargetColor_Click" />
+                                        <TextBox Width="170" Name="TargetColorText" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target Color (#RRGGBB)" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Pick" Click="PickTargetColor_Click" />
                                     </WrapPanel>
                                     <WrapPanel Margin="0,0,0,8">
-                                        <TextBox Width="190" Name="TimerColorText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Timer Color (#RRGGBB)" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Pick" Click="PickTimerColor_Click" />
+                                        <TextBox Width="170" Name="TimerColorText" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Timer Color (#RRGGBB)" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Pick" Click="PickTimerColor_Click" />
                                     </WrapPanel>
                                     <WrapPanel>
-                                        <TextBox Width="190" Name="OutlineColorText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Outline Color (#RRGGBB)" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Pick" Click="PickOutlineColor_Click" />
+                                        <TextBox Width="170" Name="OutlineColorText" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Outline Color (#RRGGBB)" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Pick" Click="PickOutlineColor_Click" />
                                     </WrapPanel>
                                 </StackPanel>
-                            </materialDesign:Card>
+                            </Border>
                         </Grid>
                     </Grid>
-                    </Grid>
-                </ScrollViewer>
-            </Grid>
+                </Grid>
+            </ScrollViewer>
         </Grid>
     </DockPanel>
 </Window>
