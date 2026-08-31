@@ -139,12 +139,12 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
-        _loopTimer.Stop();
-        _authController.AuthRefreshTimer.Stop();
+        _loopTimer?.Stop();
+        _authController?.AuthRefreshTimer?.Stop();
         _responseDiagnostics.LineAdded -= OnResponseDiagnosticLineAdded;
         _orchestrator?.Dispose();
         _liveOverlay?.Dispose();
-        _httpClient.Dispose();
+        _httpClient?.Dispose();
         base.OnClosed(e);
     }
 
@@ -958,7 +958,7 @@ public partial class MainWindow : Window
 
     private void SidebarList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
-        if (SidebarList.SelectedItem is not System.Windows.Controls.ListBoxItem item)
+        if (_isBindingControls || SidebarList?.SelectedItem is not System.Windows.Controls.ListBoxItem item || LivePanel is null)
         {
             return;
         }
