@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using HeraldHelper.Application.Services;
 using HeraldHelper.Desktop.Controllers;
+using HeraldHelper.Desktop.Models;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 using HeraldHelper.Infrastructure.Auth;
@@ -32,6 +33,7 @@ public partial class MainWindow : Window
     private ScreenCaptureOcrService _capture = null!;
     private readonly AppDataStore _store;
     private readonly SettingsController _settingsController;
+    private readonly OverlaySettingsController _overlaySettingsController;
     private readonly ResponseDiagnosticsBuffer _responseDiagnostics;
     private readonly IShardAuthRefreshService _authRefreshService;
     private readonly HttpClient _httpClient;
@@ -69,6 +71,7 @@ public partial class MainWindow : Window
         _store = new AppDataStore(dbPath);
         _store.Initialize();
         _settingsController = new SettingsController(_store);
+        _overlaySettingsController = new OverlaySettingsController(_settingsController);
         _responseDiagnostics = new ResponseDiagnosticsBuffer();
         _responseDiagnostics.LineAdded += OnResponseDiagnosticLineAdded;
         _httpClient = new HttpClient
@@ -1344,28 +1347,26 @@ public partial class MainWindow : Window
 
     private void SaveOverlaySettings_Click(object sender, RoutedEventArgs e)
     {
-        var updates = new List<ConfigEntry>
-        {
-            new() { Key = "overlayX", Value = NormalizeIntText(OverlayXText.Text, 1200).ToString() },
-            new() { Key = "overlayY", Value = NormalizeIntText(OverlayYText.Text, 900).ToString() },
-            new() { Key = "overlayXTimer", Value = NormalizeIntText(OverlayTimerXText.Text, 1580).ToString() },
-            new() { Key = "overlayYTimer", Value = NormalizeIntText(OverlayTimerYText.Text, 900).ToString() },
-            new() { Key = "overlayXCast", Value = NormalizeIntText(OverlayCastXText.Text, 1200).ToString() },
-            new() { Key = "overlayYCast", Value = NormalizeIntText(OverlayCastYText.Text, 986).ToString() },
-            new() { Key = "fontSize", Value = NormalizeIntText(OverlayFontSizeText.Text, 20).ToString() },
-            new() { Key = "timerSize", Value = NormalizeIntText(OverlayTimerSizeText.Text, 20).ToString() },
-            new() { Key = "targetColor", Value = NormalizeColorText(TargetColorText.Text, "#FFFFFF") },
-            new() { Key = "timerColor", Value = NormalizeColorText(TimerColorText.Text, "#FFFFFF") },
-            new() { Key = "outlineColor", Value = NormalizeColorText(OutlineColorText.Text, "#000000") },
-            new() { Key = "overlayShowTarget", Value = (ShowTargetCheckbox?.IsChecked ?? true) ? "1" : "0" },
-            new() { Key = "overlayShowTimers", Value = (ShowTimersCheckbox?.IsChecked ?? true) ? "1" : "0" },
-            new() { Key = "overlayShowCastBar", Value = (ShowCastBarCheckbox?.IsChecked ?? true) ? "1" : "0" },
-            new() { Key = "dynamicCastSpeedEnabled", Value = (DynamicCastSpeedCheckbox?.IsChecked ?? false) ? "1" : "0" },
-            new() { Key = "estimatedSpellDamageEnabled", Value = (EstimatedSpellDamageCheckbox?.IsChecked ?? false) ? "1" : "0" },
-            new() { Key = "ocrReplayEnabled", Value = (OcrReplayCheckbox?.IsChecked ?? false) ? "1" : "0" }
-        };
+        var settings = new OverlaySettings(
+            NormalizeIntText(OverlayXText.Text, 1200),
+            NormalizeIntText(OverlayYText.Text, 900),
+            NormalizeIntText(OverlayTimerXText.Text, 1580),
+            NormalizeIntText(OverlayTimerYText.Text, 900),
+            NormalizeIntText(OverlayCastXText.Text, 1200),
+            NormalizeIntText(OverlayCastYText.Text, 986),
+            NormalizeIntText(OverlayFontSizeText.Text, 20),
+            NormalizeIntText(OverlayTimerSizeText.Text, 20),
+            NormalizeColorText(TargetColorText.Text, "#FFFFFF"),
+            NormalizeColorText(TimerColorText.Text, "#FFFFFF"),
+            NormalizeColorText(OutlineColorText.Text, "#000000"),
+            ShowTargetCheckbox?.IsChecked ?? true,
+            ShowTimersCheckbox?.IsChecked ?? true,
+            ShowCastBarCheckbox?.IsChecked ?? true,
+            DynamicCastSpeedCheckbox?.IsChecked ?? false,
+            EstimatedSpellDamageCheckbox?.IsChecked ?? false,
+            OcrReplayCheckbox?.IsChecked ?? false);
 
-        _settingsController.Save(updates);
+        _settingsController.Save(_overlaySettingsController.Save(settings));
         SaveCurrentCharacterStatBonuses();
         ReloadEditorData();
         _liveOverlay?.ClearPreview();
@@ -1496,63 +1497,50 @@ public partial class MainWindow : Window
 
     private void ReloadOverlaySettingsFromStore()
     {
+        var settings = _overlaySettingsController.Load();
+        OverlayXText.Text = settings.X.ToString();
+        OverlayYText.Text = settings.Y.ToString();
+        OverlayTimerXText.Text = settings.TimerX.ToString();
+        OverlayTimerYText.Text = settings.TimerY.ToString();
+        OverlayCastXText.Text = settings.CastX.ToString();
+        OverlayCastYText.Text = settings.CastY.ToString();
+        OverlayFontSizeText.Text = settings.FontSize.ToString();
+        OverlayTimerSizeText.Text = settings.TimerSize.ToString();
+        TargetColorText.Text = NormalizeColorText(settings.TargetColor, "#FFFFFF");
+        TimerColorText.Text = NormalizeColorText(settings.TimerColor, "#FFFFFF");
+        OutlineColorText.Text = NormalizeColorText(settings.OutlineColor, "#000000");
+
         var map = _settingsController.LoadMap();
-        OverlayXText.Text = ReadOrDefault(map, "overlayX", "1200");
-        OverlayYText.Text = ReadOrDefault(map, "overlayY", "900");
-        OverlayTimerXText.Text = ReadOrDefault(map, "overlayXTimer", "1580");
-        OverlayTimerYText.Text = ReadOrDefault(map, "overlayYTimer", "900");
-        OverlayCastXText.Text = ReadOrDefault(map, "overlayXCast", "1200");
-        OverlayCastYText.Text = ReadOrDefault(map, "overlayYCast", "986");
-        OverlayFontSizeText.Text = ReadOrDefault(map, "fontSize", "20");
-        OverlayTimerSizeText.Text = ReadOrDefault(map, "timerSize", "20");
-        TargetColorText.Text = NormalizeColorText(ReadOrDefault(map, "targetColor", "#FFFFFF"), "#FFFFFF");
-        TimerColorText.Text = NormalizeColorText(ReadOrDefault(map, "timerColor", "#FFFFFF"), "#FFFFFF");
-        OutlineColorText.Text = NormalizeColorText(ReadOrDefault(map, "outlineColor", "#000000"), "#000000");
         var character = ReadOrDefault(map, $"daoc.character.{_shardType.ToString().ToLowerInvariant()}", string.Empty);
         var stats = _store.LoadCharacterStats(_shardType, character);
         CastingSpeedBonusText.Text = (stats?.CastingSpeedPercent ?? 0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
         SpellDamageBonusText.Text = (stats?.SpellDamagePercent ?? 0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
 
-        if (ShowTargetCheckbox is not null)
-        {
-            ShowTargetCheckbox.IsChecked = ReadBool(map, "overlayShowTarget", true);
-            ShowTargetCheckbox.Checked -= OverlayVisibilityChanged;
-            ShowTargetCheckbox.Unchecked -= OverlayVisibilityChanged;
-            ShowTargetCheckbox.Checked += OverlayVisibilityChanged;
-            ShowTargetCheckbox.Unchecked += OverlayVisibilityChanged;
-        }
-        if (ShowTimersCheckbox is not null)
-        {
-            ShowTimersCheckbox.IsChecked = ReadBool(map, "overlayShowTimers", true);
-            ShowTimersCheckbox.Checked -= OverlayVisibilityChanged;
-            ShowTimersCheckbox.Unchecked -= OverlayVisibilityChanged;
-            ShowTimersCheckbox.Checked += OverlayVisibilityChanged;
-            ShowTimersCheckbox.Unchecked += OverlayVisibilityChanged;
-        }
-        if (ShowCastBarCheckbox is not null)
-        {
-            ShowCastBarCheckbox.IsChecked = ReadBool(map, "overlayShowCastBar", true);
-            ShowCastBarCheckbox.Checked -= OverlayVisibilityChanged;
-            ShowCastBarCheckbox.Unchecked -= OverlayVisibilityChanged;
-            ShowCastBarCheckbox.Checked += OverlayVisibilityChanged;
-            ShowCastBarCheckbox.Unchecked += OverlayVisibilityChanged;
-        }
-        BindToggle(DynamicCastSpeedCheckbox, ReadBool(map, "dynamicCastSpeedEnabled", false));
-        BindToggle(EstimatedSpellDamageCheckbox, ReadBool(map, "estimatedSpellDamageEnabled", false));
-        BindToggle(OcrReplayCheckbox, ReadBool(map, "ocrReplayEnabled", false));
+        BindToggle(ShowTargetCheckbox, settings.ShowTarget, OverlayVisibilityChanged);
+        BindToggle(ShowTimersCheckbox, settings.ShowTimers, OverlayVisibilityChanged);
+        BindToggle(ShowCastBarCheckbox, settings.ShowCastBar, OverlayVisibilityChanged);
+        BindToggle(DynamicCastSpeedCheckbox, settings.DynamicCastSpeedEnabled, OverlayVisibilityChanged);
+        BindToggle(EstimatedSpellDamageCheckbox, settings.EstimatedSpellDamageEnabled, OverlayVisibilityChanged);
+        BindToggle(OcrReplayCheckbox, settings.OcrReplayEnabled, OverlayVisibilityChanged);
     }
 
-    private void BindToggle(System.Windows.Controls.CheckBox? checkBox, bool value)
+    private void BindToggle(System.Windows.Controls.CheckBox? checkBox, bool value, RoutedEventHandler? handler = null)
     {
         if (checkBox is null)
         {
             return;
         }
+
         checkBox.IsChecked = value;
-        checkBox.Checked -= OverlayVisibilityChanged;
-        checkBox.Unchecked -= OverlayVisibilityChanged;
-        checkBox.Checked += OverlayVisibilityChanged;
-        checkBox.Unchecked += OverlayVisibilityChanged;
+        if (handler is null)
+        {
+            return;
+        }
+
+        checkBox.Checked -= handler;
+        checkBox.Unchecked -= handler;
+        checkBox.Checked += handler;
+        checkBox.Unchecked += handler;
     }
 
     private static bool ReadBool(IReadOnlyDictionary<string, string> map, string key, bool fallback)
@@ -1572,16 +1560,13 @@ public partial class MainWindow : Window
 
     private void OverlayVisibilityChanged(object sender, RoutedEventArgs e)
     {
-        var updates = new List<ConfigEntry>
-        {
-            new() { Key = "overlayShowTarget", Value = (ShowTargetCheckbox?.IsChecked ?? true) ? "1" : "0" },
-            new() { Key = "overlayShowTimers", Value = (ShowTimersCheckbox?.IsChecked ?? true) ? "1" : "0" },
-            new() { Key = "overlayShowCastBar", Value = (ShowCastBarCheckbox?.IsChecked ?? true) ? "1" : "0" },
-            new() { Key = "dynamicCastSpeedEnabled", Value = (DynamicCastSpeedCheckbox?.IsChecked ?? false) ? "1" : "0" },
-            new() { Key = "estimatedSpellDamageEnabled", Value = (EstimatedSpellDamageCheckbox?.IsChecked ?? false) ? "1" : "0" },
-            new() { Key = "ocrReplayEnabled", Value = (OcrReplayCheckbox?.IsChecked ?? false) ? "1" : "0" }
-        };
-        _settingsController.Save(updates);
+        _settingsController.Save(_overlaySettingsController.SaveVisibility(
+            ShowTargetCheckbox?.IsChecked ?? true,
+            ShowTimersCheckbox?.IsChecked ?? true,
+            ShowCastBarCheckbox?.IsChecked ?? true,
+            DynamicCastSpeedCheckbox?.IsChecked ?? false,
+            EstimatedSpellDamageCheckbox?.IsChecked ?? false,
+            OcrReplayCheckbox?.IsChecked ?? false));
         RebuildRuntimeFromFiles();
     }
 
