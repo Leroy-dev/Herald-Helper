@@ -17,6 +17,113 @@
             <SolidColorBrush x:Key="VsTextBrush" Color="#D4D4D4" />
             <SolidColorBrush x:Key="VsMutedTextBrush" Color="#9DA1A6" />
             <SolidColorBrush x:Key="VsAccentBrush" Color="#007ACC" />
-        </ResourceDictionary>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+        </Style>
+        <Style TargetType="GroupBox">
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource VsBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+        </Style>
+        <Style x:Key="SidebarListBoxStyle" TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        </Style>
+        <Style x:Key="SidebarListBoxItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border Name="ItemBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{DynamicResource VsAccentBrush}"
+                                BorderThickness="0,0,0,0"
+                                Padding="12,10">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource VsPanelAltBrush}" />
+                                <Setter TargetName="ItemBorder" Property="BorderThickness" Value="2,0,0,0" />
+                                <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource VsPanelBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ToolbarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="Margin" Value="0,0,2,0" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource VsPanelAltBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.75" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="PrimaryToolbarButtonStyle" TargetType="Button" BasedOn="{StaticResource ToolbarButtonStyle}">
+            <Setter Property="Background" Value="{DynamicResource VsAccentBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="10,4" />
+        </Style>
+        <Style x:Key="CompactInputTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignFilledTextBox}">
+            <Setter Property="Background" Value="{DynamicResource VsPanelAltBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="MinHeight" Value="30" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="CompactInputComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignFilledComboBox}">
+            <Setter Property="Background" Value="{DynamicResource VsPanelAltBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="MinHeight" Value="30" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="{DynamicResource VsPanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource VsBorderBrush}" />
+            <Setter Property="RowBackground" Value="{DynamicResource VsPanelBrush}" />
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource VsPanelAltBrush}" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource VsBorderBrush}" />
+            <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource VsBorderBrush}" />
+        </Style>
+</ResourceDictionary>
     </Application.Resources>
 </Application>

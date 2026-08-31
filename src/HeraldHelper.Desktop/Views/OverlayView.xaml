@@ -1,0 +1,88 @@
+<UserControl x:Class="HeraldHelper.Desktop.Views.OverlayView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             Background="{DynamicResource VsWindowBackgroundBrush}">
+                    <Grid Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <WrapPanel Grid.Row="0" Margin="0,0,0,10">
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Reload Overlay Settings" Click="ReloadOverlaySettings_Click" />
+                            <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Content="Save Overlay Settings" Click="SaveOverlaySettings_Click" />
+                        </WrapPanel>
+
+                        <GroupBox Grid.Row="1" Header="Overlay Elements">
+                            <WrapPanel Margin="8">
+                                <CheckBox x:Name="ShowTargetCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Target" />
+                                <CheckBox x:Name="ShowTimersCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Timers" />
+                                <CheckBox x:Name="ShowCastBarCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Spellbar" />
+                                <CheckBox x:Name="DynamicCastSpeedCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Dynamic Cast Speed"
+                                          ToolTip="Adjust the catalog cast time using the OCR-read Dexterity and the configured casting-speed bonus." />
+                                <CheckBox x:Name="EstimatedSpellDamageCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Estimated Spell Damage"
+                                          ToolTip="Show a rough pre-resist estimate based on catalog damage, class acuity and the configured spell-damage bonus." />
+                                <CheckBox x:Name="OcrReplayCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Record OCR Replay"
+                                          ToolTip="Keep a bounded local history of changed OCR frames, recognized text and parser results for troubleshooting." />
+                                <TextBox Width="90" x:Name="CastingSpeedBonusText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Cast Speed %"
+                                         ToolTip="Enter the item or status-window casting-speed bonus. OCR keeps this value when the bonus is not visible." />
+                                <TextBox Margin="8,0,0,0" Width="100" x:Name="SpellDamageBonusText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Spell Damage %"
+                                         ToolTip="Enter the item spell-damage bonus used by the optional rough damage estimate." />
+                            </WrapPanel>
+                        </GroupBox>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Margin="0,0,8,0" Padding="10" Background="{DynamicResource VsPanelBrush}" BorderBrush="{DynamicResource VsBorderBrush}" BorderThickness="1" CornerRadius="4">
+                                <StackPanel>
+                                    <TextBlock Margin="0,0,0,8" FontWeight="SemiBold" Text="Position / Size" />
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <TextBox Width="90" x:Name="OverlayXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target X" />
+                                        <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target Y" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Drag" Click="PickTargetOverlayPosition_Click" />
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <TextBox Width="90" x:Name="OverlayTimerXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Timer X" />
+                                        <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayTimerYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Timer Y" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Drag" Click="PickTimerOverlayPosition_Click" />
+                                    </WrapPanel>
+                                    <WrapPanel>
+                                        <TextBox Width="90" x:Name="OverlayFontSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target Font" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Resize" Click="PickTargetSize_Click" />
+                                        <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayTimerSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Timer Font" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Resize" Click="PickTimerSize_Click" />
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,8,0,0">
+                                        <TextBox Width="90" x:Name="OverlayCastXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Spellbar X" />
+                                        <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayCastYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Spellbar Y" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Drag" Click="PickCastOverlayPosition_Click" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="1" Margin="8,0,0,0" Padding="10" Background="{DynamicResource VsPanelBrush}" BorderBrush="{DynamicResource VsBorderBrush}" BorderThickness="1" CornerRadius="4">
+                                <StackPanel>
+                                    <TextBlock Margin="0,0,0,8" FontWeight="SemiBold" Text="Colors" />
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <TextBox Width="170" x:Name="TargetColorText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target Color (#RRGGBB)" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Pick" Click="PickTargetColor_Click" />
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <TextBox Width="170" x:Name="TimerColorText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Timer Color (#RRGGBB)" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Pick" Click="PickTimerColor_Click" />
+                                    </WrapPanel>
+                                    <WrapPanel>
+                                        <TextBox Width="170" x:Name="OutlineColorText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Outline Color (#RRGGBB)" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Pick" Click="PickOutlineColor_Click" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
+
+</UserControl>

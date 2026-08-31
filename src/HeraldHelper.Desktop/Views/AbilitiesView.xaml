@@ -1,0 +1,57 @@
+<UserControl x:Class="HeraldHelper.Desktop.Views.AbilitiesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             Background="{DynamicResource VsWindowBackgroundBrush}">
+                    <Grid Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <WrapPanel Margin="0,0,0,10">
+                            <ComboBox Width="170"
+                                      x:Name="AbilityProfileServerCombo" x:FieldModifier="public"
+                                      Style="{StaticResource CompactInputComboBoxStyle}"
+                                      materialDesign:HintAssist.Hint="Ability Server"
+                                      SelectionChanged="AbilityProfileServerCombo_SelectionChanged" />
+                            <ComboBox Margin="8,0,0,0"
+                                      Width="200"
+                                      x:Name="AbilityProfileClassCombo" x:FieldModifier="public"
+                                      Style="{StaticResource CompactInputComboBoxStyle}"
+                                      materialDesign:HintAssist.Hint="Active Class"
+                                      SelectionChanged="AbilityProfileClassCombo_SelectionChanged" />
+                            <TextBlock Margin="12,0,0,0"
+                                       x:Name="AbilityProfileSummaryText" x:FieldModifier="public"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource VsMutedTextBrush}" />
+                        </WrapPanel>
+                        <WrapPanel Grid.Row="1" Margin="0,0,0,10">
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Reload Abilities" Click="ReloadAbilities_Click" />
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Reload Local Catalogs" Click="ReloadAbilityCatalogs_Click" />
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Update Catalogs Online" Click="UpdateCatalogsOnline_Click" />
+                            <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Content="Save Abilities" Click="SaveAbilities_Click" />
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Add Ability" Click="AddAbility_Click" />
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Remove Selected" Click="RemoveAbility_Click" />
+                        </WrapPanel>
+                        <DataGrid Grid.Row="2"
+                                  x:Name="AbilitiesGrid" x:FieldModifier="public"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="True"
+                                  CanUserDeleteRows="True"
+                                  HeadersVisibility="Column"
+                                  IsReadOnly="False">
+                            <DataGrid.Columns>
+                                <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled, UpdateSourceTrigger=PropertyChanged}" Width="75" />
+                                <DataGridTextColumn Header="Ability Name" Binding="{Binding AbilityName, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                                <DataGridTextColumn Header="Category" Binding="{Binding Category, UpdateSourceTrigger=PropertyChanged}" Width="150" />
+                                <DataGridTextColumn Header="Level" Binding="{Binding Level, UpdateSourceTrigger=PropertyChanged}" Width="70" />
+                                <DataGridTextColumn Header="OCR Aliases" Binding="{Binding Aliases, UpdateSourceTrigger=PropertyChanged}" Width="180" />
+                                <DataGridTextColumn Header="Skill Code" Binding="{Binding SkillCode, UpdateSourceTrigger=PropertyChanged}" Width="110" />
+                                <DataGridTextColumn Header="Duration (s)" Binding="{Binding DurationSeconds, UpdateSourceTrigger=PropertyChanged}" Width="110" />
+                                <DataGridTextColumn Header="Effect Type" Binding="{Binding EffectType, UpdateSourceTrigger=PropertyChanged}" Width="110" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
+</UserControl>

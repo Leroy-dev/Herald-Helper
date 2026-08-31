@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using HeraldHelper.Application.Services;
 using HeraldHelper.Desktop.Controllers;
 using HeraldHelper.Desktop.Models;
+using HeraldHelper.Desktop.Views;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 using HeraldHelper.Infrastructure.Auth;
@@ -56,6 +57,35 @@ public partial class MainWindow : Window
     private AppRuntimeSettings _runtimeSettings = new(null, ShardType.Default, 0, OcrEngineMode.Adaptive, [], true, true, true, true);
     private OverlaySnapshot? _lastOverlaySnapshot;
     private DataBrowserWindow? _edenBrowserWindow;
+
+    private System.Windows.Controls.TextBox OutputBox => LiveView!.OutputBox;
+    private System.Windows.Controls.TextBox DiagnosticsBox => LiveView!.DiagnosticsBox;
+    private System.Windows.Controls.TextBox ResponseDiagnosticsBox => LiveView!.ResponseDiagnosticsBox;
+    private System.Windows.Controls.StackPanel DaocCharacterPanel => ConfigView!.DaocCharacterPanel;
+    private System.Windows.Controls.DataGrid ConfigGrid => ConfigView!.ConfigGrid;
+    private System.Windows.Controls.ComboBox AbilityProfileServerCombo => AbilitiesView!.AbilityProfileServerCombo;
+    private System.Windows.Controls.ComboBox AbilityProfileClassCombo => AbilitiesView!.AbilityProfileClassCombo;
+    private System.Windows.Controls.TextBlock AbilityProfileSummaryText => AbilitiesView!.AbilityProfileSummaryText;
+    private System.Windows.Controls.DataGrid AbilitiesGrid => AbilitiesView!.AbilitiesGrid;
+    private System.Windows.Controls.CheckBox ShowTargetCheckbox => OverlayView!.ShowTargetCheckbox;
+    private System.Windows.Controls.CheckBox ShowTimersCheckbox => OverlayView!.ShowTimersCheckbox;
+    private System.Windows.Controls.CheckBox ShowCastBarCheckbox => OverlayView!.ShowCastBarCheckbox;
+    private System.Windows.Controls.CheckBox DynamicCastSpeedCheckbox => OverlayView!.DynamicCastSpeedCheckbox;
+    private System.Windows.Controls.CheckBox EstimatedSpellDamageCheckbox => OverlayView!.EstimatedSpellDamageCheckbox;
+    private System.Windows.Controls.CheckBox OcrReplayCheckbox => OverlayView!.OcrReplayCheckbox;
+    private System.Windows.Controls.TextBox CastingSpeedBonusText => OverlayView!.CastingSpeedBonusText;
+    private System.Windows.Controls.TextBox SpellDamageBonusText => OverlayView!.SpellDamageBonusText;
+    private System.Windows.Controls.TextBox OverlayXText => OverlayView!.OverlayXText;
+    private System.Windows.Controls.TextBox OverlayYText => OverlayView!.OverlayYText;
+    private System.Windows.Controls.TextBox OverlayTimerXText => OverlayView!.OverlayTimerXText;
+    private System.Windows.Controls.TextBox OverlayTimerYText => OverlayView!.OverlayTimerYText;
+    private System.Windows.Controls.TextBox OverlayFontSizeText => OverlayView!.OverlayFontSizeText;
+    private System.Windows.Controls.TextBox OverlayTimerSizeText => OverlayView!.OverlayTimerSizeText;
+    private System.Windows.Controls.TextBox OverlayCastXText => OverlayView!.OverlayCastXText;
+    private System.Windows.Controls.TextBox OverlayCastYText => OverlayView!.OverlayCastYText;
+    private System.Windows.Controls.TextBox TargetColorText => OverlayView!.TargetColorText;
+    private System.Windows.Controls.TextBox TimerColorText => OverlayView!.TimerColorText;
+    private System.Windows.Controls.TextBox OutlineColorText => OverlayView!.OutlineColorText;
 
     public MainWindow()
     {
@@ -724,7 +754,7 @@ public partial class MainWindow : Window
         _loopTimer.Interval = TimeSpan.FromMilliseconds(ms);
     }
 
-    private void ReloadConfig_Click(object sender, RoutedEventArgs e)
+    internal void ReloadConfig_Click(object sender, RoutedEventArgs e)
     {
         ReloadEditorData();
         RebuildRuntimeFromFiles();
@@ -733,7 +763,7 @@ public partial class MainWindow : Window
         OutputBox.Text = "Config reloaded.";
     }
 
-    private void SaveConfig_Click(object sender, RoutedEventArgs e)
+    internal void SaveConfig_Click(object sender, RoutedEventArgs e)
     {
         _settingsController.Replace(_cfgEntries.Where(x => !string.IsNullOrWhiteSpace(x.Key)));
         ReloadEditorData();
@@ -743,7 +773,7 @@ public partial class MainWindow : Window
         OutputBox.Text = "Config saved to database and runtime refreshed.";
     }
 
-    private void ExportJson_Click(object sender, RoutedEventArgs e)
+    internal void ExportJson_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new Microsoft.Win32.SaveFileDialog
         {
@@ -761,7 +791,7 @@ public partial class MainWindow : Window
         OutputBox.Text = $"Backup exported: {dialog.FileName}";
     }
 
-    private void ImportJson_Click(object sender, RoutedEventArgs e)
+    internal void ImportJson_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
@@ -782,13 +812,13 @@ public partial class MainWindow : Window
         OutputBox.Text = "Backup imported and runtime refreshed.";
     }
 
-    private void ReloadAbilities_Click(object sender, RoutedEventArgs e)
+    internal void ReloadAbilities_Click(object sender, RoutedEventArgs e)
     {
         ReloadEditorData();
         OutputBox.Text = "Abilities reloaded.";
     }
 
-    private void ReloadAbilityCatalogs_Click(object sender, RoutedEventArgs e)
+    internal void ReloadAbilityCatalogs_Click(object sender, RoutedEventArgs e)
     {
         AbilityProfileCatalog.Refresh();
         _abilityProfileController.RefreshClasses(_abilityProfileController.Shard);
@@ -802,7 +832,7 @@ public partial class MainWindow : Window
         OutputBox.Text = "Local Eden and Blackthorn catalogs reloaded.";
     }
 
-    private async void UpdateCatalogsOnline_Click(object sender, RoutedEventArgs e)
+    internal async void UpdateCatalogsOnline_Click(object sender, RoutedEventArgs e)
     {
         var confirmation = System.Windows.MessageBox.Show(
             this,
@@ -831,7 +861,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void SaveAbilities_Click(object sender, RoutedEventArgs e)
+    internal void SaveAbilities_Click(object sender, RoutedEventArgs e)
     {
         _abilityProfileController.Save();
         ReloadEditorData();
@@ -839,13 +869,13 @@ public partial class MainWindow : Window
         OutputBox.Text = _abilityProfileController.GetSaveMessage();
     }
 
-    private void AddAbility_Click(object sender, RoutedEventArgs e)
+    internal void AddAbility_Click(object sender, RoutedEventArgs e)
     {
         _abilityProfileController.Add();
         AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
     }
 
-    private void RemoveAbility_Click(object sender, RoutedEventArgs e)
+    internal void RemoveAbility_Click(object sender, RoutedEventArgs e)
     {
         if (AbilitiesGrid.SelectedItem is not AbilityEditorRow selected)
         {
@@ -856,7 +886,7 @@ public partial class MainWindow : Window
         AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
     }
 
-    private void AbilityProfileServerCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    internal void AbilityProfileServerCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_isBindingControls || AbilityProfileServerCombo.SelectedItem is not ShardType shard)
         {
@@ -872,7 +902,7 @@ public partial class MainWindow : Window
         _abilityProfileController.ReloadRows();
     }
 
-    private void AbilityProfileClassCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    internal void AbilityProfileClassCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_isBindingControls || _abilityProfileController.Shard == ShardType.Default ||
             AbilityProfileClassCombo.SelectedItem is not string className)
@@ -900,7 +930,7 @@ public partial class MainWindow : Window
         await _authController.RefreshAllAsync();
     }
 
-    private void ClearResponseDiagnostics_Click(object sender, RoutedEventArgs e)
+    internal void ClearResponseDiagnostics_Click(object sender, RoutedEventArgs e)
     {
         _responseDiagnostics.Clear();
         ResponseDiagnosticsBox.Clear();
@@ -963,15 +993,20 @@ public partial class MainWindow : Window
 
     private void SidebarList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
-        if (_isBindingControls || SidebarList?.SelectedItem is not System.Windows.Controls.ListBoxItem item || LivePanel is null)
+        if (_isBindingControls ||
+            LiveView is null ||
+            ConfigView is null ||
+            AbilitiesView is null ||
+            OverlayView is null ||
+            SidebarList?.SelectedItem is not System.Windows.Controls.ListBoxItem item)
         {
             return;
         }
 
-        LivePanel.Visibility = item.Tag is "Live" ? Visibility.Visible : Visibility.Collapsed;
-        ConfigPanel.Visibility = item.Tag is "Config" ? Visibility.Visible : Visibility.Collapsed;
-        AbilitiesPanel.Visibility = item.Tag is "Abilities" ? Visibility.Visible : Visibility.Collapsed;
-        OverlayPanel.Visibility = item.Tag is "Overlay" ? Visibility.Visible : Visibility.Collapsed;
+        LiveView.Visibility = item.Tag is "Live" ? Visibility.Visible : Visibility.Collapsed;
+        ConfigView.Visibility = item.Tag is "Config" ? Visibility.Visible : Visibility.Collapsed;
+        AbilitiesView.Visibility = item.Tag is "Abilities" ? Visibility.Visible : Visibility.Collapsed;
+        OverlayView.Visibility = item.Tag is "Overlay" ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void ToggleTheme_Click(object sender, RoutedEventArgs e)
@@ -1017,13 +1052,13 @@ public partial class MainWindow : Window
         _authController.OnRefreshed(shard, bundle);
     }
 
-    private void ReloadOverlaySettings_Click(object sender, RoutedEventArgs e)
+    internal void ReloadOverlaySettings_Click(object sender, RoutedEventArgs e)
     {
         ReloadOverlaySettingsFromStore();
         OutputBox.Text = "Overlay settings reloaded.";
     }
 
-    private void SaveOverlaySettings_Click(object sender, RoutedEventArgs e)
+    internal void SaveOverlaySettings_Click(object sender, RoutedEventArgs e)
     {
         var settings = new OverlaySettings(
             NormalizeIntText(OverlayXText.Text, 1200),
@@ -1053,42 +1088,42 @@ public partial class MainWindow : Window
         OutputBox.Text = "Overlay settings saved.";
     }
 
-    private void PickTargetColor_Click(object sender, RoutedEventArgs e)
+    internal void PickTargetColor_Click(object sender, RoutedEventArgs e)
     {
         PickColorLive(TargetColorText, "#FFFFFF");
     }
 
-    private void PickTimerColor_Click(object sender, RoutedEventArgs e)
+    internal void PickTimerColor_Click(object sender, RoutedEventArgs e)
     {
         PickColorLive(TimerColorText, "#FFFFFF");
     }
 
-    private void PickOutlineColor_Click(object sender, RoutedEventArgs e)
+    internal void PickOutlineColor_Click(object sender, RoutedEventArgs e)
     {
         PickColorLive(OutlineColorText, "#000000");
     }
 
-    private void PickTargetOverlayPosition_Click(object sender, RoutedEventArgs e)
+    internal void PickTargetOverlayPosition_Click(object sender, RoutedEventArgs e)
     {
         PickOverlayPosition(isTimerOverlay: false);
     }
 
-    private void PickTimerOverlayPosition_Click(object sender, RoutedEventArgs e)
+    internal void PickTimerOverlayPosition_Click(object sender, RoutedEventArgs e)
     {
         PickOverlayPosition(isTimerOverlay: true);
     }
 
-    private void PickCastOverlayPosition_Click(object sender, RoutedEventArgs e)
+    internal void PickCastOverlayPosition_Click(object sender, RoutedEventArgs e)
     {
         PickCastOverlayPosition();
     }
 
-    private void PickTargetSize_Click(object sender, RoutedEventArgs e)
+    internal void PickTargetSize_Click(object sender, RoutedEventArgs e)
     {
         PickSizeLive(OverlayFontSizeText, "Target", isTimerOverlay: false);
     }
 
-    private void PickTimerSize_Click(object sender, RoutedEventArgs e)
+    internal void PickTimerSize_Click(object sender, RoutedEventArgs e)
     {
         PickSizeLive(OverlayTimerSizeText, "Timers", isTimerOverlay: true);
     }
