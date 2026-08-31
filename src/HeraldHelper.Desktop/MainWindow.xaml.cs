@@ -50,11 +50,10 @@ public partial class MainWindow : Window
     private OcrEngineMode _ocrEngineMode;
     private readonly ObservableCollection<ConfigEntry> _cfgEntries = [];
     private readonly AbilityProfileController _abilityProfileController;
-    private readonly DaocCharacterDiscoveryService _daocCharacterDiscovery = new();
+    private readonly DaocCharacterController _daocCharacterController;
     private readonly Dictionary<ShardType, WpfComboBox> _daocCharacterSelectors = new();
     private readonly Dictionary<ShardType, System.Windows.Controls.Button> _daocWindowButtons = new();
     private readonly Dictionary<ShardType, TextBlock> _daocCharacterSummaryBlocks = new();
-    private IReadOnlyDictionary<ShardType, IReadOnlyList<DaocCharacterProfile>> _daocCharacterProfiles = new Dictionary<ShardType, IReadOnlyList<DaocCharacterProfile>>();
     private AppRuntimeSettings _runtimeSettings = new(null, ShardType.Default, 0, OcrEngineMode.Adaptive, [], true, true, true, true);
     private OverlaySnapshot? _lastOverlaySnapshot;
     private DataBrowserWindow? _edenBrowserWindow;
@@ -71,6 +70,7 @@ public partial class MainWindow : Window
         _settingsController = new SettingsController(_store);
         _overlaySettingsController = new OverlaySettingsController(_settingsController);
         _abilityProfileController = new AbilityProfileController(_store, _store, _settingsController);
+        _daocCharacterController = new DaocCharacterController(_store);
         _httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(8)
@@ -225,14 +225,14 @@ public partial class MainWindow : Window
 
     private void LoadDaocCharacterProfiles()
     {
-        _daocCharacterProfiles = _daocCharacterDiscovery.Discover();
+        _daocCharacterController.LoadProfiles();
     }
 
     private void RepairInvalidSavedCustomWindowRegions()
     {
         var settings = _settingsController.LoadMap();
         var updates = new List<ConfigEntry>();
-        foreach (var (shard, profiles) in _daocCharacterProfiles)
+        foreach (var (shard, profiles) in _daocCharacterController.Profiles)
         {
             foreach (var profile in profiles)
             {
@@ -387,9 +387,7 @@ public partial class MainWindow : Window
                     continue;
                 }
 
-                var profiles = _daocCharacterProfiles.TryGetValue(shard, out var list)
-                    ? list
-                    : [];
+                var profiles = _daocCharacterController.GetProfiles(shard);
                 combo.ItemsSource = profiles;
                 var selectedName = ReadOrDefault(settings, $"daoc.character.{shard.ToString().ToLowerInvariant()}", string.Empty);
                 var selectedProfile = profiles.FirstOrDefault(x => string.Equals(x.CharacterName, selectedName, StringComparison.OrdinalIgnoreCase));
@@ -409,7 +407,7 @@ public partial class MainWindow : Window
                     }
                     else
                     {
-                        var ocrCount = LoadSelectedOcrWindows(shard, selectedProfile.CharacterName).Count;
+                        var ocrCount = _daocCharacterController.LoadOcrWindows(shard, selectedProfile.CharacterName).Count;
                         summary.Text = $"{selectedProfile.SummaryText} | OCR Windows: {ocrCount}";
                     }
                 }
@@ -455,7 +453,7 @@ public partial class MainWindow : Window
 
         if (_daocCharacterSummaryBlocks.TryGetValue(shard, out var summary))
         {
-            var ocrCount = LoadSelectedOcrWindows(shard, profile.CharacterName).Count;
+            var ocrCount = _daocCharacterController.LoadOcrWindows(shard, profile.CharacterName).Count;
             summary.Text = $"{profile.SummaryText} | OCR Windows: {ocrCount}";
         }
 
@@ -478,7 +476,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var current = LoadSelectedOcrWindows(shard, profile.CharacterName);
+        var current = _daocCharacterController.LoadOcrWindows(shard, profile.CharacterName);
         var selected = DaocWindowSelectionWindow.Pick(this, profile, current);
         if (selected is null)
         {
@@ -486,7 +484,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        SaveSelectedOcrWindows(shard, profile.CharacterName, selected);
+        _daocCharacterController.SaveOcrWindows(shard, profile.CharacterName, selected);
         _responseDiagnostics.Log($"[OCR] saved {selected.Count} windows for {profile.CharacterName} on {shard}.");
         ReloadEditorData();
         RebuildRuntimeFromFiles();
@@ -932,44 +930,6 @@ public partial class MainWindow : Window
         return stats?.Dexterity is null
             ? "Stats: awaiting OCR"
             : $"Stats: Dex {stats.Dexterity} | Cast {stats.CastingSpeedPercent:0.##}% | Dmg {stats.SpellDamagePercent:0.##}%";
-    }
-
-    private IReadOnlyList<OcrWatchRegion> LoadSelectedOcrWindows(ShardType shard, string characterName)
-    {
-        var settings = _settingsController.LoadMap();
-        var prefix = $"daoc.ocr.windows.{shard.ToString().ToLowerInvariant()}.";
-        var key = prefix + NormalizeSettingSegment(characterName);
-        var legacyKey = prefix + characterName.Trim().ToLowerInvariant();
-        if (!settings.TryGetValue(key, out var raw))
-        {
-            settings.TryGetValue(legacyKey, out raw);
-        }
-        if (string.IsNullOrWhiteSpace(raw))
-        {
-            return [];
-        }
-
-        try
-        {
-            return JsonSerializer.Deserialize<List<OcrWatchRegion>>(raw) ?? [];
-        }
-        catch
-        {
-            return [];
-        }
-    }
-
-    private void SaveSelectedOcrWindows(ShardType shard, string characterName, IReadOnlyCollection<DaocWindowDefinition> selected)
-    {
-        var windows = selected.Select(x => new OcrWatchRegion(x.Key, x.Label, x.Region)).ToList();
-        var raw = JsonSerializer.Serialize(windows);
-        _settingsController.Save([
-            new ConfigEntry
-            {
-                Key = $"daoc.ocr.windows.{shard.ToString().ToLowerInvariant()}.{NormalizeSettingSegment(characterName)}",
-                Value = raw
-            }
-        ]);
     }
 
     private static string FindFilePath(string fileName)
