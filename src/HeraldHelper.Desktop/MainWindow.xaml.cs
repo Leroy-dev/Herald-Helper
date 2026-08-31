@@ -35,11 +35,11 @@ public partial class MainWindow : Window
     private readonly SettingsController _settingsController;
     private readonly OverlaySettingsController _overlaySettingsController;
     private readonly RuntimeController _runtimeController;
+    private readonly AuthController _authController;
     private readonly ResponseDiagnosticsBuffer _responseDiagnostics;
     private readonly IShardAuthRefreshService _authRefreshService;
     private readonly HttpClient _httpClient;
     private readonly DispatcherTimer _loopTimer;
-    private readonly DispatcherTimer _authRefreshTimer;
     private readonly PaletteHelper _paletteHelper = new();
     private bool _tickInProgress;
     private bool _isBindingControls;
@@ -107,22 +107,23 @@ public partial class MainWindow : Window
             _liveOverlay,
             _responseDiagnostics);
 
+        _authController = new AuthController(
+            _settingsController,
+            _authRefreshService,
+            TimeSpan.FromMinutes(25),
+            text => OutputBox.Text = text,
+            () =>
+            {
+                ReloadEditorData();
+                RebuildRuntimeFromFiles();
+                ReloadOverlaySettingsFromStore();
+                return;
+            });
+
         _loopTimer = new DispatcherTimer();
         _loopTimer.Interval = TimeSpan.FromMilliseconds(350);
         _loopTimer.Tick += async (_, _) => await TickOnceAsync();
-        _authRefreshTimer = new DispatcherTimer();
-        _authRefreshTimer.Tick += async (_, _) =>
-        {
-            try
-            {
-                await RefreshEnabledShardAuthAsync();
-            }
-            catch
-            {
-                // Keep UI alive even if auth refresh fails.
-            }
-        };
-        ConfigureAuthRefreshTimer();
+        _authController.ConfigureTimer();
 
         RebuildRuntimeFromFiles();
         ConfigGrid.ItemsSource = _cfgEntries;
@@ -140,7 +141,7 @@ public partial class MainWindow : Window
     protected override void OnClosed(EventArgs e)
     {
         _loopTimer.Stop();
-        _authRefreshTimer.Stop();
+        _authController.AuthRefreshTimer.Stop();
         _responseDiagnostics.LineAdded -= OnResponseDiagnosticLineAdded;
         _orchestrator?.Dispose();
         _liveOverlay?.Dispose();
@@ -782,7 +783,7 @@ public partial class MainWindow : Window
         ReloadEditorData();
         RebuildRuntimeFromFiles();
         ReloadOverlaySettingsFromStore();
-        ConfigureAuthRefreshTimer();
+        _authController.ConfigureTimer();
         OutputBox.Text = "Config reloaded.";
     }
 
@@ -792,7 +793,7 @@ public partial class MainWindow : Window
         ReloadEditorData();
         RebuildRuntimeFromFiles();
         ReloadOverlaySettingsFromStore();
-        ConfigureAuthRefreshTimer();
+        _authController.ConfigureTimer();
         OutputBox.Text = "Config saved to database and runtime refreshed.";
     }
 
@@ -831,7 +832,7 @@ public partial class MainWindow : Window
         ReloadEditorData();
         RebuildRuntimeFromFiles();
         ReloadOverlaySettingsFromStore();
-        ConfigureAuthRefreshTimer();
+        _authController.ConfigureTimer();
         OutputBox.Text = "Backup imported and runtime refreshed.";
     }
 
@@ -985,57 +986,12 @@ public partial class MainWindow : Window
 
     private async void RefreshAuthCurrent_Click(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            OutputBox.Text = $"Refreshing auth for {_shardType}...";
-            var bundle = await _authRefreshService.RefreshAsync(_shardType, CancellationToken.None);
-            if (bundle is null)
-            {
-                OutputBox.Text = $"No valid auth captured for {_shardType}. Sign in inside the Playwright browser and retry.";
-                return;
-            }
-
-            ReloadEditorData();
-            RebuildRuntimeFromFiles();
-            OutputBox.Text = $"Auth refreshed for {_shardType}.";
-        }
-        catch (Exception ex)
-        {
-            OutputBox.Text = $"Auth refresh failed for {_shardType}: {ex.Message}";
-        }
+        await _authController.RefreshCurrentAsync(_shardType);
     }
 
     private async void RefreshAuthAll_Click(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            var refreshed = await RefreshEnabledShardAuthAsync();
-
-            ReloadEditorData();
-            RebuildRuntimeFromFiles();
-            OutputBox.Text = refreshed.Count == 0
-                ? "No enabled shard auth profiles."
-                : $"Auth refreshed: {string.Join(", ", refreshed)}";
-        }
-        catch (Exception ex)
-        {
-            OutputBox.Text = $"Auth refresh failed: {ex.Message}";
-        }
-    }
-
-    private async Task<List<string>> RefreshEnabledShardAuthAsync()
-    {
-        var refreshed = new List<string>();
-        foreach (var shard in Enum.GetValues<ShardType>())
-        {
-            var bundle = await _authRefreshService.RefreshAsync(shard, CancellationToken.None);
-            if (bundle is not null)
-            {
-                refreshed.Add(shard.ToString());
-            }
-        }
-
-        return refreshed;
+        await _authController.RefreshAllAsync();
     }
 
     private void RefreshDiagnostics()
@@ -1230,42 +1186,9 @@ public partial class MainWindow : Window
         });
     }
 
-    private void ConfigureAuthRefreshTimer()
-    {
-        var settings = _settingsController.LoadMap();
-        var enabled = !settings.TryGetValue("auth.autoRefreshEnabled", out var enabledRaw)
-            || !enabledRaw.Equals("false", StringComparison.OrdinalIgnoreCase);
-        var minutes = settings.TryGetValue("auth.autoRefreshMinutes", out var minsRaw) && int.TryParse(minsRaw, out var parsed)
-            ? Math.Clamp(parsed, 5, 240)
-            : 25;
-
-        _authRefreshTimer.Interval = TimeSpan.FromMinutes(minutes);
-        if (enabled)
-        {
-            _authRefreshTimer.Start();
-        }
-        else
-        {
-            _authRefreshTimer.Stop();
-        }
-    }
-
     private void OnAuthRefreshed(ShardType shard, ShardAuthBundle bundle)
     {
-        var shardKey = shard.ToString().ToLowerInvariant();
-        var updates = new List<ConfigEntry>
-        {
-            new() { Key = $"auth.{shardKey}.cookieHeader", Value = bundle.CookieHeader ?? string.Empty },
-            new() { Key = $"auth.{shardKey}.userAgent", Value = bundle.UserAgent ?? string.Empty }
-        };
-
-        if (shard == ShardType.Eden)
-        {
-            updates.Add(new ConfigEntry { Key = "edenHeraldCookie", Value = bundle.CookieHeader ?? string.Empty });
-            updates.Add(new ConfigEntry { Key = "edenHeraldUserAgent", Value = bundle.UserAgent ?? string.Empty });
-        }
-
-        _settingsController.Save(updates);
+        _authController.OnRefreshed(shard, bundle);
     }
 
     private void ReloadOverlaySettings_Click(object sender, RoutedEventArgs e)
