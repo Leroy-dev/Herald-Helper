@@ -85,4 +85,42 @@ internal sealed class SqliteCharacterStatsRepository : SqliteRepositoryBase, ICh
         cmd.Parameters.AddWithValue("$updated", stats.UpdatedUtc.ToString("O"));
         cmd.ExecuteNonQuery();
     }
+
+    public List<CharacterStatsSnapshot> LoadAllCharacterStats()
+    {
+        using var connection = ConnectionFactory.OpenConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT server, character_name, strength, constitution, dexterity, quickness,
+                   intelligence, piety, empathy, charisma, casting_speed_percent,
+                   spell_damage_percent, updated_utc
+            FROM character_stats;
+            """;
+        var result = new List<CharacterStatsSnapshot>();
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            if (!Enum.TryParse<ShardType>(reader.GetString(0), true, out var shard))
+            {
+                continue;
+            }
+
+            result.Add(new CharacterStatsSnapshot(
+                shard, reader.GetString(1), ReadNullableInt(reader, 2), ReadNullableInt(reader, 3),
+                ReadNullableInt(reader, 4), ReadNullableInt(reader, 5), ReadNullableInt(reader, 6),
+                ReadNullableInt(reader, 7), ReadNullableInt(reader, 8), ReadNullableInt(reader, 9),
+                reader.GetDouble(10), reader.GetDouble(11),
+                DateTimeOffset.Parse(reader.GetString(12), CultureInfo.InvariantCulture)));
+        }
+
+        return result;
+    }
+
+    public void DeleteAllCharacterStats()
+    {
+        using var connection = ConnectionFactory.OpenConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "DELETE FROM character_stats;";
+        cmd.ExecuteNonQuery();
+    }
 }
