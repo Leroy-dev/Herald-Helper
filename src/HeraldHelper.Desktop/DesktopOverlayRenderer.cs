@@ -125,7 +125,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             _targetWindow.Update(targetText, ox, oy, f1, targetColor, outlineColor);
             _timerWindow.Update(timerText, tx, ty, f2, timerColor, outlineColor);
             var cast = showCastBar ? snapshot.ActiveCast : null;
-            _castBarWindow.Update(cast, cx, cy);
+            _castBarWindow.Update(cast, cx, cy, targetColor, timerColor, outlineColor);
         }).Task;
     }
 

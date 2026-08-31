@@ -22,8 +22,12 @@ public sealed class CastBarWindow : Window
     private readonly TextBlock _spellNameText;
     private readonly TextBlock _secondsText;
     private readonly ProgressBar _progressBar;
+    private readonly Border _border;
     private readonly DispatcherTimer _timer;
     private CastBarState? _state;
+    private MediaColor _targetColor = Colors.White;
+    private MediaColor _timerColor = MediaColor.FromRgb(255, 233, 178);
+    private MediaColor _outlineColor = Colors.Black;
 
     public CastBarWindow()
     {
@@ -35,27 +39,27 @@ public sealed class CastBarWindow : Window
         Topmost = true;
         Focusable = false;
         IsHitTestVisible = false;
-        Width = 320;
-        Height = 76;
+        Width = 280;
+        Height = 48;
 
         _iconImage = new Image
         {
-            Width = 32,
-            Height = 32,
-            Margin = new Thickness(0, 0, 12, 0),
+            Width = 24,
+            Height = 24,
+            Margin = new Thickness(0, 0, 8, 0),
             VerticalAlignment = VerticalAlignment.Center,
             Stretch = Stretch.Fill
         };
 
         _spellNameText = new TextBlock
         {
-            Foreground = MediaBrushes.White,
-            FontSize = 18,
+            Foreground = new SolidColorBrush(_targetColor),
+            FontSize = 15,
             FontFamily = new FontFamily("Segoe UI Semibold"),
             TextTrimming = TextTrimming.CharacterEllipsis,
             Effect = new DropShadowEffect
             {
-                Color = Colors.Black,
+                Color = _outlineColor,
                 BlurRadius = 2,
                 ShadowDepth = 0,
                 Opacity = 0.9
@@ -64,8 +68,8 @@ public sealed class CastBarWindow : Window
 
         _secondsText = new TextBlock
         {
-            Foreground = new SolidColorBrush(MediaColor.FromRgb(255, 233, 178)),
-            FontSize = 13,
+            Foreground = new SolidColorBrush(_timerColor),
+            FontSize = 12,
             FontFamily = new FontFamily("Segoe UI"),
             HorizontalAlignment = System.Windows.HorizontalAlignment.Right
         };
@@ -74,10 +78,10 @@ public sealed class CastBarWindow : Window
         {
             Minimum = 0,
             Maximum = 1,
-            Height = 16,
-            Margin = new Thickness(0, 8, 0, 0),
-            Foreground = new SolidColorBrush(MediaColor.FromRgb(239, 189, 73)),
-            Background = new SolidColorBrush(MediaColor.FromArgb(160, 24, 24, 28)),
+            Height = 4,
+            Margin = new Thickness(0, 4, 0, 0),
+            Foreground = new SolidColorBrush(_timerColor),
+            Background = new SolidColorBrush(MediaColor.FromArgb(120, 0, 0, 0)),
             BorderThickness = new Thickness(0)
         };
 
@@ -99,15 +103,17 @@ public sealed class CastBarWindow : Window
         content.Children.Add(infoPanel);
         Grid.SetColumn(infoPanel, 1);
 
-        Content = new Border
+        _border = new Border
         {
-            CornerRadius = new CornerRadius(8),
-            Background = new SolidColorBrush(MediaColor.FromArgb(210, 20, 24, 31)),
-            BorderBrush = new SolidColorBrush(MediaColor.FromRgb(239, 189, 73)),
+            CornerRadius = new CornerRadius(4),
+            Background = new SolidColorBrush(MediaColor.FromArgb(180, 20, 24, 31)),
+            BorderBrush = new SolidColorBrush(_outlineColor),
             BorderThickness = new Thickness(1),
-            Padding = new Thickness(12, 10, 12, 10),
+            Padding = new Thickness(8),
             Child = content
         };
+
+        Content = _border;
 
         _timer = new DispatcherTimer(DispatcherPriority.Render)
         {
@@ -125,11 +131,34 @@ public sealed class CastBarWindow : Window
         OverlayTextWindowInterop.SetWindowLongPtr(hwnd, new IntPtr(exStyle));
     }
 
-    public void Update(CastBarState? state, double x, double y)
+    public void Update(CastBarState? state, double x, double y, MediaColor targetColor, MediaColor timerColor, MediaColor outlineColor)
     {
         _state = state;
         Left = x;
         Top = y;
+
+        if (_targetColor != targetColor || _outlineColor != outlineColor)
+        {
+            _targetColor = targetColor;
+            _outlineColor = outlineColor;
+            _spellNameText.Foreground = new SolidColorBrush(targetColor);
+            _spellNameText.Effect = new DropShadowEffect
+            {
+                Color = outlineColor,
+                BlurRadius = 2,
+                ShadowDepth = 0,
+                Opacity = 0.9
+            };
+            _border.BorderBrush = new SolidColorBrush(outlineColor);
+        }
+
+        if (_timerColor != timerColor)
+        {
+            _timerColor = timerColor;
+            _secondsText.Foreground = new SolidColorBrush(timerColor);
+            _progressBar.Foreground = new SolidColorBrush(timerColor);
+        }
+
         Refresh();
     }
 
