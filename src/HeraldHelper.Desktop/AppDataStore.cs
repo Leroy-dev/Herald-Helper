@@ -1,4 +1,3 @@
-using Microsoft.Data.Sqlite;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,6 +7,7 @@ using HeraldHelper.Application.Contracts;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 using HeraldHelper.Infrastructure.Parsing;
+using Microsoft.Data.Sqlite;
 
 namespace HeraldHelper.Desktop;
 

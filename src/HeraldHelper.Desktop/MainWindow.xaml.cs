@@ -5,11 +5,8 @@ using System.Text;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
 using System.Windows.Media;
-using Microsoft.Win32;
-using MaterialDesignThemes.Wpf;
-using MediaColor = System.Windows.Media.Color;
+using System.Windows.Threading;
 using HeraldHelper.Application.Services;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
@@ -19,6 +16,9 @@ using HeraldHelper.Infrastructure.Composition;
 using HeraldHelper.Infrastructure.Configuration;
 using HeraldHelper.Infrastructure.Overlay;
 using HeraldHelper.Infrastructure.Parsing;
+using MaterialDesignThemes.Wpf;
+using Microsoft.Win32;
+using MediaColor = System.Windows.Media.Color;
 using WpfComboBox = System.Windows.Controls.ComboBox;
 
 namespace HeraldHelper.Desktop;
@@ -1565,7 +1565,7 @@ public partial class MainWindow : Window
         var stats = _store.LoadCharacterStats(_shardType, character);
         CastingSpeedBonusText.Text = (stats?.CastingSpeedPercent ?? 0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
         SpellDamageBonusText.Text = (stats?.SpellDamagePercent ?? 0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
-        
+
         if (ShowTargetCheckbox is not null)
         {
             ShowTargetCheckbox.IsChecked = ReadBool(map, "overlayShowTarget", true);

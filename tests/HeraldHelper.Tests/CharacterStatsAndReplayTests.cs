@@ -1,12 +1,12 @@
 using System.Text.Json;
+using System.Windows.Media.Imaging;
 using HeraldHelper.Application.Models;
 using HeraldHelper.Application.Services;
 using HeraldHelper.Desktop;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
-using HeraldHelper.Infrastructure.Ocr;
 using HeraldHelper.Infrastructure.Configuration;
-using System.Windows.Media.Imaging;
+using HeraldHelper.Infrastructure.Ocr;
 
 namespace HeraldHelper.Tests;
 

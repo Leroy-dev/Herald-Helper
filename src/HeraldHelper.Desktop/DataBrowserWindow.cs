@@ -11,9 +11,9 @@ using DataGridColumnHeader = System.Windows.Controls.Primitives.DataGridColumnHe
 using Image = System.Windows.Controls.Image;
 using MediaBrush = System.Windows.Media.Brush;
 using MediaBrushes = System.Windows.Media.Brushes;
-using WpfControl = System.Windows.Controls.Control;
-using WpfComboBox = System.Windows.Controls.ComboBox;
 using TextBox = System.Windows.Controls.TextBox;
+using WpfComboBox = System.Windows.Controls.ComboBox;
+using WpfControl = System.Windows.Controls.Control;
 
 namespace HeraldHelper.Desktop;
 

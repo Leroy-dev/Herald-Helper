@@ -1,7 +1,7 @@
-using System.Net.Http.Headers;
-using System.Net;
-using System.Text.Json;
 using System.Collections.Concurrent;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text.Json;
 using HeraldHelper.Application.Contracts;
 using HeraldHelper.Domain.Models;
 using HeraldHelper.Infrastructure.Auth;
@@ -39,15 +39,51 @@ public sealed class EdenHeraldClient : IHeraldClient, IHeraldProfileUpdateSource
 
     private static readonly IReadOnlyDictionary<int, string> EdenClassList = new Dictionary<int, string>
     {
-        [59] = "Warlock", [58] = "Vampiir", [63] = "Occultist", [2] = "Armsman", [11] = "Mercenary",
-        [1] = "Paladin", [19] = "Reaver", [13] = "Cabalist", [12] = "Necromancer", [8] = "Sorcerer",
-        [5] = "Theurgist", [7] = "Wizard", [4] = "Minstrel", [6] = "Cleric", [10] = "Friar",
-        [9] = "Infiltrator", [3] = "Scout", [33] = "Heretic", [43] = "Blademaster", [45] = "Champion",
-        [44] = "Hero", [56] = "Valewalker", [55] = "Animist", [40] = "Eldritch", [41] = "Enchanter",
-        [42] = "Mentalist", [48] = "Bard", [47] = "Druid", [46] = "Warden", [49] = "Nightshade",
-        [39] = "Bainshee", [50] = "Ranger", [31] = "Berserker", [32] = "Savage", [24] = "Skald",
-        [21] = "Thane", [22] = "Warrior", [30] = "Bonedancer", [29] = "Runemaster", [27] = "Spiritmaster",
-        [26] = "Healer", [28] = "Shaman", [25] = "Hunter", [23] = "Shadowblade", [34] = "Valkyrie"
+        [59] = "Warlock",
+        [58] = "Vampiir",
+        [63] = "Occultist",
+        [2] = "Armsman",
+        [11] = "Mercenary",
+        [1] = "Paladin",
+        [19] = "Reaver",
+        [13] = "Cabalist",
+        [12] = "Necromancer",
+        [8] = "Sorcerer",
+        [5] = "Theurgist",
+        [7] = "Wizard",
+        [4] = "Minstrel",
+        [6] = "Cleric",
+        [10] = "Friar",
+        [9] = "Infiltrator",
+        [3] = "Scout",
+        [33] = "Heretic",
+        [43] = "Blademaster",
+        [45] = "Champion",
+        [44] = "Hero",
+        [56] = "Valewalker",
+        [55] = "Animist",
+        [40] = "Eldritch",
+        [41] = "Enchanter",
+        [42] = "Mentalist",
+        [48] = "Bard",
+        [47] = "Druid",
+        [46] = "Warden",
+        [49] = "Nightshade",
+        [39] = "Bainshee",
+        [50] = "Ranger",
+        [31] = "Berserker",
+        [32] = "Savage",
+        [24] = "Skald",
+        [21] = "Thane",
+        [22] = "Warrior",
+        [30] = "Bonedancer",
+        [29] = "Runemaster",
+        [27] = "Spiritmaster",
+        [26] = "Healer",
+        [28] = "Shaman",
+        [25] = "Hunter",
+        [23] = "Shadowblade",
+        [34] = "Valkyrie"
     };
 
     private readonly HttpClient _httpClient;

@@ -1,6 +1,6 @@
+using System.Text.Json;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
-using System.Text.Json;
 
 namespace HeraldHelper.Infrastructure.Configuration;
 

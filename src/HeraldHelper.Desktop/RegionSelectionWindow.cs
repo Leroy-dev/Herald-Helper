@@ -3,9 +3,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using HeraldHelper.Domain.Models;
+using WpfMouseEventArgs = System.Windows.Input.MouseEventArgs;
 using WpfPoint = System.Windows.Point;
 using WpfRectangle = System.Windows.Shapes.Rectangle;
-using WpfMouseEventArgs = System.Windows.Input.MouseEventArgs;
 
 namespace HeraldHelper.Desktop;
 

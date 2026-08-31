@@ -1,15 +1,15 @@
 using HeraldHelper.Application.Contracts;
 using HeraldHelper.Application.Services;
+using HeraldHelper.Domain.Enums;
+using HeraldHelper.Domain.Models;
+using HeraldHelper.Infrastructure.Auth;
 using HeraldHelper.Infrastructure.Capture;
 using HeraldHelper.Infrastructure.Casting;
 using HeraldHelper.Infrastructure.Configuration;
 using HeraldHelper.Infrastructure.Herald;
-using HeraldHelper.Infrastructure.Overlay;
 using HeraldHelper.Infrastructure.Ocr;
+using HeraldHelper.Infrastructure.Overlay;
 using HeraldHelper.Infrastructure.Parsing;
-using HeraldHelper.Infrastructure.Auth;
-using HeraldHelper.Domain.Enums;
-using HeraldHelper.Domain.Models;
 
 namespace HeraldHelper.Infrastructure.Composition;
 

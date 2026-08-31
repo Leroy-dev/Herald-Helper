@@ -1,9 +1,9 @@
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 using HeraldHelper.Application.Contracts;
 using HeraldHelper.Application.Models;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
 
 namespace HeraldHelper.Application.Services;
 

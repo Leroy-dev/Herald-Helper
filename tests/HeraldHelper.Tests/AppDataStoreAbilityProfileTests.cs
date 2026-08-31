@@ -1,7 +1,7 @@
+using System.Text.Json;
 using HeraldHelper.Desktop;
 using HeraldHelper.Domain.Enums;
 using Microsoft.Data.Sqlite;
-using System.Text.Json;
 
 namespace HeraldHelper.Tests;
 

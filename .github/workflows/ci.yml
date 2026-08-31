@@ -19,6 +19,9 @@ jobs:
         with:
           dotnet-version: '10.x'
 
+      - name: Verify formatting
+        run: dotnet format --verify-no-changes
+
       - name: Build
         run: dotnet build HeraldHelper.slnx -v minimal
 

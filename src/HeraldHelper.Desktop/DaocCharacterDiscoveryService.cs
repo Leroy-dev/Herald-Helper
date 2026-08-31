@@ -1,6 +1,6 @@
 using System.IO;
-using HeraldHelper.Domain.Models;
 using HeraldHelper.Domain.Enums;
+using HeraldHelper.Domain.Models;
 
 namespace HeraldHelper.Desktop;
 

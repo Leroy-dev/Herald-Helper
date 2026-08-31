@@ -1,11 +1,11 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using WpfBrushes = System.Windows.Media.Brushes;
+using WpfButton = System.Windows.Controls.Button;
 using WpfColor = System.Windows.Media.Color;
 using WpfPanel = System.Windows.Controls.Panel;
 using WpfTextBox = System.Windows.Controls.TextBox;
-using WpfBrushes = System.Windows.Media.Brushes;
-using WpfButton = System.Windows.Controls.Button;
 
 namespace HeraldHelper.Desktop;
 
