@@ -40,10 +40,8 @@ public partial class MainWindow : Window
     private readonly IShardAuthRefreshService _authRefreshService;
     private readonly HttpClient _httpClient;
     private readonly DispatcherTimer _loopTimer;
-    private readonly PaletteHelper _paletteHelper = new();
     private bool _tickInProgress;
     private bool _isBindingControls;
-    private bool _isDarkTheme = true;
     private ScreenRegion? _chatRegion;
     private ShardType _shardType;
     private int _resistPercent;
@@ -51,6 +49,7 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<ConfigEntry> _cfgEntries = [];
     private readonly AbilityProfileController _abilityProfileController;
     private readonly DaocCharacterController _daocCharacterController;
+    private readonly ThemeController _themeController;
     private readonly Dictionary<ShardType, WpfComboBox> _daocCharacterSelectors = new();
     private readonly Dictionary<ShardType, System.Windows.Controls.Button> _daocWindowButtons = new();
     private readonly Dictionary<ShardType, TextBlock> _daocCharacterSummaryBlocks = new();
@@ -71,6 +70,7 @@ public partial class MainWindow : Window
         _overlaySettingsController = new OverlaySettingsController(_settingsController);
         _abilityProfileController = new AbilityProfileController(_store, _store, _settingsController);
         _daocCharacterController = new DaocCharacterController(_store);
+        _themeController = new ThemeController(_settingsController);
         _httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(8)
@@ -132,7 +132,8 @@ public partial class MainWindow : Window
         RepairInvalidSavedCustomWindowRegions();
         BuildDaocCharacterSelectorUi();
         ReloadOverlaySettingsFromStore();
-        LoadThemeSetting();
+        _themeController.Initialize();
+        ThemeToggleButton.Content = _themeController.ToggleButtonContent;
         OutputBox.Text = "Ready.";
     }
 
@@ -957,54 +958,9 @@ public partial class MainWindow : Window
 
     private void ToggleTheme_Click(object sender, RoutedEventArgs e)
     {
-        ApplyTheme(!_isDarkTheme);
-        _settingsController.Save([
-            new ConfigEntry { Key = "ui.theme", Value = _isDarkTheme ? "dark" : "light" }
-        ]);
+        _themeController.Toggle();
+        ThemeToggleButton.Content = _themeController.ToggleButtonContent;
         ReloadEditorData();
-    }
-
-    private void LoadThemeSetting()
-    {
-        var settings = _settingsController.LoadMap();
-        var theme = settings.TryGetValue("ui.theme", out var themeRaw) ? themeRaw : "dark";
-        ApplyTheme(!string.Equals(theme, "light", StringComparison.OrdinalIgnoreCase));
-    }
-
-    private void ApplyTheme(bool dark)
-    {
-        _isDarkTheme = dark;
-        var theme = _paletteHelper.GetTheme();
-        theme.SetBaseTheme(dark ? BaseTheme.Dark : BaseTheme.Light);
-        _paletteHelper.SetTheme(theme);
-        ApplyVsCodePalette(dark);
-        ThemeToggleButton.Content = dark ? "Switch to Light" : "Switch to Dark";
-    }
-
-    private static void ApplyVsCodePalette(bool dark)
-    {
-        var resources = System.Windows.Application.Current.Resources;
-        if (dark)
-        {
-            resources["VsWindowBackgroundBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x1E, 0x1E, 0x1E));
-            resources["VsTitleBarBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x25, 0x25, 0x26));
-            resources["VsPanelBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x25, 0x25, 0x26));
-            resources["VsPanelAltBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x2D, 0x2D, 0x30));
-            resources["VsBorderBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x3E, 0x3E, 0x42));
-            resources["VsTextBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xD4, 0xD4, 0xD4));
-            resources["VsMutedTextBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x9D, 0xA1, 0xA6));
-            resources["VsAccentBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0x7A, 0xCC));
-            return;
-        }
-
-        resources["VsWindowBackgroundBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF3, 0xF3, 0xF3));
-        resources["VsTitleBarBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE7, 0xE7, 0xE7));
-        resources["VsPanelBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xFF, 0xFF));
-        resources["VsPanelAltBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF8, 0xF8, 0xF8));
-        resources["VsBorderBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xD4, 0xD4, 0xD4));
-        resources["VsTextBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x1E, 0x1E, 0x1E));
-        resources["VsMutedTextBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x5C, 0x63, 0x6A));
-        resources["VsAccentBrush"] = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x00, 0x6B, 0xC1));
     }
 
     private void OnResponseDiagnosticLineAdded(string line)
