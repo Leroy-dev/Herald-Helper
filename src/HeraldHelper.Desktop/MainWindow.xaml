@@ -1,0 +1,338 @@
+<Window x:Class="HeraldHelper.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        TextElement.FontSize="13"
+        TextElement.FontWeight="Normal"
+        TextOptions.TextFormattingMode="Ideal"
+        Title="HeraldHelper" Height="820" Width="1220" MinHeight="720" MinWidth="1080"
+        Background="{DynamicResource VsWindowBackgroundBrush}">
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+        </Style>
+        <Style TargetType="GroupBox">
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource VsBorderBrush}" />
+        </Style>
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="{DynamicResource VsPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource VsBorderBrush}" />
+        </Style>
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="{DynamicResource VsPanelBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource VsBorderBrush}" />
+            <Setter Property="RowBackground" Value="{DynamicResource VsPanelBrush}" />
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource VsPanelAltBrush}" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource VsBorderBrush}" />
+            <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource VsBorderBrush}" />
+        </Style>
+    </Window.Resources>
+    <DockPanel LastChildFill="True" Background="{DynamicResource VsWindowBackgroundBrush}">
+        <Border DockPanel.Dock="Top"
+                Background="{DynamicResource VsTitleBarBrush}"
+                BorderBrush="{DynamicResource VsBorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock FontSize="26" FontWeight="Bold" Text="HeraldHelper" />
+                    <TextBlock Opacity="0.85" Foreground="{DynamicResource VsMutedTextBrush}" Text="Realtime DAoC OCR, Herald lookups and ingame overlays" />
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Name="ThemeToggleButton"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Content="Light Mode"
+                        Click="ToggleTheme_Click" />
+            </Grid>
+        </Border>
+
+        <Grid Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <materialDesign:Card Grid.Row="0" Padding="12" Margin="0,0,0,12" Background="{DynamicResource VsPanelBrush}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <WrapPanel Grid.Row="0" Margin="0,0,0,8">
+                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Select Chat Area (Drag)" Click="SelectChatArea_Click" />
+                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Select Stats Area (Drag)" Click="SelectStatsArea_Click" />
+                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignRaisedButton}" Content="Run One Tick" Click="RunTick_Click" />
+                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignRaisedButton}" Name="ToggleLoopButton" Content="Start Loop" Click="ToggleLoop_Click" />
+                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Open Spell Browser" Click="OpenSpellBrowser_Click" />
+                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Browser starten" Click="OpenEdenBrowser_Click" />
+                        <Button Margin="0,0,8,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Refresh Auth (Shard)" Click="RefreshAuthCurrent_Click" />
+                        <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Refresh Auth (All)" Click="RefreshAuthAll_Click" />
+                    </WrapPanel>
+                    <WrapPanel Grid.Row="1">
+                        <ComboBox Width="180"
+                                  Name="ShardCombo"
+                                  Style="{StaticResource MaterialDesignFilledComboBox}"
+                                  materialDesign:HintAssist.Hint="Mode / Shard"
+                                  Background="{DynamicResource VsPanelAltBrush}"
+                                  Foreground="{DynamicResource VsTextBrush}"
+                                  SelectionChanged="ShardCombo_SelectionChanged" />
+                        <TextBox Margin="8,0,0,0"
+                                 Width="96"
+                                 Name="ResistText"
+                                 Style="{StaticResource MaterialDesignFilledTextBox}"
+                                  materialDesign:HintAssist.Hint="Resist %"
+                                 Background="{DynamicResource VsPanelAltBrush}"
+                                 Foreground="{DynamicResource VsTextBrush}"
+                                 TextChanged="ResistText_TextChanged" />
+                        <TextBox Margin="8,0,0,0"
+                                 Width="110"
+                                 Name="LoopMsText"
+                                 Style="{StaticResource MaterialDesignFilledTextBox}"
+                                 materialDesign:HintAssist.Hint="Loop ms"
+                                 Background="{DynamicResource VsPanelAltBrush}"
+                                 Foreground="{DynamicResource VsTextBrush}"
+                                 Text="350"
+                                 TextChanged="LoopMsText_TextChanged" />
+                        <ComboBox Margin="8,0,0,0"
+                                  Width="150"
+                                  Name="OcrEngineCombo"
+                                  Style="{StaticResource MaterialDesignFilledComboBox}"
+                                  materialDesign:HintAssist.Hint="OCR Engine"
+                                  Background="{DynamicResource VsPanelAltBrush}"
+                                  Foreground="{DynamicResource VsTextBrush}"
+                                  SelectionChanged="OcrEngineCombo_SelectionChanged" />
+                    </WrapPanel>
+                </Grid>
+            </materialDesign:Card>
+
+            <materialDesign:Card Grid.Row="1" Padding="10" Margin="0,0,0,12" Background="{DynamicResource VsPanelBrush}">
+                <TextBlock Name="RegionText" />
+            </materialDesign:Card>
+
+            <TextBlock Grid.Row="2" Margin="0,0,0,8" Opacity="0.85" Foreground="{DynamicResource VsMutedTextBrush}" Text="Tip: Overlay positions use cfg-style keys (overlayX, overlayY, overlayXTimer, overlayYTimer, overlayXCast, overlayYCast)." />
+
+            <TabControl Grid.Row="3">
+                <TabItem Header="Live">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <GroupBox Grid.Row="0" Margin="0,0,0,8" Header="Status">
+                            <TextBox Name="OutputBox" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                                     Background="{DynamicResource VsPanelAltBrush}" Foreground="{DynamicResource VsTextBrush}" BorderBrush="{DynamicResource VsBorderBrush}" />
+                        </GroupBox>
+                        <GroupBox Grid.Row="1" Margin="0,0,0,8" Header="OCR Diagnostics">
+                            <TextBox Name="DiagnosticsBox" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                                     Background="{DynamicResource VsPanelAltBrush}" Foreground="{DynamicResource VsTextBrush}" BorderBrush="{DynamicResource VsBorderBrush}" />
+                        </GroupBox>
+                        <GroupBox Grid.Row="2" Header="Response Diagnostics">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <WrapPanel Margin="0,0,0,6">
+                                    <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Clear Log" Click="ClearResponseDiagnostics_Click" />
+                                </WrapPanel>
+                                <TextBox Grid.Row="1"
+                                         Name="ResponseDiagnosticsBox"
+                                         IsReadOnly="True"
+                                         TextWrapping="Wrap"
+                                         VerticalScrollBarVisibility="Auto"
+                                         Background="{DynamicResource VsPanelAltBrush}"
+                                         Foreground="{DynamicResource VsTextBrush}"
+                                         BorderBrush="{DynamicResource VsBorderBrush}" />
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Config">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <GroupBox Grid.Row="0" Margin="0,0,0,8" Header="DAoC Characters">
+                            <StackPanel Name="DaocCharacterPanel" Margin="8" />
+                        </GroupBox>
+                        <WrapPanel Grid.Row="1" Margin="0,0,0,8">
+                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Reload Config" Click="ReloadConfig_Click" />
+                            <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="Save Config" Click="SaveConfig_Click" />
+                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Export JSON" Click="ExportJson_Click" />
+                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Import JSON" Click="ImportJson_Click" />
+                        </WrapPanel>
+                        <DataGrid Grid.Row="2"
+                                  Name="ConfigGrid"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="True"
+                                  CanUserDeleteRows="True"
+                                  HeadersVisibility="Column"
+                                  IsReadOnly="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Key" Binding="{Binding Key, UpdateSourceTrigger=PropertyChanged}" Width="300" />
+                                <DataGridTextColumn Header="Value" Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Abilities">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <WrapPanel Margin="0,0,0,8">
+                            <ComboBox Width="180"
+                                      Name="AbilityProfileServerCombo"
+                                      Style="{StaticResource MaterialDesignFilledComboBox}"
+                                      materialDesign:HintAssist.Hint="Ability Server"
+                                      Background="{DynamicResource VsPanelAltBrush}"
+                                      Foreground="{DynamicResource VsTextBrush}"
+                                      SelectionChanged="AbilityProfileServerCombo_SelectionChanged" />
+                            <ComboBox Margin="8,0,0,0"
+                                      Width="220"
+                                      Name="AbilityProfileClassCombo"
+                                      Style="{StaticResource MaterialDesignFilledComboBox}"
+                                      materialDesign:HintAssist.Hint="Active Class"
+                                      Background="{DynamicResource VsPanelAltBrush}"
+                                      Foreground="{DynamicResource VsTextBrush}"
+                                      SelectionChanged="AbilityProfileClassCombo_SelectionChanged" />
+                            <TextBlock Margin="12,0,0,0"
+                                       Name="AbilityProfileSummaryText"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource VsMutedTextBrush}" />
+                        </WrapPanel>
+                        <WrapPanel Grid.Row="1" Margin="0,0,0,8">
+                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Reload Abilities" Click="ReloadAbilities_Click" />
+                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Reload Local Catalogs" Click="ReloadAbilityCatalogs_Click" />
+                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Update Catalogs Online" Click="UpdateCatalogsOnline_Click" />
+                            <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="Save Abilities" Click="SaveAbilities_Click" />
+                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Add Ability" Click="AddAbility_Click" />
+                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Remove Selected" Click="RemoveAbility_Click" />
+                        </WrapPanel>
+                        <DataGrid Grid.Row="2"
+                                  Name="AbilitiesGrid"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="True"
+                                  CanUserDeleteRows="True"
+                                  HeadersVisibility="Column"
+                                  IsReadOnly="False">
+                            <DataGrid.Columns>
+                                <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled, UpdateSourceTrigger=PropertyChanged}" Width="75" />
+                                <DataGridTextColumn Header="Ability Name" Binding="{Binding AbilityName, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                                <DataGridTextColumn Header="Category" Binding="{Binding Category, UpdateSourceTrigger=PropertyChanged}" Width="150" />
+                                <DataGridTextColumn Header="Level" Binding="{Binding Level, UpdateSourceTrigger=PropertyChanged}" Width="70" />
+                                <DataGridTextColumn Header="OCR Aliases" Binding="{Binding Aliases, UpdateSourceTrigger=PropertyChanged}" Width="180" />
+                                <DataGridTextColumn Header="Skill Code" Binding="{Binding SkillCode, UpdateSourceTrigger=PropertyChanged}" Width="110" />
+                                <DataGridTextColumn Header="Duration (s)" Binding="{Binding DurationSeconds, UpdateSourceTrigger=PropertyChanged}" Width="110" />
+                                <DataGridTextColumn Header="Effect Type" Binding="{Binding EffectType, UpdateSourceTrigger=PropertyChanged}" Width="110" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Overlay">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <WrapPanel Grid.Row="0" Margin="0,0,0,10">
+                            <Button Style="{StaticResource MaterialDesignOutlinedButton}" Content="Reload Overlay Settings" Click="ReloadOverlaySettings_Click" />
+                            <Button Style="{StaticResource MaterialDesignRaisedButton}" Content="Save Overlay Settings" Click="SaveOverlaySettings_Click" />
+                        </WrapPanel>
+
+                        <GroupBox Grid.Row="1" Margin="0,0,0,10" Header="Overlay Elements">
+                            <WrapPanel Margin="8">
+                                <CheckBox Name="ShowTargetCheckbox" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Target" />
+                                <CheckBox Name="ShowTimersCheckbox" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Timers" />
+                                <CheckBox Name="ShowCastBarCheckbox" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Spellbar" />
+                                <CheckBox Name="DynamicCastSpeedCheckbox" Margin="0,0,16,0" VerticalAlignment="Center" Content="Dynamic Cast Speed"
+                                          ToolTip="Adjust the catalog cast time using the OCR-read Dexterity and the configured casting-speed bonus." />
+                                <CheckBox Name="EstimatedSpellDamageCheckbox" Margin="0,0,16,0" VerticalAlignment="Center" Content="Estimated Spell Damage"
+                                          ToolTip="Show a rough pre-resist estimate based on catalog damage, class acuity and the configured spell-damage bonus." />
+                                <CheckBox Name="OcrReplayCheckbox" Margin="0,0,16,0" VerticalAlignment="Center" Content="Record OCR Replay"
+                                          ToolTip="Keep a bounded local history of changed OCR frames, recognized text and parser results for troubleshooting." />
+                                <TextBox Width="110" Name="CastingSpeedBonusText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Cast Speed %"
+                                         ToolTip="Enter the item or status-window casting-speed bonus. OCR keeps this value when the bonus is not visible." />
+                                <TextBox Margin="8,0,0,0" Width="120" Name="SpellDamageBonusText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Spell Damage %"
+                                         ToolTip="Enter the item spell-damage bonus used by the optional rough damage estimate." />
+                            </WrapPanel>
+                        </GroupBox>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <materialDesign:Card Grid.Column="0" Margin="0,0,8,0" Padding="10" Background="{DynamicResource VsPanelBrush}">
+                                <StackPanel>
+                                    <TextBlock Margin="0,0,0,8" FontWeight="SemiBold" Text="Position / Size" />
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <TextBox Width="110" Name="OverlayXText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Target X" />
+                                        <TextBox Margin="8,0,0,0" Width="110" Name="OverlayYText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Target Y" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Drag Target" Click="PickTargetOverlayPosition_Click" />
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <TextBox Width="110" Name="OverlayTimerXText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Timer X" />
+                                        <TextBox Margin="8,0,0,0" Width="110" Name="OverlayTimerYText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Timer Y" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Drag Timers" Click="PickTimerOverlayPosition_Click" />
+                                    </WrapPanel>
+                                    <WrapPanel>
+                                        <TextBox Width="110" Name="OverlayFontSizeText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Target Font" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Resize Target" Click="PickTargetSize_Click" />
+                                        <TextBox Margin="8,0,0,0" Width="110" Name="OverlayTimerSizeText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Timer Font" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Resize Timers" Click="PickTimerSize_Click" />
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,8,0,0">
+                                        <TextBox Width="110" Name="OverlayCastXText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Spellbar X" />
+                                        <TextBox Margin="8,0,0,0" Width="110" Name="OverlayCastYText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Spellbar Y" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Drag Spellbar" Click="PickCastOverlayPosition_Click" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </materialDesign:Card>
+
+                            <materialDesign:Card Grid.Column="1" Margin="8,0,0,0" Padding="10" Background="{DynamicResource VsPanelBrush}">
+                                <StackPanel>
+                                    <TextBlock Margin="0,0,0,8" FontWeight="SemiBold" Text="Colors" />
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <TextBox Width="190" Name="TargetColorText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Target Color (#RRGGBB)" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Pick" Click="PickTargetColor_Click" />
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <TextBox Width="190" Name="TimerColorText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Timer Color (#RRGGBB)" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Pick" Click="PickTimerColor_Click" />
+                                    </WrapPanel>
+                                    <WrapPanel>
+                                        <TextBox Width="190" Name="OutlineColorText" Style="{StaticResource MaterialDesignFilledTextBox}" materialDesign:HintAssist.Hint="Outline Color (#RRGGBB)" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}" Content="Pick" Click="PickOutlineColor_Click" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </materialDesign:Card>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </DockPanel>
+</Window>

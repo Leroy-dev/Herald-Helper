@@ -1,0 +1,353 @@
+[
+  {
+    "id": 55,
+    "name": "Animist",
+    "slug": "animist",
+    "realm": "Hibernia",
+    "specCount": 7,
+    "realmAbilityCount": 31,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Animist"
+  },
+  {
+    "id": 2,
+    "name": "Armsman",
+    "slug": "armsman",
+    "realm": "Albion",
+    "specCount": 9,
+    "realmAbilityCount": 32,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Armsman"
+  },
+  {
+    "id": 48,
+    "name": "Bard",
+    "slug": "bard",
+    "realm": "Hibernia",
+    "specCount": 9,
+    "realmAbilityCount": 34,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Bard"
+  },
+  {
+    "id": 31,
+    "name": "Berserker",
+    "slug": "berserker",
+    "realm": "Midgard",
+    "specCount": 6,
+    "realmAbilityCount": 34,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Berserker"
+  },
+  {
+    "id": 43,
+    "name": "Blademaster",
+    "slug": "blademaster",
+    "realm": "Hibernia",
+    "specCount": 7,
+    "realmAbilityCount": 34,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Blademaster"
+  },
+  {
+    "id": 30,
+    "name": "Bonedancer",
+    "slug": "bonedancer",
+    "realm": "Midgard",
+    "specCount": 7,
+    "realmAbilityCount": 31,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Bonedancer"
+  },
+  {
+    "id": 13,
+    "name": "Cabalist",
+    "slug": "cabalist",
+    "realm": "Albion",
+    "specCount": 7,
+    "realmAbilityCount": 30,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Cabalist"
+  },
+  {
+    "id": 45,
+    "name": "Champion",
+    "slug": "champion",
+    "realm": "Hibernia",
+    "specCount": 8,
+    "realmAbilityCount": 35,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Champion"
+  },
+  {
+    "id": 6,
+    "name": "Cleric",
+    "slug": "cleric",
+    "realm": "Albion",
+    "specCount": 7,
+    "realmAbilityCount": 31,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Cleric"
+  },
+  {
+    "id": 47,
+    "name": "Druid",
+    "slug": "druid",
+    "realm": "Hibernia",
+    "specCount": 7,
+    "realmAbilityCount": 31,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Druid"
+  },
+  {
+    "id": 40,
+    "name": "Eldritch",
+    "slug": "eldritch",
+    "realm": "Hibernia",
+    "specCount": 7,
+    "realmAbilityCount": 30,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Eldritch"
+  },
+  {
+    "id": 41,
+    "name": "Enchanter",
+    "slug": "enchanter",
+    "realm": "Hibernia",
+    "specCount": 7,
+    "realmAbilityCount": 31,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Enchanter"
+  },
+  {
+    "id": 10,
+    "name": "Friar",
+    "slug": "friar",
+    "realm": "Albion",
+    "specCount": 7,
+    "realmAbilityCount": 35,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Friar"
+  },
+  {
+    "id": 26,
+    "name": "Healer",
+    "slug": "healer",
+    "realm": "Midgard",
+    "specCount": 7,
+    "realmAbilityCount": 32,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Healer"
+  },
+  {
+    "id": 44,
+    "name": "Hero",
+    "slug": "hero",
+    "realm": "Hibernia",
+    "specCount": 8,
+    "realmAbilityCount": 34,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Hero"
+  },
+  {
+    "id": 25,
+    "name": "Hunter",
+    "slug": "hunter",
+    "realm": "Midgard",
+    "specCount": 6,
+    "realmAbilityCount": 32,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Hunter"
+  },
+  {
+    "id": 9,
+    "name": "Infiltrator",
+    "slug": "infiltrator",
+    "realm": "Albion",
+    "specCount": 7,
+    "realmAbilityCount": 28,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Infiltrator"
+  },
+  {
+    "id": 42,
+    "name": "Mentalist",
+    "slug": "mentalist",
+    "realm": "Hibernia",
+    "specCount": 7,
+    "realmAbilityCount": 31,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Mentalist"
+  },
+  {
+    "id": 11,
+    "name": "Mercenary",
+    "slug": "mercenary",
+    "realm": "Albion",
+    "specCount": 7,
+    "realmAbilityCount": 33,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Mercenary"
+  },
+  {
+    "id": 4,
+    "name": "Minstrel",
+    "slug": "minstrel",
+    "realm": "Albion",
+    "specCount": 5,
+    "realmAbilityCount": 34,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Minstrel"
+  },
+  {
+    "id": 12,
+    "name": "Necromancer",
+    "slug": "necromancer",
+    "realm": "Albion",
+    "specCount": 7,
+    "realmAbilityCount": 30,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Necromancer"
+  },
+  {
+    "id": 49,
+    "name": "Nightshade",
+    "slug": "nightshade",
+    "realm": "Hibernia",
+    "specCount": 8,
+    "realmAbilityCount": 31,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Nightshade"
+  },
+  {
+    "id": 1,
+    "name": "Paladin",
+    "slug": "paladin",
+    "realm": "Albion",
+    "specCount": 8,
+    "realmAbilityCount": 35,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Paladin"
+  },
+  {
+    "id": 50,
+    "name": "Ranger",
+    "slug": "ranger",
+    "realm": "Hibernia",
+    "specCount": 7,
+    "realmAbilityCount": 32,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Ranger"
+  },
+  {
+    "id": 19,
+    "name": "Reaver",
+    "slug": "reaver",
+    "realm": "Albion",
+    "specCount": 9,
+    "realmAbilityCount": 32,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Reaver"
+  },
+  {
+    "id": 29,
+    "name": "Runemaster",
+    "slug": "runemaster",
+    "realm": "Midgard",
+    "specCount": 7,
+    "realmAbilityCount": 30,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Runemaster"
+  },
+  {
+    "id": 32,
+    "name": "Savage",
+    "slug": "savage",
+    "realm": "Midgard",
+    "specCount": 7,
+    "realmAbilityCount": 34,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Savage"
+  },
+  {
+    "id": 3,
+    "name": "Scout",
+    "slug": "scout",
+    "realm": "Albion",
+    "specCount": 6,
+    "realmAbilityCount": 31,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Scout"
+  },
+  {
+    "id": 23,
+    "name": "Shadowblade",
+    "slug": "shadowblade",
+    "realm": "Midgard",
+    "specCount": 7,
+    "realmAbilityCount": 29,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Shadowblade"
+  },
+  {
+    "id": 28,
+    "name": "Shaman",
+    "slug": "shaman",
+    "realm": "Midgard",
+    "specCount": 7,
+    "realmAbilityCount": 33,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Shaman"
+  },
+  {
+    "id": 24,
+    "name": "Skald",
+    "slug": "skald",
+    "realm": "Midgard",
+    "specCount": 6,
+    "realmAbilityCount": 34,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Skald"
+  },
+  {
+    "id": 8,
+    "name": "Sorcerer",
+    "slug": "sorcerer",
+    "realm": "Albion",
+    "specCount": 7,
+    "realmAbilityCount": 30,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Sorcerer"
+  },
+  {
+    "id": 27,
+    "name": "Spiritmaster",
+    "slug": "spiritmaster",
+    "realm": "Midgard",
+    "specCount": 7,
+    "realmAbilityCount": 31,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Spiritmaster"
+  },
+  {
+    "id": 21,
+    "name": "Thane",
+    "slug": "thane",
+    "realm": "Midgard",
+    "specCount": 7,
+    "realmAbilityCount": 34,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Thane"
+  },
+  {
+    "id": 5,
+    "name": "Theurgist",
+    "slug": "theurgist",
+    "realm": "Albion",
+    "specCount": 7,
+    "realmAbilityCount": 30,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Theurgist"
+  },
+  {
+    "id": 56,
+    "name": "Valewalker",
+    "slug": "valewalker",
+    "realm": "Hibernia",
+    "specCount": 5,
+    "realmAbilityCount": 34,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Valewalker"
+  },
+  {
+    "id": 46,
+    "name": "Warden",
+    "slug": "warden",
+    "realm": "Hibernia",
+    "specCount": 8,
+    "realmAbilityCount": 37,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Warden"
+  },
+  {
+    "id": 22,
+    "name": "Warrior",
+    "slug": "warrior",
+    "realm": "Midgard",
+    "specCount": 7,
+    "realmAbilityCount": 33,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Warrior"
+  },
+  {
+    "id": 7,
+    "name": "Wizard",
+    "slug": "wizard",
+    "realm": "Albion",
+    "specCount": 7,
+    "realmAbilityCount": 30,
+    "sourceUrl": "https://blackthorn-daoc.com/class/Wizard"
+  }
+]

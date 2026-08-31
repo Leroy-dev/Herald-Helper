@@ -1,0 +1,700 @@
+[
+  {
+    "id": 55,
+    "name": "Animist",
+    "slug": "animist",
+    "realm": 3,
+    "races": [
+      "Celt",
+      "Firbolg",
+      "Sylvan"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 28,
+    "specCount": 4,
+    "skillCount": 276
+  },
+  {
+    "id": 2,
+    "name": "Armsman",
+    "slug": "armsman",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Avalonian",
+      "Highlander",
+      "Saracen",
+      "Inconnu",
+      "Half Ogre"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 21,
+    "specCount": 9,
+    "skillCount": 215
+  },
+  {
+    "id": 39,
+    "name": "Bainshee",
+    "slug": "bainshee",
+    "realm": 3,
+    "races": [
+      "Celt",
+      "Elf",
+      "Lurikeen"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 28,
+    "specCount": 4,
+    "skillCount": 127
+  },
+  {
+    "id": 48,
+    "name": "Bard",
+    "slug": "bard",
+    "realm": 3,
+    "races": [
+      "Celt",
+      "Firbolg"
+    ],
+    "specPointMultiplier": 1.5,
+    "realmAbilityCount": 29,
+    "specCount": 6,
+    "skillCount": 238
+  },
+  {
+    "id": 31,
+    "name": "Berserker",
+    "slug": "berserker",
+    "realm": 2,
+    "races": [
+      "Norseman",
+      "Troll",
+      "Dwarf",
+      "Valkyn"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 20,
+    "specCount": 6,
+    "skillCount": 137
+  },
+  {
+    "id": 43,
+    "name": "Blademaster",
+    "slug": "blademaster",
+    "realm": 3,
+    "races": [
+      "Celt",
+      "Firbolg",
+      "Elf",
+      "Shar"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 21,
+    "specCount": 7,
+    "skillCount": 158
+  },
+  {
+    "id": 30,
+    "name": "Bonedancer",
+    "slug": "bonedancer",
+    "realm": 2,
+    "races": [
+      "Troll",
+      "Kobold",
+      "Valkyn"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 31,
+    "specCount": 4,
+    "skillCount": 286
+  },
+  {
+    "id": 13,
+    "name": "Cabalist",
+    "slug": "cabalist",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Avalonian",
+      "Saracen",
+      "Inconnu",
+      "Half Ogre"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 30,
+    "specCount": 4,
+    "skillCount": 232
+  },
+  {
+    "id": 45,
+    "name": "Champion",
+    "slug": "champion",
+    "realm": 3,
+    "races": [
+      "Celt",
+      "Elf",
+      "Lurikeen",
+      "Shar"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 30,
+    "specCount": 8,
+    "skillCount": 204
+  },
+  {
+    "id": 6,
+    "name": "Cleric",
+    "slug": "cleric",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Avalonian",
+      "Highlander"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 30,
+    "specCount": 4,
+    "skillCount": 230
+  },
+  {
+    "id": 47,
+    "name": "Druid",
+    "slug": "druid",
+    "realm": 3,
+    "races": [
+      "Celt",
+      "Firbolg",
+      "Sylvan"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 31,
+    "specCount": 4,
+    "skillCount": 278
+  },
+  {
+    "id": 40,
+    "name": "Eldritch",
+    "slug": "eldritch",
+    "realm": 3,
+    "races": [
+      "Elf",
+      "Lurikeen"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 29,
+    "specCount": 4,
+    "skillCount": 176
+  },
+  {
+    "id": 41,
+    "name": "Enchanter",
+    "slug": "enchanter",
+    "realm": 3,
+    "races": [
+      "Elf",
+      "Lurikeen"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 30,
+    "specCount": 4,
+    "skillCount": 197
+  },
+  {
+    "id": 10,
+    "name": "Friar",
+    "slug": "friar",
+    "realm": 1,
+    "races": [
+      "Briton"
+    ],
+    "specPointMultiplier": 1.8,
+    "realmAbilityCount": 29,
+    "specCount": 5,
+    "skillCount": 209
+  },
+  {
+    "id": 26,
+    "name": "Healer",
+    "slug": "healer",
+    "realm": 2,
+    "races": [
+      "Norseman",
+      "Dwarf",
+      "Frostalf"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 30,
+    "specCount": 4,
+    "skillCount": 239
+  },
+  {
+    "id": 33,
+    "name": "Heretic",
+    "slug": "heretic",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Avalonian",
+      "Inconnu"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 31,
+    "specCount": 6,
+    "skillCount": 276
+  },
+  {
+    "id": 44,
+    "name": "Hero",
+    "slug": "hero",
+    "realm": 3,
+    "races": [
+      "Celt",
+      "Firbolg",
+      "Lurikeen",
+      "Sylvan",
+      "Shar"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 21,
+    "specCount": 8,
+    "skillCount": 214
+  },
+  {
+    "id": 25,
+    "name": "Hunter",
+    "slug": "hunter",
+    "realm": 2,
+    "races": [
+      "Norseman",
+      "Dwarf",
+      "Kobold",
+      "Valkyn",
+      "Frostalf"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 25,
+    "specCount": 6,
+    "skillCount": 291
+  },
+  {
+    "id": 9,
+    "name": "Infiltrator",
+    "slug": "infiltrator",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Saracen",
+      "Inconnu"
+    ],
+    "specPointMultiplier": 2.5,
+    "realmAbilityCount": 21,
+    "specCount": 7,
+    "skillCount": 185
+  },
+  {
+    "id": 42,
+    "name": "Mentalist",
+    "slug": "mentalist",
+    "realm": 3,
+    "races": [
+      "Celt",
+      "Elf",
+      "Lurikeen",
+      "Shar"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 32,
+    "specCount": 4,
+    "skillCount": 186
+  },
+  {
+    "id": 11,
+    "name": "Mercenary",
+    "slug": "mercenary",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Avalonian",
+      "Highlander",
+      "Saracen",
+      "Inconnu",
+      "Half Ogre"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 21,
+    "specCount": 7,
+    "skillCount": 159
+  },
+  {
+    "id": 4,
+    "name": "Minstrel",
+    "slug": "minstrel",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Highlander",
+      "Saracen"
+    ],
+    "specPointMultiplier": 1.5,
+    "realmAbilityCount": 29,
+    "specCount": 5,
+    "skillCount": 139
+  },
+  {
+    "id": 12,
+    "name": "Necromancer",
+    "slug": "necromancer",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Saracen",
+      "Inconnu"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 28,
+    "specCount": 4,
+    "skillCount": 355
+  },
+  {
+    "id": 49,
+    "name": "Nightshade",
+    "slug": "nightshade",
+    "realm": 3,
+    "races": [
+      "Celt",
+      "Elf",
+      "Lurikeen"
+    ],
+    "specPointMultiplier": 2.2,
+    "realmAbilityCount": 24,
+    "specCount": 7,
+    "skillCount": 211
+  },
+  {
+    "id": 63,
+    "name": "Occultist",
+    "slug": "occultist",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Saracen",
+      "Inconnu"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 33,
+    "specCount": 5,
+    "skillCount": 224
+  },
+  {
+    "id": 1,
+    "name": "Paladin",
+    "slug": "paladin",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Avalonian",
+      "Highlander",
+      "Saracen"
+    ],
+    "specPointMultiplier": 2.3,
+    "realmAbilityCount": 29,
+    "specCount": 8,
+    "skillCount": 219
+  },
+  {
+    "id": 50,
+    "name": "Ranger",
+    "slug": "ranger",
+    "realm": 3,
+    "races": [
+      "Celt",
+      "Elf",
+      "Lurikeen",
+      "Shar"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 24,
+    "specCount": 6,
+    "skillCount": 281
+  },
+  {
+    "id": 19,
+    "name": "Reaver",
+    "slug": "reaver",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Saracen",
+      "Inconnu"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 31,
+    "specCount": 8,
+    "skillCount": 233
+  },
+  {
+    "id": 29,
+    "name": "Runemaster",
+    "slug": "runemaster",
+    "realm": 2,
+    "races": [
+      "Norseman",
+      "Dwarf",
+      "Kobold",
+      "Frostalf"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 29,
+    "specCount": 4,
+    "skillCount": 168
+  },
+  {
+    "id": 32,
+    "name": "Savage",
+    "slug": "savage",
+    "realm": 2,
+    "races": [
+      "Norseman",
+      "Troll",
+      "Dwarf",
+      "Kobold",
+      "Valkyn"
+    ],
+    "specPointMultiplier": 1.5,
+    "realmAbilityCount": 20,
+    "specCount": 7,
+    "skillCount": 181
+  },
+  {
+    "id": 3,
+    "name": "Scout",
+    "slug": "scout",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Highlander",
+      "Saracen",
+      "Inconnu"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 21,
+    "specCount": 6,
+    "skillCount": 274
+  },
+  {
+    "id": 23,
+    "name": "Shadowblade",
+    "slug": "shadowblade",
+    "realm": 2,
+    "races": [
+      "Norseman",
+      "Kobold",
+      "Valkyn"
+    ],
+    "specPointMultiplier": 2.2,
+    "realmAbilityCount": 21,
+    "specCount": 7,
+    "skillCount": 185
+  },
+  {
+    "id": 28,
+    "name": "Shaman",
+    "slug": "shaman",
+    "realm": 2,
+    "races": [
+      "Troll",
+      "Kobold",
+      "Frostalf"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 29,
+    "specCount": 4,
+    "skillCount": 241
+  },
+  {
+    "id": 24,
+    "name": "Skald",
+    "slug": "skald",
+    "realm": 2,
+    "races": [
+      "Norseman",
+      "Troll",
+      "Dwarf",
+      "Kobold"
+    ],
+    "specPointMultiplier": 1.5,
+    "realmAbilityCount": 29,
+    "specCount": 6,
+    "skillCount": 163
+  },
+  {
+    "id": 8,
+    "name": "Sorcerer",
+    "slug": "sorcerer",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Avalonian",
+      "Saracen",
+      "Inconnu",
+      "Half Ogre"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 29,
+    "specCount": 4,
+    "skillCount": 167
+  },
+  {
+    "id": 27,
+    "name": "Spiritmaster",
+    "slug": "spiritmaster",
+    "realm": 2,
+    "races": [
+      "Norseman",
+      "Kobold",
+      "Frostalf"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 30,
+    "specCount": 4,
+    "skillCount": 216
+  },
+  {
+    "id": 21,
+    "name": "Thane",
+    "slug": "thane",
+    "realm": 2,
+    "races": [
+      "Norseman",
+      "Troll",
+      "Dwarf",
+      "Frostalf"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 31,
+    "specCount": 7,
+    "skillCount": 188
+  },
+  {
+    "id": 5,
+    "name": "Theurgist",
+    "slug": "theurgist",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Avalonian",
+      "Half Ogre"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 28,
+    "specCount": 4,
+    "skillCount": 152
+  },
+  {
+    "id": 56,
+    "name": "Valewalker",
+    "slug": "valewalker",
+    "realm": 3,
+    "races": [
+      "Celt",
+      "Firbolg",
+      "Sylvan"
+    ],
+    "specPointMultiplier": 1.5,
+    "realmAbilityCount": 29,
+    "specCount": 4,
+    "skillCount": 129
+  },
+  {
+    "id": 34,
+    "name": "Valkyrie",
+    "slug": "valkyrie",
+    "realm": 2,
+    "races": [
+      "Norseman",
+      "Dwarf",
+      "Frostalf"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 32,
+    "specCount": 7,
+    "skillCount": 213
+  },
+  {
+    "id": 58,
+    "name": "Vampiir",
+    "slug": "vampiir",
+    "realm": 3,
+    "races": [
+      "Celt",
+      "Lurikeen",
+      "Shar"
+    ],
+    "specPointMultiplier": 1.5,
+    "realmAbilityCount": 21,
+    "specCount": 5,
+    "skillCount": 173
+  },
+  {
+    "id": 46,
+    "name": "Warden",
+    "slug": "warden",
+    "realm": 3,
+    "races": [
+      "Celt",
+      "Firbolg",
+      "Sylvan"
+    ],
+    "specPointMultiplier": 1.8,
+    "realmAbilityCount": 30,
+    "specCount": 7,
+    "skillCount": 263
+  },
+  {
+    "id": 59,
+    "name": "Warlock",
+    "slug": "warlock",
+    "realm": 2,
+    "races": [
+      "Norseman",
+      "Kobold",
+      "Frostalf"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 29,
+    "specCount": 4,
+    "skillCount": 162
+  },
+  {
+    "id": 22,
+    "name": "Warrior",
+    "slug": "warrior",
+    "realm": 2,
+    "races": [
+      "Norseman",
+      "Troll",
+      "Dwarf",
+      "Kobold",
+      "Valkyn"
+    ],
+    "specPointMultiplier": 2,
+    "realmAbilityCount": 21,
+    "specCount": 7,
+    "skillCount": 159
+  },
+  {
+    "id": 7,
+    "name": "Wizard",
+    "slug": "wizard",
+    "realm": 1,
+    "races": [
+      "Briton",
+      "Avalonian",
+      "Half Ogre"
+    ],
+    "specPointMultiplier": 1,
+    "realmAbilityCount": 29,
+    "specCount": 4,
+    "skillCount": 193
+  }
+]

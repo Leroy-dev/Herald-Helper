@@ -1,0 +1,17 @@
+{
+  "source": "https://blackthorn-daoc.com",
+  "generatedAt": "2026-08-29T23:13:08.619Z",
+  "buildIds": [
+    "ju-gDeTeBHUDz5UStWZOt"
+  ],
+  "classCount": 39,
+  "iconAssetCount": 7,
+  "missingIconAssets": [
+    "spells/spl_1600.bmp"
+  ],
+  "files": {
+    "classIndex": "generated/classes/index.json",
+    "classDirectory": "generated/classes",
+    "iconDirectory": "assets/icons"
+  }
+}

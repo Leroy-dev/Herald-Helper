@@ -1,0 +1,27 @@
+{
+  "source": "https://eden-daoc.net",
+  "version": "1.0.62",
+  "generatedAt": "2026-08-29T23:01:19.193Z",
+  "classCount": 45,
+  "charplanClassCount": 48,
+  "ignoredClasses": [
+    "Mauler"
+  ],
+  "charplanClCount": 15,
+  "uniqueIconConfigCount": 4190,
+  "files": {
+    "raw": [
+      "raw/charplan.js",
+      "raw/charplan.css",
+      "raw/daoc.json",
+      "raw/charplan.json",
+      "raw/charplan_cl.json",
+      "raw/icons.txt"
+    ],
+    "classIndex": "generated/classes/index.json",
+    "realmAbilities": "generated/realm-abilities.json",
+    "flattenedSkills": "generated/skills-flat.json",
+    "iconConfigs": "generated/icon-configs.json",
+    "spriteDir": "assets/sprites"
+  }
+}

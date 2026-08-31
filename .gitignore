@@ -1,0 +1,34 @@
+# .NET and Visual Studio
+**/bin/
+**/obj/
+**/.tmpobj/
+**/artifacts/
+.vs/
+TestResults/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor and test transient files
+*.log
+*.tmp
+*.bak
+
+# Local runtime state and secrets
+*.db
+cfg.ini
+
+# Build/test scratch directories
+tmp/
+.dotnet/
+
+# Generated Windows DPAPI secret artifacts
+*.enc.bak
+
+# Auth/session artifacts produced by Playwright/manual refresh scripts
+edenHeaders.*
+*.log

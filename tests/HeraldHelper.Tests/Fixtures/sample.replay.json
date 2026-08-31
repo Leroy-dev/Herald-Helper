@@ -1,0 +1,40 @@
+{
+  "frames": [
+    {
+      "index": 0,
+      "chatOcrText": "You target [Alice].",
+      "parseResult": {
+        "targetEvent": { "name": "Alice", "membership": "Member" },
+        "abilityHits": [],
+        "castEvent": null,
+        "visibleTargetEvents": null,
+        "visibleCastEvents": null
+      },
+      "expected": {
+        "targetName": "Alice",
+        "targetIsLoading": true
+      },
+      "shard": "Eden",
+      "resistPercent": 0
+    },
+    {
+      "index": 1,
+      "chatOcrText": "You target [Alice].\nYou begin casting Bolt!",
+      "parseResult": {
+        "targetEvent": { "name": "Alice", "membership": "Member" },
+        "abilityHits": [],
+        "castEvent": { "eventType": "Started", "spellName": "Bolt", "occurrenceOrdinal": 1 },
+        "visibleTargetEvents": null,
+        "visibleCastEvents": null
+      },
+      "expected": {
+        "targetName": "Alice",
+        "targetIsLoading": true,
+        "activeCastSpellName": "Bolt",
+        "activeCastRemainingSeconds": 2.5
+      },
+      "shard": "Eden",
+      "resistPercent": 0
+    }
+  ]
+}

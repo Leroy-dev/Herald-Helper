@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HeraldHelper.Application/HeraldHelper.Application.csproj" />
+    <Project Path="src/HeraldHelper.Desktop/HeraldHelper.Desktop.csproj" />
+    <Project Path="src/HeraldHelper.Domain/HeraldHelper.Domain.csproj" />
+    <Project Path="src/HeraldHelper.Infrastructure/HeraldHelper.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HeraldHelper.Tests/HeraldHelper.Tests.csproj" />
+  </Folder>
+</Solution>

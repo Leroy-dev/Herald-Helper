@@ -1,0 +1,1785 @@
+/* Rajdhani is loaded locally via /assets/font.css — no Google Fonts import needed */
+
+
+/* ---------- CSS VARIABLES ---------- */
+
+:root {
+    --bg-header: #004e49;
+    --bg-header-hover: #006b5a;
+    --accent: #009879;
+    --accent-light: #4beacc;
+    --accent-muted: #3fc9b0;
+    --accent-glow: rgba(75, 234, 204, 0.15);
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --border-subtle: rgba(56, 165, 157, 0.2);
+    --border-row: rgba(56, 165, 157, 0.3);
+    --selected-bg: rgba(0, 185, 173, 0.30);
+    --selected-bg-strong: rgba(0, 152, 121, 0.45);
+    --font-main: 'Rajdhani', sans-serif;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Global transitions for interactive elements */
+button, select.selector, input.realmrank,
+span.spec_skill, span.spec_skill_base,
+td.spec_rainfo, .cl_icon, .global-btn {
+    transition: all 0.15s ease;
+}
+
+
+html,
+body {
+    width: 100%;
+    border: 0;
+}
+
+
+/* ---------- TOOLBAR ---------- */
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.toolbar-selectors,
+.toolbar-tabs,
+.toolbar-rr,
+.toolbar-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    vertical-align: top;
+    flex-shrink: 0;
+}
+
+.toolbar .global-btn,
+.toolbar .picker-btn,
+.toolbar .realmrank {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.toolbar .global-btn {
+    min-width: max-content;
+}
+
+.toolbar-actions {
+    margin-left: auto;
+}
+
+/* Neutralize the global button margin/white-inset-hover inherited from the base button rule */
+.toolbar button,
+.picker-popover button {
+    margin: 0;
+}
+
+/* Popover items: kill the inherited white inset-shadow on hover/focus (picker & global btns override box-shadow themselves) */
+.picker-popover button,
+.picker-popover button:hover,
+.picker-popover button:focus,
+.picker-popover button:focus-visible {
+    box-shadow: none;
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 26px;
+    background: rgba(56, 164, 156, 0.25);
+    margin: 0 2px;
+}
+
+
+/* ---------- LEFT PANEL ---------- */
+
+
+.charplan-content {
+    margin: 30px 0;
+    font-size: 0.8em;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    font-family: var(--font-main);
+    width: 100%;
+}
+
+.charplan-content tr {
+    background-color: transparent;
+    color: var(--text-primary);
+    text-align: left;
+    font-family: var(--font-main);
+    border-bottom: 1px solid var(--border-row);
+}
+
+.charplan-content td {
+    /*padding-top: 7px;
+        padding-bottom: 4px;*/
+}
+
+.charplan-content tr:last-of-type {
+    border-bottom: 2px solid var(--accent);
+}
+
+.charplan-content tr.active-row {
+    font-weight: bold;
+    color: var(--accent);
+    font-family: var(--font-main);
+}
+
+#specs {
+    vertical-align: top;
+}
+
+#details {
+    width: 320px;
+    padding-left: 20px;
+    text-align: right;
+    vertical-align: top;
+}
+
+
+
+table.costscheme tr {
+    border-bottom: none !important;
+}
+
+
+/* ---------- RIGHT PANEL ---------- */
+
+#details > table {
+    background-color: rgba(0, 30, 28, 0.5);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+#details > table > tbody > tr {
+    border-bottom: 1px solid var(--border-row);
+}
+
+#details > table > tbody > tr:last-child {
+    border-bottom: none;
+}
+
+/* Kill borders (including the stray green underline) on the nested
+   layout table inside the skill name cell */
+.spec_skill_name table,
+.spec_skill_name table tr,
+.spec_skill_name table td {
+    border: none !important;
+}
+
+
+td.title_totalpoints {
+    width: 50%;
+    font-weight: 600;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    padding: 10px 10px 2px 10px;
+}
+
+td.title_multiplier {
+    font-weight: 600;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    padding: 10px 10px 2px 10px;
+}
+
+td.title_remaining {
+    font-weight: 600;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    padding: 8px 10px 2px 10px;
+}
+
+td.title_used {
+    font-weight: 600;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    padding: 8px 10px 2px 10px;
+}
+
+
+#points_total,
+#points_remain,
+#points_mult,
+#points_used {
+    color: var(--accent-light);
+    font-size: 1.5em;
+    font-weight: 700;
+    padding: 2px 10px 8px 10px;
+}
+
+
+#points_used,
+#points_remain {
+    border-bottom: 2px solid var(--accent);
+}
+
+td.points_total {
+    font-weight: bold;
+}
+
+td.points_mult {
+    font-weight: bold;
+}
+
+
+/* Info area (skill detail on hover) */
+#info {
+    padding: 10px 8px;
+    text-align: left;
+}
+
+.spec_skill_name {
+    font-weight: 700;
+    text-align: center;
+    padding: 8px 6px;
+    background-color: var(--bg-header);
+}
+
+.spec_skill_attr {
+    width: 50%;
+    font-family: var(--font-main);
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding: 4px 8px;
+}
+
+tr.spec_skill_desc_attr:nth-child(even) {
+    white-space: nowrap;
+    background-image: url("image/edn_pattern.png");
+}
+
+
+/* ---------- SELECT MENU (mobile/tablet fallback - dark teal) ---------- */
+
+select.selector {
+    border-radius: 4px;
+    color: #fff !important;
+    font-size: 16px !important;
+    font-family: var(--font-main) !important;
+    font-weight: 600 !important;
+    margin: 0;
+    overflow: hidden;
+    padding: 0 32px 0 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1px solid var(--accent-muted);
+    background-color: transparent;
+    background-image:
+        linear-gradient(45deg, transparent 50%, var(--accent-light) 50%),
+        linear-gradient(135deg, var(--accent-light) 50%, transparent 50%),
+        linear-gradient(to bottom, #0d3a3b, #082628);
+    background-position:
+        calc(100% - 16px) 16px,
+        calc(100% - 11px) 16px,
+        0 0;
+    background-size:
+        5px 5px,
+        5px 5px,
+        100% 100%;
+    background-repeat: no-repeat;
+    height: 36px;
+    width: auto;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    box-shadow: none;
+}
+
+select.selector option {
+    background-color: #0d2628;
+    color: #fff;
+    padding: 6px;
+}
+
+select.selector:hover {
+    border-color: var(--accent-light);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+select.selector:focus {
+    outline: none;
+    border-color: var(--accent-light);
+    box-shadow: 0 0 0 2px rgba(75, 234, 204, 0.3);
+}
+
+
+.srace {
+    width: 130px !important;
+}
+
+.sclasse {
+    width: 150px !important;
+}
+
+.slevel {
+    width: 120px;
+}
+
+select.srace,
+select.slevel {
+    font-weight: 700 !important;
+}
+
+
+/* ---------- CUSTOM PICKERS (classes / races) ---------- */
+
+:root {
+    --realm-alb: #e55050;
+    --realm-alb-glow: rgba(229, 80, 80, 0.35);
+    --realm-mid: #5080ff;
+    --realm-mid-glow: rgba(80, 128, 255, 0.35);
+    --realm-hib: #50c850;
+    --realm-hib-glow: rgba(80, 200, 80, 0.35);
+}
+
+.picker-wrap {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.picker-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 10px 0 12px;
+    border: 1px solid var(--accent-muted);
+    border-radius: 4px;
+    background: linear-gradient(to bottom, #0d3a3b, #082628);
+    color: #fff;
+    font-family: var(--font-main);
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.picker-class { min-width: 160px; }
+.picker-race  { min-width: 130px; }
+.picker-level { min-width: 67px; padding: 0 8px 0 10px; }
+.picker-level .picker-label { text-align: center; font-variant-numeric: tabular-nums; }
+
+.picker-btn:hover {
+    border-color: var(--accent-light);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.picker-btn.open {
+    border-color: var(--accent-light);
+    background: linear-gradient(to bottom, #104849, #0a3032);
+    box-shadow: 0 0 0 2px rgba(75, 234, 204, 0.25);
+}
+
+.picker-btn:focus,
+.picker-btn:focus-visible,
+.picker-btn:active {
+    outline: none;
+}
+
+.picker-label {
+    flex: 1;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.3px;
+}
+
+.picker-caret {
+    font-size: 12px;
+    color: var(--accent-light);
+    transition: transform 0.15s ease;
+}
+
+.picker-btn.open .picker-caret {
+    transform: rotate(180deg);
+}
+
+.picker-realm-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-muted);
+    box-shadow: 0 0 6px currentColor;
+    flex-shrink: 0;
+}
+
+.picker-btn[data-realm="1"] .picker-realm-dot { background: var(--realm-alb); color: var(--realm-alb); }
+.picker-btn[data-realm="2"] .picker-realm-dot { background: var(--realm-mid); color: var(--realm-mid); }
+.picker-btn[data-realm="3"] .picker-realm-dot { background: var(--realm-hib); color: var(--realm-hib); }
+
+/* Popover shared */
+.picker-popover {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 200;
+    background: linear-gradient(to bottom, #0d2628, #071719);
+    border: 1px solid var(--accent-muted);
+    border-radius: 6px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(75, 234, 204, 0.08);
+    padding: 10px;
+    animation: pickerFadeIn 0.12s ease-out;
+    box-sizing: border-box;
+}
+
+.picker-popover *,
+.picker-popover *::before,
+.picker-popover *::after {
+    box-sizing: border-box;
+}
+
+.picker-popover button {
+    outline: none;
+}
+
+.picker-popover button::-moz-focus-inner {
+    border: 0;
+}
+
+.picker-popover[hidden] { display: none; }
+
+@keyframes pickerFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Class popover: 3 columns by realm */
+.picker-popover-class {
+    display: flex;
+    gap: 10px;
+    min-width: 560px;
+}
+
+.popover-col {
+    flex: 1;
+    min-width: 170px;
+    border-radius: 4px;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.popover-col.realm-alb { border-top: 2px solid var(--realm-alb); }
+.popover-col.realm-mid { border-top: 2px solid var(--realm-mid); }
+.popover-col.realm-hib { border-top: 2px solid var(--realm-hib); }
+
+.popover-col-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px 8px 6px;
+    font-family: var(--font-main);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 6px;
+}
+
+.popover-col-header img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 4px currentColor);
+}
+
+.realm-alb .popover-col-header { color: var(--realm-alb); }
+.realm-mid .popover-col-header { color: var(--realm-mid); }
+.realm-hib .popover-col-header { color: var(--realm-hib); }
+
+.popover-col-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Class/race item buttons */
+.popover-item {
+    display: block;
+    width: calc(100% - 4px);
+    box-sizing: border-box;
+    margin: 0 2px;
+    text-align: left;
+    padding: 6px 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: var(--font-main);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.1s ease, border-color 0.1s ease, color 0.1s ease;
+}
+
+.popover-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+}
+
+.popover-item.selected {
+    background: rgba(75, 234, 204, 0.12);
+    border-color: var(--accent-muted);
+    color: #fff;
+    font-weight: 600;
+}
+
+.realm-alb .popover-item:hover         { background: rgba(229, 80,  80,  0.18); border-color: var(--realm-alb); }
+.realm-alb .popover-item.selected      { background: rgba(229, 80,  80,  0.28); border-color: var(--realm-alb); }
+.realm-mid .popover-item:hover         { background: rgba(80,  128, 255, 0.18); border-color: var(--realm-mid); }
+.realm-mid .popover-item.selected      { background: rgba(80,  128, 255, 0.28); border-color: var(--realm-mid); }
+.realm-hib .popover-item:hover         { background: rgba(80,  200, 80,  0.18); border-color: var(--realm-hib); }
+.realm-hib .popover-item.selected      { background: rgba(80,  200, 80,  0.28); border-color: var(--realm-hib); }
+
+/* Race popover: single column tinted by current realm */
+.picker-popover-race {
+    min-width: 180px;
+}
+
+.picker-popover-race .popover-race-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.picker-popover-race[data-realm="1"] .popover-item:hover    { background: rgba(229, 80,  80,  0.18); border-color: var(--realm-alb); }
+.picker-popover-race[data-realm="1"] .popover-item.selected { background: rgba(229, 80,  80,  0.28); border-color: var(--realm-alb); }
+.picker-popover-race[data-realm="2"] .popover-item:hover    { background: rgba(80,  128, 255, 0.18); border-color: var(--realm-mid); }
+.picker-popover-race[data-realm="2"] .popover-item.selected { background: rgba(80,  128, 255, 0.28); border-color: var(--realm-mid); }
+.picker-popover-race[data-realm="3"] .popover-item:hover    { background: rgba(80,  200, 80,  0.18); border-color: var(--realm-hib); }
+.picker-popover-race[data-realm="3"] .popover-item.selected { background: rgba(80,  200, 80,  0.28); border-color: var(--realm-hib); }
+
+/* Level popover: grid layout */
+.picker-popover-level {
+    min-width: 460px;
+    padding: 8px 10px 10px 10px;
+}
+
+.picker-popover-level .popover-section + .popover-section {
+    margin-top: 8px;
+}
+
+.popover-section-label {
+    font-family: var(--font-main);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.55);
+    padding: 2px 2px 6px 2px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 6px;
+}
+
+.popover-level-whole-list,
+.popover-level-half-list {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+}
+
+.popover-level-item {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    padding: 0 12px;
+    background: transparent;
+    border: 1px solid rgba(56, 164, 156, 0.18);
+    border-radius: 3px;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: background 0.1s ease, border-color 0.1s ease;
+}
+
+.popover-level-item:hover {
+    background: rgba(75, 234, 204, 0.15);
+    border-color: var(--accent-muted);
+    color: #fff;
+}
+
+.popover-level-item.selected {
+    background: rgba(75, 234, 204, 0.28);
+    border-color: var(--accent-light);
+    color: #fff;
+}
+
+.popover-level-item.half {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Hide the native selects that act as fallback on desktop */
+.select-fallback {
+    display: none !important;
+}
+
+
+/* ---------- TABLES ---------- */
+
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+tr.spec_title,
+tr.spec_racat {
+    color: var(--text-primary);
+    text-align: left;
+    font-weight: bold;
+    border: none;
+}
+
+/* Full-row header style: background + borders span all cells of the row */
+tr.spec_title > td,
+tr.spec_racat > td {
+    background: linear-gradient(to bottom, #0d3a3b, #082628);
+    background-clip: padding-box;
+    border-top: 1px solid var(--accent-muted);
+    border-bottom: 1px solid var(--accent-muted);
+    color: #fff;
+}
+
+tr.spec_racat > td,
+tr.spec_spellline > td {
+    border-top: 10px solid transparent !important;
+    background-clip: padding-box !important;
+}
+
+/* Since the 10px transparent border on spec_racat/spec_spellline wins
+   the collapse contest (hiding the bottom of spec_title and the top of
+   spec_racat), paint those 1px lines with inset box-shadow instead so
+   each header row stays visually closed. */
+tr.spec_title > td {
+    border-top: none;
+    border-bottom: none;
+    box-shadow: inset 0 1px 0 0 var(--accent-muted), inset 0 -1px 0 0 var(--accent-muted);
+}
+tr.spec_racat > td {
+    box-shadow: inset 0 1px 0 0 var(--accent-muted), inset 0 -1px 0 0 var(--accent-muted);
+}
+tr.spec_spellline > td {
+    border-top-color: transparent !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+}
+
+/* Replace 1px border-left/right with inset box-shadows so all four edges
+   of spec_title/spec_racat header rows are drawn with the same primitive.
+   Mixing borders (cell-level, drawn at the cell edge) with inset shadows
+   (drawn inside the cell) under border-collapse:collapse produces visible
+   1px corner artifacts in Firefox. The 3px --accent-light shadow on
+   td.spec_title / td.spec_racat already serves as the left edge. */
+tr.spec_title > td:last-child,
+tr.spec_racat > td:last-child {
+    box-shadow: inset 0 1px 0 0 var(--accent-muted),
+                inset 0 -1px 0 0 var(--accent-muted),
+                inset -1px 0 0 0 var(--accent-muted);
+}
+
+td.spec_title,
+td.spec_racat {
+    position: relative;
+    padding: 9px 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 0.95em;
+    font-weight: 700;
+}
+
+/* The 3px accent on the left edge is painted via a ::before pseudo-element
+   absolutely positioned within the padding-box. Earlier versions used an
+   inset box-shadow or a layered background gradient, but inset shadows
+   render through transparent borders in Firefox and the gradient was
+   overridden by the more-specific tr.spec_racat > td rule above. The
+   pseudo-element is positioned relative to the td's padding-box (top:0
+   = top of padding) so it cannot extend into the 10px transparent
+   border-top of spec_racat rows. */
+td.spec_title::before,
+td.spec_racat::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent-light);
+}
+
+td.spec_ragroup,
+td.spec_racat {
+    white-space: nowrap;
+    width: 240px;
+}
+
+tr.spec_ragroup:nth-child(even) {
+    white-space: nowrap;
+    background-image: url("image/edn_pattern.png");
+    width: 240px;
+}
+
+tr.spec_ragroup {
+    transition: background-color 0.12s ease;
+}
+
+tr.spec_ragroup:hover {
+    background-color: rgba(0, 152, 121, 0.08);
+}
+
+
+td.spec_level {
+    font-weight: bold;
+    background-color: var(--bg-header);
+}
+
+td.spec_points {
+    font-weight: bold;
+    background-color: var(--bg-header);
+    padding: 8px 6px;
+    font-size: 0.9em;
+    color: var(--accent-light);
+}
+
+td.spec_buttons {
+    font-weight: bold;
+    background-color: var(--bg-header);
+    text-align: right;
+    padding: 8px 12px 8px 6px;
+    white-space: nowrap;
+}
+
+
+
+/* ---------- BUTTONS ---------- */
+
+
+button {
+    text-align: center;
+    align-content: center;
+    text-decoration: none;
+    border: none;
+    color: #005f4c;
+    margin-right: 10px;
+    margin-left: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    width: 15px;
+    border-radius: 20px;
+    box-sizing: content-box;
+    font-size: 12px;
+    display: inline-block;
+}
+
+button:hover {
+    background-color: var(--bg-header);
+    color: #fff;
+    box-shadow: inset 0px 0px 0px 1px #fff;
+}
+
+
+/* Spec +/- buttons - grouped box like the Realm Rank (RR) box */
+td.spec_buttons {
+    white-space: nowrap;
+}
+
+button.spec_minus, button.spec_plus {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 26px;
+    padding: 0;
+    margin: 0;
+    font-size: 18px;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--accent-light);
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--accent-muted);
+    border-radius: 0;
+    vertical-align: middle;
+    box-sizing: border-box;
+    transition: background 0.1s ease, color 0.1s ease;
+}
+
+button.spec_minus {
+    border-radius: 4px 0 0 4px;
+    border-right: none;
+}
+
+button.spec_plus {
+    border-radius: 0 4px 4px 0;
+    border-left: none;
+}
+
+button.spec_minus:hover,
+button.spec_plus:hover {
+    background: rgba(75, 234, 204, 0.18);
+    color: #fff;
+    box-shadow: none;
+    border-color: var(--accent-muted);
+}
+
+button.spec_minus:disabled,
+button.spec_plus:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* Spec level display between +/- */
+span.spec_level {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 26px;
+    padding: 0 6px;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.25);
+    border-top: 1px solid var(--accent-muted);
+    border-bottom: 1px solid var(--accent-muted);
+    vertical-align: middle;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
+}
+
+
+.directurl-btn {
+    width: 80px;
+    color: #002825 !important;
+    font-size: 16px;
+    font-family: var(--font-main);
+    font-weight: bold;
+    border: 1px solid var(--accent-muted);
+}
+
+.directurl-btn:hover {
+    color: #fff !important;
+    border: 1px solid #fff;
+}
+
+.directurl {
+    width: 295px;
+    font-size: 16px;
+    font-family: var(--font-main);
+}
+
+
+/* ---------- SKILL GROUPS ---------- */
+
+tr.spec_skillgroup {
+    border-bottom: 1px solid var(--border-row);
+}
+
+tr.spec_skillgroup.last {
+    border-bottom: none;
+}
+
+
+td.spec_skillgroup {
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 500;
+    font-family: var(--font-main);
+    padding: 6px 12px;
+    min-width: 200px;
+    width: 320px;
+}
+
+tr.spec_skillgroup td:not(.spec_skillgroup) {
+    color: #fff;
+    font-weight: 500;
+}
+
+
+tr.spec_spellline {
+    background-image: url("image/edn_pattern.png");
+    border-top: 1px solid var(--border-row);
+    border-left: 3px solid var(--accent);
+}
+
+td.spec_spellline {
+    color: var(--accent-light);
+    font-weight: bold;
+    padding: 6px 8px;
+    font-size: 0.95em;
+    letter-spacing: 0.3px;
+}
+
+td.spec_spellgroup,
+td.spec_ragroup,
+td.spec_rapts,
+td.spec_rainfo {
+    color: #fff;
+    font-weight: 600;
+    font-family: var(--font-main);
+    padding-left: 15px;
+    padding-right: 10px;
+}
+
+td.spec_rainfo {
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
+
+td.spec_rainfo.selected {
+    background-color: var(--selected-bg-strong);
+    color: #fff;
+    box-shadow: inset 0 0 0 1px rgba(75, 234, 204, 0.25);
+}
+
+
+
+tr.spec_spellgroup,
+tr.spec_ragroup {
+    margin-right: 25px;
+    padding-left: 10px;
+    border-bottom: 1px solid var(--border-row);
+}
+
+tr.spec_spellgroup.last,
+tr.spec_ragroup.last {
+    border-bottom: none;
+}
+
+
+/* ---------- SKILL LEVEL SPANS ---------- */
+
+span.spec_skill,
+span.spec_skill_base {
+    display: inline-block;
+    min-width: 28px;
+    height: 26px;
+    line-height: 26px;
+    text-align: center;
+    padding: 0 4px;
+    margin: 1px;
+    border-radius: 3px;
+    color: rgba(69, 248, 212, 0.85);
+    font-weight: bold;
+    cursor: pointer;
+}
+
+span.spec_skill_base {
+    cursor: default;
+    color: #e0e0e0;
+    font-weight: 500;
+}
+
+span.spec_skill:hover {
+    color: white;
+    background-color: var(--accent);
+    box-shadow: 0 0 4px rgba(0, 152, 121, 0.5);
+}
+
+span.spec_skill.selected {
+    background-color: var(--selected-bg-strong);
+    color: #fff;
+    border: 1px solid rgba(75, 234, 204, 0.25);
+}
+
+span.spec_skill.selected:hover {
+    color: #ffd54f;
+}
+
+span.spec_raactive {
+    float: right;
+    color: var(--text-secondary);
+    font-size: 0.85em;
+    font-weight: 400;
+}
+
+
+/* ---------- REALM & CLASSES ---------- */
+
+
+
+.neutral-list {
+    font-size: 20px !important;
+    font-family: var(--font-main) !important;
+    font-weight: 600 !important;
+}
+
+.Albion-list {
+    color: #9c0000 !important;
+    font-size: 20px !important;
+    font-family: var(--font-main) !important;
+    font-weight: 600 !important;
+}
+
+.Hibernia-list {
+    color: #297e1d !important;
+    font-size: 20px !important;
+    font-family: var(--font-main) !important;
+    font-weight: 600 !important;
+}
+
+.Midgard-list {
+    color: #024f7c !important;
+    font-size: 20px !important;
+    font-family: var(--font-main) !important;
+    font-weight: 600 !important;
+}
+
+
+
+
+/* ---------- TOP MENU (unified dark-teal) ---------- */
+
+
+.global-btn {
+    border: 1px solid var(--accent-muted);
+    background: linear-gradient(to bottom, #0d3a3b, #082628);
+    color: #fff !important;
+    font-family: var(--font-main);
+    font-weight: 600;
+    font-size: 16px;
+    outline: none;
+    border-radius: 4px;
+    height: 36px;
+    padding: 0 14px;
+    cursor: pointer;
+}
+
+.global-btn:hover {
+    border-color: var(--accent-light);
+    background: linear-gradient(to bottom, #104849, #0a3032);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.global-btn:focus,
+.global-btn:active {
+    outline: none;
+}
+
+
+/* Tab buttons - pill group */
+.toolbar-tabs {
+    border: 1px solid var(--accent-muted);
+    border-radius: 5px;
+    padding: 0;
+    gap: 0;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.toolbar-tabs .global-btn {
+    border: none;
+    border-right: 1px solid rgba(56, 164, 156, 0.35);
+    border-radius: 0;
+    background: transparent;
+    height: 34px;
+    padding: 0 16px;
+    color: rgba(255, 255, 255, 0.75) !important;
+    box-shadow: none;
+}
+
+.toolbar-tabs .global-btn:first-child { border-radius: 4px 0 0 4px; }
+.toolbar-tabs .global-btn:last-child  { border-radius: 0 4px 4px 0; border-right: none; }
+
+.toolbar-tabs .global-btn:hover {
+    background: rgba(56, 164, 156, 0.15);
+    color: #fff !important;
+    box-shadow: none;
+}
+
+.toolbar-tabs .global-btn.active {
+    background: rgba(75, 234, 204, 0.18);
+    color: #fff !important;
+    box-shadow: inset 0 -2px 0 var(--accent-light);
+}
+
+
+/* Apply button - primary action */
+.apply-btn {
+    background: linear-gradient(to bottom, var(--accent), #00755c);
+    color: #fff !important;
+    border: 1px solid var(--accent);
+    font-weight: 700;
+    padding: 0 18px;
+}
+
+.apply-btn:hover {
+    background: linear-gradient(to bottom, #00b392, var(--accent));
+    border-color: var(--accent-light);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+
+/* Realm rank box - grouped rectangular buttons + input */
+.rr-box {
+    border: 1px solid var(--accent-muted);
+    border-radius: 4px;
+    overflow: hidden;
+    gap: 0 !important;
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.rr-box .realmrank-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    width: 32px;
+    height: 34px;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--accent-light) !important;
+    box-shadow: none;
+}
+
+.rr-box .realmrank-btn:first-child {
+    border-right: 1px solid rgba(56, 164, 156, 0.35);
+}
+
+.rr-box .realmrank-btn:last-child {
+    border-left: 1px solid rgba(56, 164, 156, 0.35);
+}
+
+.rr-box .realmrank-btn:hover {
+    background: rgba(75, 234, 204, 0.18);
+    color: #fff !important;
+    box-shadow: none;
+}
+
+.realmrank {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: #fff !important;
+    font-size: 16px !important;
+    font-family: var(--font-main) !important;
+    font-weight: 700 !important;
+    height: 34px;
+    width: 58px;
+    text-align: center;
+    padding: 0;
+    cursor: text;
+    appearance: none;
+    box-shadow: none;
+    letter-spacing: 0.5px;
+}
+
+.realmrank:focus {
+    outline: none;
+    background: rgba(75, 234, 204, 0.08);
+    box-shadow: none;
+    border: none;
+}
+
+
+/* Share / Reset */
+.share-btn,
+.reset-btn {
+    padding: 0 14px;
+}
+
+.reset-btn:hover {
+    background: linear-gradient(to bottom, #4a1d1d, #2b1010);
+    color: #ff8080 !important;
+    border-color: #ff6b6b;
+    box-shadow: 0 0 6px rgba(255, 107, 107, 0.25);
+}
+
+
+/* Pinned-skill right-click hint shown in the details panel */
+.pin-hint {
+    margin-top: 8px;
+    padding: 4px 0;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: rgba(230, 193, 74, 0.75);
+    font-style: italic;
+}
+
+/* Yellow stroke around pinned cells */
+.spec_skill.pinned,
+.spec_skill_base.pinned,
+.cl_icon.pinned {
+    box-shadow: 0 0 0 2px #e6c14a, 0 0 6px rgba(230, 193, 74, 0.55);
+    position: relative;
+    z-index: 2;
+}
+
+tr.spec_ragroup.pinned td {
+    box-shadow: inset 0 0 0 2px #e6c14a;
+}
+
+
+/* ---------- MESSAGE BOX ---------- */
+
+#hidder {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+#messagebox {
+    font-family: var(--font-main);
+    font-size: 18px;
+    font-weight: bold;
+    position: absolute;
+    top: 15%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    align-items: center;
+    background-color: rgba(0, 30, 28, 0.96);
+    color: #fff;
+    text-align: center;
+    border-radius: 12px;
+    padding: 24px;
+    border: 2px solid var(--accent);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+
+
+
+/* ---------- CL PANELS ---------- */
+
+.cl_panel {
+    display: none;
+    float: left;
+    border: 1px solid var(--accent);
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-size: 0;
+    line-height: 0;
+    align-content: center;
+    background-image: url(image/edn_pattern.png);
+    width: 270px;
+    height: 380px;
+    padding: 0px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.2s ease;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.cl_panel:hover {
+    box-shadow: 0 4px 20px rgba(0, 152, 121, 0.2);
+}
+
+.cl_empty {
+    float: left;
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-size: 0;
+    line-height: 0;
+    align-content: center;
+    width: 270px;
+    height: 130px;
+    padding: 0px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.cl_trainer {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    padding-bottom: 15px;
+}
+
+.cl_icon_bg {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    background-color: #000000ff;
+}
+
+.cl_icon {
+    opacity: 0.6;
+    box-shadow: 0 0 6px 3px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    border-radius: 2px;
+    transition: opacity 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.cl_icon.active {
+    opacity: 1;
+    box-shadow: 0 0 8px 4px rgba(75, 234, 204, 0.4);
+}
+
+.cl_icon:hover {
+    opacity: 1;
+    box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.4);
+    transform: scale(1.08);
+}
+
+.cl_panel table {
+    border: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.cl_panel td {
+    font-size: 0;
+    line-height: 0;
+    text-align: center;
+}
+
+.cl_panel tr {
+    border-bottom: none !important;
+}
+
+.cl_title {
+    color: white;
+    height: 22px !important;
+    font-size: 15px !important;
+    font-weight: bold;
+    line-height: 22px !important;
+    vertical-align: middle;
+    padding: 8px 5px;
+    background-color: var(--bg-header);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.cl_title_bar {
+    border-top: 1px solid var(--accent);
+    height: 8px !important;
+}
+
+
+.cl-btn {
+    align-content: center;
+    border-radius: 24px;
+    width: 24px;
+    margin-left: 4px;
+    margin-right: 4px;
+    height: 24px;
+    vertical-align: top;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.cl-btn:hover {
+    color: #fff !important;
+    border: 1px solid #fff;
+}
+
+.cl_level_table {
+    border: 0;
+    display: none;
+}
+
+.cl_level_table tr {
+    border: 0 !important;
+}
+
+#cl_level {
+    text-align: center;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+
+
+
+/* ---------- ICONS ---------- */
+
+.icon0 {
+    background-image: url(/itm/icon/spl_0.png);
+}
+
+.icon100 {
+    background-image: url(/itm/icon/spl_100.png);
+}
+
+.icon200 {
+    background-image: url(/itm/icon/spl_200.png);
+}
+
+.icon300 {
+    background-image: url(/itm/icon/spl_300.png);
+}
+
+.icon400 {
+    background-image: url(/itm/icon/spl_400.png);
+}
+
+.icon500 {
+    background-image: url(/itm/icon/cbt_500.png);
+}
+
+.icon600 {
+    background-image: url(/itm/icon/cbt_600.png);
+}
+
+.icon700 {
+    background-image: url(/itm/icon/cbt_700.png);
+}
+
+.icon800 {
+    background-image: url(/itm/icon/cbt_800.png);
+}
+
+.icon900 {
+    background-image: url(/itm/icon/wpn_900.png);
+}
+
+.icon1000 {
+    background-image: url(/itm/icon/wpn_1000.png);
+}
+
+.icon1200 {
+    background-image: url(/itm/icon/itm_1200.png);
+}
+
+.icon1300 {
+    background-image: url(/itm/icon/itm_1300.png);
+}
+
+.icon1400 {
+    background-image: url(/itm/icon/itm_1400.png);
+}
+
+.icon1500 {
+    background-image: url(/itm/icon/itm_1500.png);
+}
+
+
+.icon0n {
+    background-image: url(/itm/icon/spl_0n.png);
+}
+
+.icon100n {
+    background-image: url(/itm/icon/spl_100n.png);
+}
+
+.icon200n {
+    background-image: url(/itm/icon/spl_200n.png);
+}
+
+.icon300n {
+    background-image: url(/itm/icon/spl_300n.png);
+}
+
+.icon400n {
+    background-image: url(/itm/icon/spl_400n.png);
+}
+
+.icon500n {
+    background-image: url(/itm/icon/cbt_500n.png);
+}
+
+.icon600n {
+    background-image: url(/itm/icon/cbt_600n.png);
+}
+
+.icon700n {
+    background-image: url(/itm/icon/cbt_700n.png);
+}
+
+.icon800n {
+    background-image: url(/itm/icon/cbt_800n.png);
+}
+
+.icon900n {
+    background-image: url(/itm/icon/wpn_900n.png);
+}
+
+.icon1000n {
+    background-image: url(/itm/icon/wpn_1000n.png);
+}
+
+.icon1200n {
+    background-image: url(/itm/icon/itm_1200n.png);
+}
+
+.icon1300n {
+    background-image: url(/itm/icon/itm_1300n.png);
+}
+
+.icon1400n {
+    background-image: url(/itm/icon/itm_1400n.png);
+}
+
+.icon1500n {
+    background-image: url(/itm/icon/itm_1500n.png);
+}
+
+.icon_skill {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    background-repeat: no-repeat;
+}
+
+.icon_border {
+    width: 32px;
+    height: 32px;
+    background-image: url(/itm/icon/icon_borders.png);
+}
+
+.icon_corner {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-image: url(/itm/icon/icon_corners.png);
+    background-repeat: no-repeat;
+}
+
+.icon_spell {
+    position: absolute;
+    width: 20px;
+    height: 12px;
+    left: 12px;
+    top: 20px;
+    background-image: url(/itm/icon/icon_spells.png);
+    background-repeat: no-repeat;
+}
+
+.icon_upleft {
+    left: 0;
+    top: 0;
+}
+
+.icon_up {
+    left: 11px;
+    top: 0;
+}
+
+.icon_upright {
+    left: 22px;
+    top: 0;
+}
+
+.icon_right {
+    left: 22px;
+    top: 11px;
+}
+
+.icon_downright {
+    left: 22px;
+    top: 22px;
+}
+
+.icon_down {
+    left: 11px;
+    top: 22px;
+}
+
+.icon_left {
+    left: 0;
+    top: 11px;
+}
+
+
+/* ============================================================
+   RESPONSIVE - TABLETTE (max 1024px)
+   Details panel passe en-dessous des specs
+   ============================================================ */
+@media (max-width: 1024px) {
+
+    /* Casser la table 2 colonnes → empilé */
+    .charplan-content,
+    .charplan-content > tbody,
+    .charplan-content > tbody > tr,
+    .charplan-content > tbody > tr > td {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* Details panel pleine largeur */
+    #details {
+        width: 100% !important;
+        padding-left: 0 !important;
+        padding-top: 10px !important;
+        text-align: left !important;
+    }
+
+    #details > table {
+        margin-top: 12px;
+    }
+
+    /* Specs prend toute la largeur, scroll horizontal pour les tables larges
+       (Realm Abilities a 9 colonnes de cost qui dépassent la viewport mobile) */
+    #specs {
+        width: 100% !important;
+        display: block;
+        overflow-x: auto;
+    }
+
+    /* Spec skill group moins large */
+    td.spec_skillgroup {
+        min-width: 0 !important;
+        width: auto !important;
+    }
+
+    /* CL panels responsive */
+    .cl_panel {
+        float: none !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        max-width: 270px;
+        height: auto !important;
+    }
+
+    .cl_empty {
+        display: none !important;
+    }
+
+    /* Boutons de contrôle : wrap naturel */
+    .content.pages-content > select,
+    .content.pages-content > button,
+    .content.pages-content > input,
+    .content.pages-content > span {
+        margin-bottom: 5px !important;
+    }
+}
+
+
+/* ============================================================
+   RESPONSIVE - MOBILE (max 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+
+    /* Toolbar groups stack */
+    .toolbar-selectors,
+    .toolbar-tabs,
+    .toolbar-rr,
+    .toolbar-actions {
+        margin-right: 0 !important;
+        margin-bottom: 6px !important;
+    }
+
+    .toolbar-selectors {
+        display: flex !important;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    /* Mobile : on montre les <select> natifs, on cache les pickers custom */
+    .picker-wrap { display: none !important; }
+    .select-fallback { display: inline-block !important; }
+
+    /* Selectors pleine largeur */
+    select.selector {
+        width: 100% !important;
+        flex: 1;
+        margin-right: 0 !important;
+        margin-bottom: 5px !important;
+    }
+
+    /* Tab buttons: keep pill group look */
+    .toolbar {
+        padding: 6px 8px !important;
+    }
+
+    .toolbar-actions {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        width: 100% !important;
+        gap: 6px !important;
+    }
+
+    .apply-btn {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        margin-bottom: 0 !important;
+    }
+
+    .share-btn,
+    .reset-btn {
+        flex: 1 1 0 !important;
+        margin-left: 0 !important;
+    }
+
+    /* Charplan content margin réduit */
+    .charplan-content {
+        margin: 10px 0 !important;
+    }
+
+    /* RA info : pas de nowrap */
+    td.spec_ragroup,
+    td.spec_racat {
+        white-space: normal !important;
+        width: auto !important;
+    }
+
+    /* Messagebox */
+    #messagebox {
+        width: 80vw !important;
+        max-width: 300px;
+    }
+
+    /* Éviter zoom iOS sur focus input */
+    input,
+    select.selector {
+        font-size: 16px !important;
+    }
+
+    /* Directurl input */
+    .directurl {
+        width: 100% !important;
+    }
+
+    /* Skill spans: larger touch targets */
+    span.spec_skill, span.spec_skill_base {
+        min-width: 32px;
+        height: 30px;
+        line-height: 30px;
+        margin: 2px 1px;
+    }
+}
+/* === Real navigation links: converted tab/Share buttons dress as the
+   buttons they replaced (.global-btn already forces color #fff) === */
+a.global-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* content-box matches the real buttons' box model, so Share renders
+       38px outer like the neighboring Apply/Reset (36px + 1px borders) */
+    box-sizing: content-box;
+    text-decoration: none !important; /* the theme styles bare anchors */
+}

@@ -1,0 +1,2991 @@
+{
+  "name": "Scout",
+  "realm": "Albion",
+  "playableRaces": [
+    "Briton",
+    "Highlander",
+    "Inconnu",
+    "Saracen"
+  ],
+  "classId": 3,
+  "specs": [
+    {
+      "keyName": "ScoutBase",
+      "name": "Scout",
+      "spellIds": [],
+      "styleIds": [],
+      "abilities": [
+        {
+          "key": "Armor",
+          "name": "Armor Ability: Leather",
+          "level": 2,
+          "specLevel": 1,
+          "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+        },
+        {
+          "key": "Armor",
+          "name": "Armor Ability: Studded",
+          "level": 3,
+          "specLevel": 10,
+          "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+        },
+        {
+          "key": "Camouflage",
+          "name": "Camouflage",
+          "level": 0,
+          "specLevel": 30,
+          "description": "Makes the archer undetectable to the Mastery of Stealth Realm Ability. Drawing a weapon or engaging in combat will cancel the effect and cause the player to be visible. This does not modify stealth skill and can be used only when the archer is stealthed."
+        },
+        {
+          "key": "Evade",
+          "name": "Evade 2 Ability",
+          "level": 2,
+          "specLevel": 12,
+          "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+        },
+        {
+          "key": "Evade",
+          "name": "Evade 3 Ability",
+          "level": 3,
+          "specLevel": 20,
+          "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+        },
+        {
+          "key": "Evade",
+          "name": "Evade 1 Ability",
+          "level": 1,
+          "specLevel": 1,
+          "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+        },
+        {
+          "key": "Shield",
+          "name": "Shield Ability: Small Shields",
+          "level": 1,
+          "specLevel": 5,
+          "description": "An independent line of defense, which can be raised through training to gain special shield attacks.  The larger the shield, the more protection it provides"
+        }
+      ],
+      "isBaseLine": true,
+      "groups": [
+        {
+          "key": "Armor",
+          "spells": [],
+          "styles": [],
+          "abilities": [
+            {
+              "key": "Armor",
+              "name": "Armor Ability: Leather",
+              "level": 2,
+              "specLevel": 1,
+              "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+            },
+            {
+              "key": "Armor",
+              "name": "Armor Ability: Studded",
+              "level": 3,
+              "specLevel": 10,
+              "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+            }
+          ]
+        },
+        {
+          "key": "Camouflage",
+          "spells": [],
+          "styles": [],
+          "abilities": [
+            {
+              "key": "Camouflage",
+              "name": "Camouflage",
+              "level": 0,
+              "specLevel": 30,
+              "description": "Makes the archer undetectable to the Mastery of Stealth Realm Ability. Drawing a weapon or engaging in combat will cancel the effect and cause the player to be visible. This does not modify stealth skill and can be used only when the archer is stealthed."
+            }
+          ]
+        },
+        {
+          "key": "Evade",
+          "spells": [],
+          "styles": [],
+          "abilities": [
+            {
+              "key": "Evade",
+              "name": "Evade 1 Ability",
+              "level": 1,
+              "specLevel": 1,
+              "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+            },
+            {
+              "key": "Evade",
+              "name": "Evade 2 Ability",
+              "level": 2,
+              "specLevel": 12,
+              "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+            },
+            {
+              "key": "Evade",
+              "name": "Evade 3 Ability",
+              "level": 3,
+              "specLevel": 20,
+              "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+            }
+          ]
+        },
+        {
+          "key": "Shield",
+          "spells": [],
+          "styles": [],
+          "abilities": [
+            {
+              "key": "Shield",
+              "name": "Shield Ability: Small Shields",
+              "level": 1,
+              "specLevel": 5,
+              "description": "An independent line of defense, which can be raised through training to gain special shield attacks.  The larger the shield, the more protection it provides"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "keyName": "Slash",
+      "name": "Slash",
+      "spellIds": [],
+      "styleIds": [
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70
+      ],
+      "abilities": [],
+      "groups": [
+        {
+          "key": "After Block",
+          "spells": [],
+          "styles": [
+            {
+              "id": 63,
+              "name": "Riposte",
+              "iconId": 63,
+              "growthRate": 0.882,
+              "classId": 3,
+              "level": 18,
+              "attackResultRequirement": 4,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 1,
+              "specKeyName": "Slash",
+              "enduranceCost": 5,
+              "bonusToHit": 10,
+              "bonusToDefense": 10,
+              "objectType": "Style",
+              "description": "Reduces the target's movement speed by 50% for 14 seconds.",
+              "icon": {
+                "styleId": 63,
+                "borderId": -1,
+                "iconLocation": 508
+              }
+            },
+            {
+              "id": 67,
+              "name": "Befuddler",
+              "iconId": 67,
+              "growthRate": 0.882,
+              "classId": 3,
+              "level": 34,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 63,
+              "openingRequirementType": 0,
+              "specKeyName": "Slash",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Stuns the target for 5 seconds.",
+              "icon": {
+                "styleId": 67,
+                "borderId": -1,
+                "iconLocation": 512
+              },
+              "openingStyle": "Riposte"
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Anytime",
+          "spells": [],
+          "styles": [
+            {
+              "id": 56,
+              "name": "Ruby Slash",
+              "iconId": 56,
+              "growthRate": 0.305,
+              "classId": 3,
+              "level": 1,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Slash",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 56,
+                "borderId": -1,
+                "iconLocation": 500
+              }
+            },
+            {
+              "id": 58,
+              "name": "Uppercut",
+              "iconId": 58,
+              "growthRate": 0.467,
+              "classId": 3,
+              "level": 6,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Slash",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 58,
+                "borderId": -1,
+                "iconLocation": 503
+              }
+            },
+            {
+              "id": 59,
+              "name": "Enrage",
+              "iconId": 59,
+              "growthRate": 0.572,
+              "classId": 3,
+              "level": 8,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Slash",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": -10,
+              "objectType": "Style",
+              "description": "Attracts the attention of a creature by 21, causing it to focus its attacks on the caster.",
+              "icon": {
+                "styleId": 59,
+                "borderId": -1,
+                "iconLocation": 504
+              }
+            },
+            {
+              "id": 61,
+              "name": "Reflect",
+              "iconId": 61,
+              "growthRate": 0,
+              "classId": 3,
+              "level": 12,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Slash",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": 10,
+              "objectType": "Style",
+              "description": "Decreases your threat to monster targets by 19 damage.",
+              "icon": {
+                "styleId": 61,
+                "borderId": -1,
+                "iconLocation": 506
+              }
+            },
+            {
+              "id": 62,
+              "name": "Opal Slash",
+              "iconId": 62,
+              "growthRate": 0.547,
+              "classId": 3,
+              "level": 15,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 58,
+              "openingRequirementType": 0,
+              "specKeyName": "Slash",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Does 4 damage to a target every 4 seconds for 25 seconds.",
+              "icon": {
+                "styleId": 62,
+                "borderId": -1,
+                "iconLocation": 507
+              },
+              "openingStyle": "Uppercut"
+            },
+            {
+              "id": 65,
+              "name": "Cleave",
+              "iconId": 65,
+              "growthRate": 0.855,
+              "classId": 3,
+              "level": 25,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 58,
+              "openingRequirementType": 0,
+              "specKeyName": "Slash",
+              "enduranceCost": 5,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 65,
+                "borderId": -1,
+                "iconLocation": 510
+              },
+              "openingStyle": "Uppercut"
+            },
+            {
+              "id": 66,
+              "name": "Amethyst Slash",
+              "iconId": 66,
+              "growthRate": 0.604,
+              "classId": 3,
+              "level": 29,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Slash",
+              "enduranceCost": 10,
+              "bonusToHit": 20,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 66,
+                "borderId": -1,
+                "iconLocation": 511
+              }
+            },
+            {
+              "id": 69,
+              "name": "Sapphire Slash",
+              "iconId": 69,
+              "growthRate": 0.867,
+              "classId": 3,
+              "level": 44,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 59,
+              "openingRequirementType": 0,
+              "specKeyName": "Slash",
+              "enduranceCost": 5,
+              "bonusToHit": 10,
+              "bonusToDefense": -15,
+              "objectType": "Style",
+              "description": "Does 7 damage to a target every 4 seconds for 40 seconds.",
+              "icon": {
+                "styleId": 69,
+                "borderId": -1,
+                "iconLocation": 514
+              },
+              "openingStyle": "Enrage"
+            },
+            {
+              "id": 70,
+              "name": "Diamond Slash",
+              "iconId": 70,
+              "growthRate": 0.844,
+              "classId": 3,
+              "level": 50,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 66,
+              "openingRequirementType": 0,
+              "specKeyName": "Slash",
+              "enduranceCost": 15,
+              "bonusToHit": 20,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Decreases the target's combat speed by 28% for 20 seconds.",
+              "icon": {
+                "styleId": 70,
+                "borderId": -1,
+                "iconLocation": 515
+              },
+              "openingStyle": "Amethyst Slash"
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Positional: Back",
+          "spells": [],
+          "styles": [
+            {
+              "id": 68,
+              "name": "Back Slash",
+              "iconId": 68,
+              "growthRate": 0.815,
+              "classId": 3,
+              "level": 39,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 2,
+              "specKeyName": "Slash",
+              "enduranceCost": 15,
+              "bonusToHit": 15,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 68,
+                "borderId": -1,
+                "iconLocation": 513
+              }
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Positional: Side",
+          "spells": [],
+          "styles": [
+            {
+              "id": 57,
+              "name": "Cross Slash",
+              "iconId": 57,
+              "growthRate": 0.679,
+              "classId": 3,
+              "level": 4,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 1,
+              "openingRequirementType": 2,
+              "specKeyName": "Slash",
+              "enduranceCost": 5,
+              "bonusToHit": 10,
+              "bonusToDefense": 10,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 57,
+                "borderId": -1,
+                "iconLocation": 502
+              }
+            },
+            {
+              "id": 60,
+              "name": "Bloodletter",
+              "iconId": 60,
+              "growthRate": 0.763,
+              "classId": 3,
+              "level": 10,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 57,
+              "openingRequirementType": 0,
+              "specKeyName": "Slash",
+              "enduranceCost": 10,
+              "bonusToHit": 15,
+              "bonusToDefense": 10,
+              "objectType": "Style",
+              "description": "Does 3 damage to a target every 4 seconds for 20 seconds.",
+              "icon": {
+                "styleId": 60,
+                "borderId": -1,
+                "iconLocation": 505
+              },
+              "openingStyle": "Cross Slash"
+            },
+            {
+              "id": 64,
+              "name": "Side Slicer",
+              "iconId": 64,
+              "growthRate": 0.701,
+              "classId": 3,
+              "level": 21,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 1,
+              "openingRequirementType": 2,
+              "specKeyName": "Slash",
+              "enduranceCost": 5,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Reduces the target's movement speed by 50% for 14 seconds.",
+              "icon": {
+                "styleId": 64,
+                "borderId": -1,
+                "iconLocation": 509
+              }
+            }
+          ],
+          "abilities": []
+        }
+      ],
+      "isBaseLine": false,
+      "groupName": ""
+    },
+    {
+      "keyName": "Thrust",
+      "name": "Thrust",
+      "spellIds": [],
+      "styleIds": [
+        131,
+        132,
+        133,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145
+      ],
+      "abilities": [],
+      "groups": [
+        {
+          "key": "After Block",
+          "spells": [],
+          "styles": [
+            {
+              "id": 137,
+              "name": "Beartooth",
+              "iconId": 137,
+              "growthRate": 0.871,
+              "classId": 3,
+              "level": 15,
+              "attackResultRequirement": 4,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 1,
+              "specKeyName": "Thrust",
+              "enduranceCost": 5,
+              "bonusToHit": 15,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Stuns the target for 6 seconds.",
+              "icon": {
+                "styleId": 137,
+                "borderId": -1,
+                "iconLocation": 582
+              }
+            },
+            {
+              "id": 140,
+              "name": "Ricochet",
+              "iconId": 140,
+              "growthRate": 0.874,
+              "classId": 3,
+              "level": 25,
+              "attackResultRequirement": 4,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 1,
+              "specKeyName": "Thrust",
+              "enduranceCost": 5,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Reduces the target's movement speed by 50% for 14 seconds.",
+              "icon": {
+                "styleId": 140,
+                "borderId": -1,
+                "iconLocation": 585
+              }
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "After Evade",
+          "spells": [],
+          "styles": [
+            {
+              "id": 132,
+              "name": "Ratfang",
+              "iconId": 132,
+              "growthRate": 0.874,
+              "classId": 3,
+              "level": 4,
+              "attackResultRequirement": 5,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 1,
+              "specKeyName": "Thrust",
+              "enduranceCost": 5,
+              "bonusToHit": 10,
+              "bonusToDefense": 5,
+              "objectType": "Style",
+              "description": "Stuns the target for 2 seconds.",
+              "icon": {
+                "styleId": 132,
+                "borderId": -1,
+                "iconLocation": 577
+              }
+            },
+            {
+              "id": 135,
+              "name": "Wolftooth",
+              "iconId": 135,
+              "growthRate": 0.871,
+              "classId": 3,
+              "level": 10,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 132,
+              "openingRequirementType": 0,
+              "specKeyName": "Thrust",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Reduces the target's movement speed by 50% for 12 seconds.",
+              "icon": {
+                "styleId": 135,
+                "borderId": -1,
+                "iconLocation": 580
+              },
+              "openingStyle": "Ratfang"
+            },
+            {
+              "id": 142,
+              "name": "Liontooth",
+              "iconId": 142,
+              "growthRate": 0.874,
+              "classId": 3,
+              "level": 34,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 135,
+              "openingRequirementType": 0,
+              "specKeyName": "Thrust",
+              "enduranceCost": 5,
+              "bonusToHit": 10,
+              "bonusToDefense": 5,
+              "objectType": "Style",
+              "description": "Does 9 damage to a target every 4 seconds for 40 seconds.",
+              "icon": {
+                "styleId": 142,
+                "borderId": -1,
+                "iconLocation": 587
+              },
+              "openingStyle": "Wolftooth"
+            },
+            {
+              "id": 145,
+              "name": "Dragonfang",
+              "iconId": 145,
+              "growthRate": 0.874,
+              "classId": 3,
+              "level": 50,
+              "attackResultRequirement": 5,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 1,
+              "specKeyName": "Thrust",
+              "enduranceCost": 5,
+              "bonusToHit": 15,
+              "bonusToDefense": -5,
+              "objectType": "Style",
+              "description": "Stuns the target for 9 seconds.",
+              "icon": {
+                "styleId": 145,
+                "borderId": -1,
+                "iconLocation": 590
+              }
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Anytime",
+          "spells": [],
+          "styles": [
+            {
+              "id": 131,
+              "name": "Thistle",
+              "iconId": 131,
+              "growthRate": 0.334,
+              "classId": 3,
+              "level": 1,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Thrust",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 131,
+                "borderId": -1,
+                "iconLocation": 575
+              }
+            },
+            {
+              "id": 133,
+              "name": "Puncture",
+              "iconId": 133,
+              "growthRate": 0.449,
+              "classId": 3,
+              "level": 6,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Thrust",
+              "enduranceCost": 15,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Does 3 damage to a target every 4 seconds for 20 seconds.",
+              "icon": {
+                "styleId": 133,
+                "borderId": -1,
+                "iconLocation": 578
+              }
+            },
+            {
+              "id": 134,
+              "name": "Sting",
+              "iconId": 134,
+              "growthRate": 0.573,
+              "classId": 3,
+              "level": 8,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Thrust",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": -15,
+              "objectType": "Style",
+              "description": "Attracts the attention of a creature by 21, causing it to focus its attacks on the caster.",
+              "icon": {
+                "styleId": 134,
+                "borderId": -1,
+                "iconLocation": 579
+              }
+            },
+            {
+              "id": 136,
+              "name": "Bloody Dance",
+              "iconId": 136,
+              "growthRate": 0.649,
+              "classId": 3,
+              "level": 12,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 133,
+              "openingRequirementType": 0,
+              "specKeyName": "Thrust",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": -5,
+              "objectType": "Style",
+              "description": "Does 4 damage to a target every 4 seconds for 25 seconds.",
+              "icon": {
+                "styleId": 136,
+                "borderId": -1,
+                "iconLocation": 581
+              },
+              "openingStyle": "Puncture"
+            },
+            {
+              "id": 138,
+              "name": "Tranquillize",
+              "iconId": 138,
+              "growthRate": 0,
+              "classId": 3,
+              "level": 18,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Thrust",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": 10,
+              "objectType": "Style",
+              "description": "Decreases your threat to monster targets by 19 damage.",
+              "icon": {
+                "styleId": 138,
+                "borderId": -1,
+                "iconLocation": 583
+              }
+            },
+            {
+              "id": 139,
+              "name": "Lunge",
+              "iconId": 139,
+              "growthRate": 0.68,
+              "classId": 3,
+              "level": 21,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 133,
+              "openingRequirementType": 0,
+              "specKeyName": "Thrust",
+              "enduranceCost": 10,
+              "bonusToHit": 15,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 139,
+                "borderId": -1,
+                "iconLocation": 584
+              },
+              "openingStyle": "Puncture"
+            },
+            {
+              "id": 144,
+              "name": "Wyvernfang",
+              "iconId": 144,
+              "growthRate": 0.876,
+              "classId": 3,
+              "level": 44,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 138,
+              "openingRequirementType": 0,
+              "specKeyName": "Thrust",
+              "enduranceCost": 5,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Reduces the target's movement speed by 50% for 27 seconds.",
+              "icon": {
+                "styleId": 144,
+                "borderId": -1,
+                "iconLocation": 589
+              },
+              "openingStyle": "Tranquillize"
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Positional: Back",
+          "spells": [],
+          "styles": [
+            {
+              "id": 141,
+              "name": "Pierce",
+              "iconId": 141,
+              "growthRate": 0.797,
+              "classId": 3,
+              "level": 29,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 2,
+              "specKeyName": "Thrust",
+              "enduranceCost": 10,
+              "bonusToHit": 15,
+              "bonusToDefense": -10,
+              "objectType": "Style",
+              "description": "Does 6 damage to a target every 4 seconds for 30 seconds.",
+              "icon": {
+                "styleId": 141,
+                "borderId": -1,
+                "iconLocation": 586
+              }
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Positional: Side",
+          "spells": [],
+          "styles": [
+            {
+              "id": 143,
+              "name": "Basiliskfang",
+              "iconId": 143,
+              "growthRate": 0.781,
+              "classId": 3,
+              "level": 39,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 1,
+              "openingRequirementType": 2,
+              "specKeyName": "Thrust",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": 5,
+              "objectType": "Style",
+              "description": "Decreases the target's combat speed by 34% for 20 seconds",
+              "icon": {
+                "styleId": 143,
+                "borderId": -1,
+                "iconLocation": 588
+              }
+            }
+          ],
+          "abilities": []
+        }
+      ],
+      "isBaseLine": false,
+      "groupName": ""
+    },
+    {
+      "keyName": "Longbows",
+      "name": "Longbows",
+      "spellIds": [],
+      "styleIds": [],
+      "abilities": [],
+      "groups": [],
+      "isBaseLine": false,
+      "groupName": ""
+    },
+    {
+      "keyName": "Shields",
+      "name": "Shields",
+      "spellIds": [],
+      "styleIds": [
+        221,
+        222,
+        223,
+        224,
+        225,
+        226,
+        227,
+        228,
+        229
+      ],
+      "abilities": [],
+      "groups": [
+        {
+          "key": "After Block",
+          "spells": [],
+          "styles": [
+            {
+              "id": 222,
+              "name": "Stun",
+              "iconId": 222,
+              "growthRate": 0.84,
+              "classId": 3,
+              "level": 8,
+              "attackResultRequirement": 4,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 1,
+              "specKeyName": "Shields",
+              "enduranceCost": 15,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Stuns the target for 3 seconds.",
+              "icon": {
+                "styleId": 222,
+                "borderId": -1,
+                "iconLocation": 775
+              }
+            },
+            {
+              "id": 224,
+              "name": "Incapacitate",
+              "iconId": 224,
+              "growthRate": 0.859,
+              "classId": 3,
+              "level": 18,
+              "attackResultRequirement": 4,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 1,
+              "specKeyName": "Shields",
+              "enduranceCost": 20,
+              "bonusToHit": 5,
+              "bonusToDefense": 10,
+              "objectType": "Style",
+              "description": "Stuns the target for 5 seconds.",
+              "icon": {
+                "styleId": 224,
+                "borderId": -1,
+                "iconLocation": 777
+              }
+            },
+            {
+              "id": 226,
+              "name": "Bash",
+              "iconId": 226,
+              "growthRate": 0.85,
+              "classId": 3,
+              "level": 29,
+              "attackResultRequirement": 4,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 1,
+              "specKeyName": "Shields",
+              "enduranceCost": 15,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Stuns the target for 7 seconds.",
+              "icon": {
+                "styleId": 226,
+                "borderId": -1,
+                "iconLocation": 779
+              }
+            },
+            {
+              "id": 229,
+              "name": "Brutalize",
+              "iconId": 229,
+              "growthRate": 0.85,
+              "classId": 3,
+              "level": 50,
+              "attackResultRequirement": 4,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 1,
+              "specKeyName": "Shields",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 229,
+                "borderId": -1,
+                "iconLocation": 782
+              }
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Anytime",
+          "spells": [],
+          "styles": [
+            {
+              "id": 221,
+              "name": "Numb",
+              "iconId": 221,
+              "growthRate": 0.347,
+              "classId": 3,
+              "level": 3,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Shields",
+              "enduranceCost": 15,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Stuns the target for 2 seconds.",
+              "icon": {
+                "styleId": 221,
+                "borderId": -1,
+                "iconLocation": 774
+              }
+            },
+            {
+              "id": 228,
+              "name": "Slam",
+              "iconId": 228,
+              "growthRate": 0.759,
+              "classId": 3,
+              "level": 42,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Shields",
+              "enduranceCost": 20,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Stuns the target for 9 seconds.",
+              "icon": {
+                "styleId": 228,
+                "borderId": -1,
+                "iconLocation": 781
+              }
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Positional: Back",
+          "spells": [],
+          "styles": [
+            {
+              "id": 225,
+              "name": "Paralyze",
+              "iconId": 225,
+              "growthRate": 0.683,
+              "classId": 3,
+              "level": 23,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 2,
+              "specKeyName": "Shields",
+              "enduranceCost": 15,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Stuns the target for 6 seconds.",
+              "icon": {
+                "styleId": 225,
+                "borderId": -1,
+                "iconLocation": 778
+              }
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Positional: Side",
+          "spells": [],
+          "styles": [
+            {
+              "id": 223,
+              "name": "Disable",
+              "iconId": 223,
+              "growthRate": 0.645,
+              "classId": 3,
+              "level": 13,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 1,
+              "openingRequirementType": 2,
+              "specKeyName": "Shields",
+              "enduranceCost": 15,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Stuns the target for 4 seconds.",
+              "icon": {
+                "styleId": 223,
+                "borderId": -1,
+                "iconLocation": 776
+              }
+            },
+            {
+              "id": 227,
+              "name": "Mangle",
+              "iconId": 227,
+              "growthRate": 0.73,
+              "classId": 3,
+              "level": 35,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 1,
+              "openingRequirementType": 2,
+              "specKeyName": "Shields",
+              "enduranceCost": 15,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Stuns the target for 8 seconds.",
+              "icon": {
+                "styleId": 227,
+                "borderId": -1,
+                "iconLocation": 780
+              }
+            }
+          ],
+          "abilities": []
+        }
+      ],
+      "isBaseLine": false,
+      "groupName": ""
+    },
+    {
+      "keyName": "Stealth",
+      "name": "Stealth",
+      "spellIds": [],
+      "styleIds": [],
+      "abilities": [],
+      "groups": [],
+      "isBaseLine": false,
+      "groupName": ""
+    }
+  ],
+  "specMultiplier": 20,
+  "realmAbilities": [
+    {
+      "name": "Arrow Salvaging",
+      "classId": 3,
+      "delve": "10% chance per level to not expend arrow on firing.\n\nLevel 1: Amount: 10%\nLevel 2: Amount: 20%\nLevel 3: Amount: 30%\nLevel 4: Amount: 40%\nLevel 5: Amount: 50%\nLevel 6: Amount: 60%\nLevel 7: Amount: 70%\nLevel 8: Amount: 80%\nLevel 9: Amount: 90%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        10,
+        20,
+        30,
+        40,
+        50,
+        60,
+        70,
+        80,
+        90
+      ]
+    },
+    {
+      "name": "Augmented Constitution",
+      "classId": 3,
+      "delve": "Increases Constitution by the listed amount per level.\n\nLevel 1: Amount: 6\nLevel 2: Amount: 12\nLevel 3: Amount: 18\nLevel 4: Amount: 23\nLevel 5: Amount: 28\nLevel 6: Amount: 32\nLevel 7: Amount: 36\nLevel 8: Amount: 40\nLevel 9: Amount: 44",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        6,
+        12,
+        18,
+        23,
+        28,
+        32,
+        36,
+        40,
+        44
+      ]
+    },
+    {
+      "name": "Augmented Dexterity",
+      "classId": 3,
+      "delve": "Increases Dexterity by the listed amount per level.\n\nLevel 1: Amount: 6\nLevel 2: Amount: 12\nLevel 3: Amount: 18\nLevel 4: Amount: 23\nLevel 5: Amount: 28\nLevel 6: Amount: 32\nLevel 7: Amount: 36\nLevel 8: Amount: 40\nLevel 9: Amount: 44",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        6,
+        12,
+        18,
+        23,
+        28,
+        32,
+        36,
+        40,
+        44
+      ]
+    },
+    {
+      "name": "Augmented Quickness",
+      "classId": 3,
+      "delve": "Increases Quickness by the listed amount per level.\n\nLevel 1: Amount: 6\nLevel 2: Amount: 12\nLevel 3: Amount: 18\nLevel 4: Amount: 23\nLevel 5: Amount: 28\nLevel 6: Amount: 32\nLevel 7: Amount: 36\nLevel 8: Amount: 40\nLevel 9: Amount: 44",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        6,
+        12,
+        18,
+        23,
+        28,
+        32,
+        36,
+        40,
+        44
+      ]
+    },
+    {
+      "name": "Augmented Strength",
+      "classId": 3,
+      "delve": "Increases Strength by the listed amount per level.\n\nLevel 1: Amount: 6\nLevel 2: Amount: 12\nLevel 3: Amount: 18\nLevel 4: Amount: 23\nLevel 5: Amount: 28\nLevel 6: Amount: 32\nLevel 7: Amount: 36\nLevel 8: Amount: 40\nLevel 9: Amount: 44",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        6,
+        12,
+        18,
+        23,
+        28,
+        32,
+        36,
+        40,
+        44
+      ]
+    },
+    {
+      "name": "Avoidance of Magic",
+      "classId": 3,
+      "delve": "Increases resistance to all types of magic by the listed percentage (This includes crowd control, debuffs, damage, etc).\n\nLevel 1: Amount: 2%\nLevel 2: Amount: 4%\nLevel 3: Amount: 6%\nLevel 4: Amount: 8%\nLevel 5: Amount: 10%\nLevel 6: Amount: 12%\nLevel 7: Amount: 14%\nLevel 8: Amount: 16%\nLevel 9: Amount: 18%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18
+      ]
+    },
+    {
+      "name": "Determination",
+      "classId": 3,
+      "delve": "Reduces the duration of all crowd control spells by the listed percentage. Effect is cumulative at each level increase.\n\nLevel 1: Amount: 8%\nLevel 2: Amount: 16%\nLevel 3: Amount: 22%\nLevel 4: Amount: 28%\nLevel 5: Amount: 34%\nLevel 6: Amount: 40%\nLevel 7: Amount: 45%\nLevel 8: Amount: 50%\nLevel 9: Amount: 55%",
+      "costs": [
+        1,
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        4,
+        5
+      ],
+      "values": [
+        8,
+        16,
+        22,
+        28,
+        34,
+        40,
+        45,
+        50,
+        55
+      ]
+    },
+    {
+      "name": "Dodger",
+      "classId": 3,
+      "delve": "Increases your chance to evade by the listed percentage amount. Advancing to Level 6 requires Augmented Quickness 2. Advancing to Level 8 requires Augmented Quickness 3.\n\nLevel 1: Amount: 2%\nLevel 2: Amount: 4%\nLevel 3: Amount: 6%\nLevel 4: Amount: 8%\nLevel 5: Amount: 10%\nLevel 6: Amount: 12%\nLevel 7: Amount: 14%\nLevel 8: Amount: 16%\nLevel 9: Amount: 18%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18
+      ]
+    },
+    {
+      "name": "Falcon's Eye",
+      "classId": 3,
+      "delve": "Increases the chance of dealing a critical hit with archery by the listed percentage amount. Advancing to level 6 requires Augmented Dexterity 2. Advancing to level 8 requires Augmented Dexterity 3.\n\nLevel 1: Amount: 4\nLevel 2: Amount: 8\nLevel 3: Amount: 12\nLevel 4: Amount: 15\nLevel 5: Amount: 18\nLevel 6: Amount: 21\nLevel 7: Amount: 24\nLevel 8: Amount: 27\nLevel 9: Amount: 30",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        4,
+        8,
+        12,
+        15,
+        18,
+        21,
+        24,
+        27,
+        30
+      ]
+    },
+    {
+      "name": "First Aid",
+      "classId": 3,
+      "delve": "Self heal that heals approximately 300 HP (at level 50) per level gained in the ability. It cannot be used in combat.\n\nLevel 1: Value: 300HP\nLevel 2: Value: 600HP\nLevel 3: Value: 900HP\n\nTarget: Self\nCasting time: instant\n\nLevel 1: Can use every: 05:00 min\nLevel 2: Can use every: 05:00 min\nLevel 3: Can use every: 05:00 min",
+      "costs": [
+        3,
+        6,
+        10
+      ],
+      "values": []
+    },
+    {
+      "name": "Hail of Blows ",
+      "classId": 3,
+      "delve": "5% per level boosted attack speed for 60 seconds. This ability is currently affected by the haste cap, and thus has less benefit on faster weapons.\n\nTarget: Self\nDuration: 60 sec\nCasting time: instant\n\nLevel 1: Can use every: 15:00 min\nLevel 2: Can use every: 15:00 min\nLevel 3: Can use every: 15:00 min",
+      "costs": [
+        3,
+        6,
+        10
+      ],
+      "values": []
+    },
+    {
+      "name": "Ignore Pain",
+      "classId": 3,
+      "delve": "Self heal that heals approximately 20% hit points per level, and can be used in combat. Requires First Aid 2.\n\nLevel 1: Value: 100%\n\nTarget: Self\nCasting time: instant\nReuse Timer : 30 mins\nPre-Requisit : First Aid lvl 2\n\nLevel 1: Can use every: 30:00 min",
+      "costs": [
+        14
+      ],
+      "values": []
+    },
+    {
+      "name": "Lifter",
+      "classId": 3,
+      "delve": "20% additional maximum carrying capacity per level.\n\nLevel 1: Amount: 20%\nLevel 2: Amount: 40%\nLevel 3: Amount: 60%\nLevel 4: Amount: 80%\nLevel 5: Amount: 100%",
+      "costs": [
+        1,
+        3,
+        6,
+        10,
+        14
+      ],
+      "values": [
+        20,
+        40,
+        60,
+        80,
+        100
+      ]
+    },
+    {
+      "name": "Long Wind",
+      "classId": 3,
+      "delve": "Decreases the amount of endurance taken per tick when sprinting, by the number listed.\n\nLevel 1: Amount: 20%\nLevel 2: Amount: 40%\nLevel 3: Amount: 60%\nLevel 4: Amount: 80%\nLevel 5: Amount: 100%",
+      "costs": [
+        1,
+        3,
+        6,
+        10,
+        14
+      ],
+      "values": [
+        20,
+        40,
+        60,
+        80,
+        100
+      ]
+    },
+    {
+      "name": "Longshot",
+      "classId": 3,
+      "delve": "A bow shot with no damage bonus that can be fired up to 150% of normal maximum bow range.\n\nLevel 1: Can use every: 05:00 min",
+      "costs": [
+        6
+      ],
+      "values": []
+    },
+    {
+      "name": "Majestic Will",
+      "classId": 3,
+      "delve": "Your targets chance of resisting your spells is reduced by 1% per level per level of this ability\nPassive Ability",
+      "costs": [
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3
+      ],
+      "values": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "name": "Mastery of Archery",
+      "classId": 3,
+      "delve": "Increases bow firing speed by the listed percentage. Advancing to Level 6 requires Augmented Dexterity 2. Advancing to Level 8 requires Augmented Dexterity 3.\n\nLevel 1: Amount: 2%\nLevel 2: Amount: 4%\nLevel 3: Amount: 6%\nLevel 4: Amount: 8%\nLevel 5: Amount: 10%\nLevel 6: Amount: 12%\nLevel 7: Amount: 14%\nLevel 8: Amount: 16%\nLevel 9: Amount: 18%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18
+      ]
+    },
+    {
+      "name": "Mastery of Blocking",
+      "classId": 3,
+      "delve": "Increases chance to block by the listed percentage. Advancing to Level 6 requires Augmented Dexterity 2. Advancing to Level 8 requires Augmented Dexterity 3.\n\nLevel 1: Amount: 2%\nLevel 2: Amount: 4%\nLevel 3: Amount: 6%\nLevel 4: Amount: 8%\nLevel 5: Amount: 10%\nLevel 6: Amount: 12%\nLevel 7: Amount: 14%\nLevel 8: Amount: 16%\nLevel 9: Amount: 18%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18
+      ]
+    },
+    {
+      "name": "Mastery of Pain",
+      "classId": 3,
+      "delve": "Increases chance to deal a critical hit in melee per listed percentage (passes on to Necromancer's pets). Advancing to Level 6 requires Augmented Dexterity 2. Advancing to Level 8 requires Augmented Dexterity 3.\n\nLevel 1: Amount: 4%\nLevel 2: Amount: 8%\nLevel 3: Amount: 12%\nLevel 4: Amount: 15%\nLevel 5: Amount: 18%\nLevel 6: Amount: 21%\nLevel 7: Amount: 24%\nLevel 8: Amount: 27%\nLevel 9: Amount: 30%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        4,
+        8,
+        12,
+        15,
+        18,
+        21,
+        24,
+        27,
+        30
+      ]
+    },
+    {
+      "name": "Mastery of Stealth",
+      "classId": 3,
+      "delve": "Grants movement speed increase while stealthed per listed percentage. Advancing to Level 6 requires Augmented Quickness 2. Advancing to Level 8 requires Augmented Quickness 3.\n\nLevel 1: Amount: 5%\nLevel 2: Amount: 10%\nLevel 3: Amount: 15%",
+      "costs": [
+        3,
+        6,
+        10
+      ],
+      "values": [
+        5,
+        10,
+        15
+      ]
+    },
+    {
+      "name": "Mastery of Water",
+      "classId": 3,
+      "delve": "Increases swimming speed by the listed percentage.\n\nLevel 1: Amount: 2%\nLevel 2: Amount: 4%\nLevel 3: Amount: 6%\nLevel 4: Amount: 8%\nLevel 5: Amount: 10%\nLevel 6: Amount: 12%\nLevel 7: Amount: 14%\nLevel 8: Amount: 16%\nLevel 9: Amount: 18%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18
+      ]
+    },
+    {
+      "name": "Purge",
+      "classId": 3,
+      "delve": "Removes all negative effects but leaves any applicable immunity timers in place.\n\nTarget: Self\nCasting time: instant\n\nLevel 1: Can use every: 20:00 min",
+      "costs": [
+        5
+      ],
+      "values": []
+    },
+    {
+      "name": "Rain of Annihilation",
+      "classId": 3,
+      "delve": "Adds a 10% per level spirit damage-add to non-magical attacks.\n\nValue: 6\nTarget: Self\nDuration: 60 sec\nCasting time: instant\n\nLevel 1: Can use every: 15:00 min\nLevel 2: Can use every: 15:00 min\nLevel 3: Can use every: 15:00 min",
+      "costs": [
+        3,
+        6,
+        10
+      ],
+      "values": []
+    },
+    {
+      "name": "Rain of Fire",
+      "classId": 3,
+      "delve": "Adds a 10% per level heat damage-add to non-magical attacks.\n\nValue: 6\nTarget: Self\nDuration: 60 sec\nCasting time: instant\n\nLevel 1: Can use every: 15:00 min\nLevel 2: Can use every: 15:00 min\nLevel 3: Can use every: 15:00 min",
+      "costs": [
+        3,
+        6,
+        10
+      ],
+      "values": []
+    },
+    {
+      "name": "Rain of Ice",
+      "classId": 3,
+      "delve": "Adds a 10% per level cold damage-add to non-magical attacks.\n\nValue: 6\nTarget: Self\nDuration: 60 sec\nCasting time: instant\n\nLevel 1: Can use every: 15:00 min\nLevel 2: Can use every: 15:00 min\nLevel 3: Can use every: 15:00 min",
+      "costs": [
+        3,
+        6,
+        10
+      ],
+      "values": []
+    },
+    {
+      "name": "Regeneration",
+      "classId": 3,
+      "delve": "Your hit points regenerate faster than normal.\n\nLevel 1: Amount: 1\nLevel 2: Amount: 2\nLevel 3: Amount: 3\nLevel 4: Amount: 4\nLevel 5: Amount: 5",
+      "costs": [
+        1,
+        3,
+        6,
+        10,
+        14
+      ],
+      "values": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "name": "The Empty Mind",
+      "classId": 3,
+      "delve": "5% per level boost to all magic resistances for 60 seconds.\n\nLevel 1: Can use every: 10:00 min\nLevel 2: Can use every: 10:00 min\nLevel 3: Can use every: 10:00 min",
+      "costs": [
+        3,
+        6,
+        10
+      ],
+      "values": []
+    },
+    {
+      "name": "Toughness",
+      "classId": 3,
+      "delve": "Increases hit points by a percentage of the listed amount. This is a percentage of their max health, not counting plus HP from items.\n\nLevel 1: Amount: 3\nLevel 2: Amount: 6\nLevel 3: Amount: 9\nLevel 4: Amount: 12\nLevel 5: Amount: 15\nLevel 6: Amount: 18\nLevel 7: Amount: 21\nLevel 8: Amount: 23\nLevel 9: Amount: 25",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        3,
+        6,
+        9,
+        12,
+        15,
+        18,
+        21,
+        23,
+        25
+      ]
+    },
+    {
+      "name": "True Sight",
+      "classId": 3,
+      "delve": "Detect all hidden characters for 60 seconds.\nCasting time: instant",
+      "costs": [
+        10
+      ],
+      "values": []
+    },
+    {
+      "name": "Veil Recovery",
+      "classId": 3,
+      "delve": "Removes resurrection sickness.\n\nTarget: Self\nRemoves all resurrection sickness effects\nCasting time: instant\n\nLevel 1: Can use every: 10:00 min",
+      "costs": [
+        5
+      ],
+      "values": []
+    },
+    {
+      "name": "Volley",
+      "classId": 3,
+      "delve": "Ground-targetted archery attack that fires successive arrows at a random target in a given area. To use this ability, choose a ground target. This target must be at least 66% of your bow's normal max range away from you.\nOnce you are ready to fire, you can fire up to 5 arrows by hitting your bow button in succession.\n\nTarget: Ground\nRange: Minimum 66% of player range.",
+      "costs": [
+        8
+      ],
+      "values": []
+    }
+  ],
+  "isBaseClass": false,
+  "specGroups": [
+    {
+      "specs": [
+        {
+          "keyName": "ScoutBase",
+          "name": "Scout",
+          "spellIds": [],
+          "styleIds": [],
+          "abilities": [
+            {
+              "key": "Armor",
+              "name": "Armor Ability: Leather",
+              "level": 2,
+              "specLevel": 1,
+              "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+            },
+            {
+              "key": "Armor",
+              "name": "Armor Ability: Studded",
+              "level": 3,
+              "specLevel": 10,
+              "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+            },
+            {
+              "key": "Camouflage",
+              "name": "Camouflage",
+              "level": 0,
+              "specLevel": 30,
+              "description": "Makes the archer undetectable to the Mastery of Stealth Realm Ability. Drawing a weapon or engaging in combat will cancel the effect and cause the player to be visible. This does not modify stealth skill and can be used only when the archer is stealthed."
+            },
+            {
+              "key": "Evade",
+              "name": "Evade 2 Ability",
+              "level": 2,
+              "specLevel": 12,
+              "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+            },
+            {
+              "key": "Evade",
+              "name": "Evade 3 Ability",
+              "level": 3,
+              "specLevel": 20,
+              "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+            },
+            {
+              "key": "Evade",
+              "name": "Evade 1 Ability",
+              "level": 1,
+              "specLevel": 1,
+              "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+            },
+            {
+              "key": "Shield",
+              "name": "Shield Ability: Small Shields",
+              "level": 1,
+              "specLevel": 5,
+              "description": "An independent line of defense, which can be raised through training to gain special shield attacks.  The larger the shield, the more protection it provides"
+            }
+          ],
+          "isBaseLine": true,
+          "groups": [
+            {
+              "key": "Armor",
+              "spells": [],
+              "styles": [],
+              "abilities": [
+                {
+                  "key": "Armor",
+                  "name": "Armor Ability: Leather",
+                  "level": 2,
+                  "specLevel": 1,
+                  "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+                },
+                {
+                  "key": "Armor",
+                  "name": "Armor Ability: Studded",
+                  "level": 3,
+                  "specLevel": 10,
+                  "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+                }
+              ]
+            },
+            {
+              "key": "Camouflage",
+              "spells": [],
+              "styles": [],
+              "abilities": [
+                {
+                  "key": "Camouflage",
+                  "name": "Camouflage",
+                  "level": 0,
+                  "specLevel": 30,
+                  "description": "Makes the archer undetectable to the Mastery of Stealth Realm Ability. Drawing a weapon or engaging in combat will cancel the effect and cause the player to be visible. This does not modify stealth skill and can be used only when the archer is stealthed."
+                }
+              ]
+            },
+            {
+              "key": "Evade",
+              "spells": [],
+              "styles": [],
+              "abilities": [
+                {
+                  "key": "Evade",
+                  "name": "Evade 1 Ability",
+                  "level": 1,
+                  "specLevel": 1,
+                  "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+                },
+                {
+                  "key": "Evade",
+                  "name": "Evade 2 Ability",
+                  "level": 2,
+                  "specLevel": 12,
+                  "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+                },
+                {
+                  "key": "Evade",
+                  "name": "Evade 3 Ability",
+                  "level": 3,
+                  "specLevel": 20,
+                  "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+                }
+              ]
+            },
+            {
+              "key": "Shield",
+              "spells": [],
+              "styles": [],
+              "abilities": [
+                {
+                  "key": "Shield",
+                  "name": "Shield Ability: Small Shields",
+                  "level": 1,
+                  "specLevel": 5,
+                  "description": "An independent line of defense, which can be raised through training to gain special shield attacks.  The larger the shield, the more protection it provides"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "",
+      "specs": [
+        {
+          "keyName": "Slash",
+          "name": "Slash",
+          "spellIds": [],
+          "styleIds": [
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65,
+            66,
+            67,
+            68,
+            69,
+            70
+          ],
+          "abilities": [],
+          "groups": [
+            {
+              "key": "After Block",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 63,
+                  "name": "Riposte",
+                  "iconId": 63,
+                  "growthRate": 0.882,
+                  "classId": 3,
+                  "level": 18,
+                  "attackResultRequirement": 4,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 1,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 5,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 10,
+                  "objectType": "Style",
+                  "description": "Reduces the target's movement speed by 50% for 14 seconds.",
+                  "icon": {
+                    "styleId": 63,
+                    "borderId": -1,
+                    "iconLocation": 508
+                  }
+                },
+                {
+                  "id": 67,
+                  "name": "Befuddler",
+                  "iconId": 67,
+                  "growthRate": 0.882,
+                  "classId": 3,
+                  "level": 34,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 63,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 5 seconds.",
+                  "icon": {
+                    "styleId": 67,
+                    "borderId": -1,
+                    "iconLocation": 512
+                  },
+                  "openingStyle": "Riposte"
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Anytime",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 56,
+                  "name": "Ruby Slash",
+                  "iconId": 56,
+                  "growthRate": 0.305,
+                  "classId": 3,
+                  "level": 1,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 56,
+                    "borderId": -1,
+                    "iconLocation": 500
+                  }
+                },
+                {
+                  "id": 58,
+                  "name": "Uppercut",
+                  "iconId": 58,
+                  "growthRate": 0.467,
+                  "classId": 3,
+                  "level": 6,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 58,
+                    "borderId": -1,
+                    "iconLocation": 503
+                  }
+                },
+                {
+                  "id": 59,
+                  "name": "Enrage",
+                  "iconId": 59,
+                  "growthRate": 0.572,
+                  "classId": 3,
+                  "level": 8,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": -10,
+                  "objectType": "Style",
+                  "description": "Attracts the attention of a creature by 21, causing it to focus its attacks on the caster.",
+                  "icon": {
+                    "styleId": 59,
+                    "borderId": -1,
+                    "iconLocation": 504
+                  }
+                },
+                {
+                  "id": 61,
+                  "name": "Reflect",
+                  "iconId": 61,
+                  "growthRate": 0,
+                  "classId": 3,
+                  "level": 12,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 10,
+                  "objectType": "Style",
+                  "description": "Decreases your threat to monster targets by 19 damage.",
+                  "icon": {
+                    "styleId": 61,
+                    "borderId": -1,
+                    "iconLocation": 506
+                  }
+                },
+                {
+                  "id": 62,
+                  "name": "Opal Slash",
+                  "iconId": 62,
+                  "growthRate": 0.547,
+                  "classId": 3,
+                  "level": 15,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 58,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Does 4 damage to a target every 4 seconds for 25 seconds.",
+                  "icon": {
+                    "styleId": 62,
+                    "borderId": -1,
+                    "iconLocation": 507
+                  },
+                  "openingStyle": "Uppercut"
+                },
+                {
+                  "id": 65,
+                  "name": "Cleave",
+                  "iconId": 65,
+                  "growthRate": 0.855,
+                  "classId": 3,
+                  "level": 25,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 58,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 5,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 65,
+                    "borderId": -1,
+                    "iconLocation": 510
+                  },
+                  "openingStyle": "Uppercut"
+                },
+                {
+                  "id": 66,
+                  "name": "Amethyst Slash",
+                  "iconId": 66,
+                  "growthRate": 0.604,
+                  "classId": 3,
+                  "level": 29,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 10,
+                  "bonusToHit": 20,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 66,
+                    "borderId": -1,
+                    "iconLocation": 511
+                  }
+                },
+                {
+                  "id": 69,
+                  "name": "Sapphire Slash",
+                  "iconId": 69,
+                  "growthRate": 0.867,
+                  "classId": 3,
+                  "level": 44,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 59,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 5,
+                  "bonusToHit": 10,
+                  "bonusToDefense": -15,
+                  "objectType": "Style",
+                  "description": "Does 7 damage to a target every 4 seconds for 40 seconds.",
+                  "icon": {
+                    "styleId": 69,
+                    "borderId": -1,
+                    "iconLocation": 514
+                  },
+                  "openingStyle": "Enrage"
+                },
+                {
+                  "id": 70,
+                  "name": "Diamond Slash",
+                  "iconId": 70,
+                  "growthRate": 0.844,
+                  "classId": 3,
+                  "level": 50,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 66,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 15,
+                  "bonusToHit": 20,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Decreases the target's combat speed by 28% for 20 seconds.",
+                  "icon": {
+                    "styleId": 70,
+                    "borderId": -1,
+                    "iconLocation": 515
+                  },
+                  "openingStyle": "Amethyst Slash"
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Positional: Back",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 68,
+                  "name": "Back Slash",
+                  "iconId": 68,
+                  "growthRate": 0.815,
+                  "classId": 3,
+                  "level": 39,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 2,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 15,
+                  "bonusToHit": 15,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 68,
+                    "borderId": -1,
+                    "iconLocation": 513
+                  }
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Positional: Side",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 57,
+                  "name": "Cross Slash",
+                  "iconId": 57,
+                  "growthRate": 0.679,
+                  "classId": 3,
+                  "level": 4,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 1,
+                  "openingRequirementType": 2,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 5,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 10,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 57,
+                    "borderId": -1,
+                    "iconLocation": 502
+                  }
+                },
+                {
+                  "id": 60,
+                  "name": "Bloodletter",
+                  "iconId": 60,
+                  "growthRate": 0.763,
+                  "classId": 3,
+                  "level": 10,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 57,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 10,
+                  "bonusToHit": 15,
+                  "bonusToDefense": 10,
+                  "objectType": "Style",
+                  "description": "Does 3 damage to a target every 4 seconds for 20 seconds.",
+                  "icon": {
+                    "styleId": 60,
+                    "borderId": -1,
+                    "iconLocation": 505
+                  },
+                  "openingStyle": "Cross Slash"
+                },
+                {
+                  "id": 64,
+                  "name": "Side Slicer",
+                  "iconId": 64,
+                  "growthRate": 0.701,
+                  "classId": 3,
+                  "level": 21,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 1,
+                  "openingRequirementType": 2,
+                  "specKeyName": "Slash",
+                  "enduranceCost": 5,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Reduces the target's movement speed by 50% for 14 seconds.",
+                  "icon": {
+                    "styleId": 64,
+                    "borderId": -1,
+                    "iconLocation": 509
+                  }
+                }
+              ],
+              "abilities": []
+            }
+          ],
+          "isBaseLine": false,
+          "groupName": ""
+        },
+        {
+          "keyName": "Thrust",
+          "name": "Thrust",
+          "spellIds": [],
+          "styleIds": [
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145
+          ],
+          "abilities": [],
+          "groups": [
+            {
+              "key": "After Block",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 137,
+                  "name": "Beartooth",
+                  "iconId": 137,
+                  "growthRate": 0.871,
+                  "classId": 3,
+                  "level": 15,
+                  "attackResultRequirement": 4,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 1,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 5,
+                  "bonusToHit": 15,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 6 seconds.",
+                  "icon": {
+                    "styleId": 137,
+                    "borderId": -1,
+                    "iconLocation": 582
+                  }
+                },
+                {
+                  "id": 140,
+                  "name": "Ricochet",
+                  "iconId": 140,
+                  "growthRate": 0.874,
+                  "classId": 3,
+                  "level": 25,
+                  "attackResultRequirement": 4,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 1,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 5,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Reduces the target's movement speed by 50% for 14 seconds.",
+                  "icon": {
+                    "styleId": 140,
+                    "borderId": -1,
+                    "iconLocation": 585
+                  }
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "After Evade",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 132,
+                  "name": "Ratfang",
+                  "iconId": 132,
+                  "growthRate": 0.874,
+                  "classId": 3,
+                  "level": 4,
+                  "attackResultRequirement": 5,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 1,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 5,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 5,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 2 seconds.",
+                  "icon": {
+                    "styleId": 132,
+                    "borderId": -1,
+                    "iconLocation": 577
+                  }
+                },
+                {
+                  "id": 135,
+                  "name": "Wolftooth",
+                  "iconId": 135,
+                  "growthRate": 0.871,
+                  "classId": 3,
+                  "level": 10,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 132,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Reduces the target's movement speed by 50% for 12 seconds.",
+                  "icon": {
+                    "styleId": 135,
+                    "borderId": -1,
+                    "iconLocation": 580
+                  },
+                  "openingStyle": "Ratfang"
+                },
+                {
+                  "id": 142,
+                  "name": "Liontooth",
+                  "iconId": 142,
+                  "growthRate": 0.874,
+                  "classId": 3,
+                  "level": 34,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 135,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 5,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 5,
+                  "objectType": "Style",
+                  "description": "Does 9 damage to a target every 4 seconds for 40 seconds.",
+                  "icon": {
+                    "styleId": 142,
+                    "borderId": -1,
+                    "iconLocation": 587
+                  },
+                  "openingStyle": "Wolftooth"
+                },
+                {
+                  "id": 145,
+                  "name": "Dragonfang",
+                  "iconId": 145,
+                  "growthRate": 0.874,
+                  "classId": 3,
+                  "level": 50,
+                  "attackResultRequirement": 5,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 1,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 5,
+                  "bonusToHit": 15,
+                  "bonusToDefense": -5,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 9 seconds.",
+                  "icon": {
+                    "styleId": 145,
+                    "borderId": -1,
+                    "iconLocation": 590
+                  }
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Anytime",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 131,
+                  "name": "Thistle",
+                  "iconId": 131,
+                  "growthRate": 0.334,
+                  "classId": 3,
+                  "level": 1,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 131,
+                    "borderId": -1,
+                    "iconLocation": 575
+                  }
+                },
+                {
+                  "id": 133,
+                  "name": "Puncture",
+                  "iconId": 133,
+                  "growthRate": 0.449,
+                  "classId": 3,
+                  "level": 6,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 15,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Does 3 damage to a target every 4 seconds for 20 seconds.",
+                  "icon": {
+                    "styleId": 133,
+                    "borderId": -1,
+                    "iconLocation": 578
+                  }
+                },
+                {
+                  "id": 134,
+                  "name": "Sting",
+                  "iconId": 134,
+                  "growthRate": 0.573,
+                  "classId": 3,
+                  "level": 8,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": -15,
+                  "objectType": "Style",
+                  "description": "Attracts the attention of a creature by 21, causing it to focus its attacks on the caster.",
+                  "icon": {
+                    "styleId": 134,
+                    "borderId": -1,
+                    "iconLocation": 579
+                  }
+                },
+                {
+                  "id": 136,
+                  "name": "Bloody Dance",
+                  "iconId": 136,
+                  "growthRate": 0.649,
+                  "classId": 3,
+                  "level": 12,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 133,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": -5,
+                  "objectType": "Style",
+                  "description": "Does 4 damage to a target every 4 seconds for 25 seconds.",
+                  "icon": {
+                    "styleId": 136,
+                    "borderId": -1,
+                    "iconLocation": 581
+                  },
+                  "openingStyle": "Puncture"
+                },
+                {
+                  "id": 138,
+                  "name": "Tranquillize",
+                  "iconId": 138,
+                  "growthRate": 0,
+                  "classId": 3,
+                  "level": 18,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 10,
+                  "objectType": "Style",
+                  "description": "Decreases your threat to monster targets by 19 damage.",
+                  "icon": {
+                    "styleId": 138,
+                    "borderId": -1,
+                    "iconLocation": 583
+                  }
+                },
+                {
+                  "id": 139,
+                  "name": "Lunge",
+                  "iconId": 139,
+                  "growthRate": 0.68,
+                  "classId": 3,
+                  "level": 21,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 133,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 10,
+                  "bonusToHit": 15,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 139,
+                    "borderId": -1,
+                    "iconLocation": 584
+                  },
+                  "openingStyle": "Puncture"
+                },
+                {
+                  "id": 144,
+                  "name": "Wyvernfang",
+                  "iconId": 144,
+                  "growthRate": 0.876,
+                  "classId": 3,
+                  "level": 44,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 138,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 5,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Reduces the target's movement speed by 50% for 27 seconds.",
+                  "icon": {
+                    "styleId": 144,
+                    "borderId": -1,
+                    "iconLocation": 589
+                  },
+                  "openingStyle": "Tranquillize"
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Positional: Back",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 141,
+                  "name": "Pierce",
+                  "iconId": 141,
+                  "growthRate": 0.797,
+                  "classId": 3,
+                  "level": 29,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 2,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 10,
+                  "bonusToHit": 15,
+                  "bonusToDefense": -10,
+                  "objectType": "Style",
+                  "description": "Does 6 damage to a target every 4 seconds for 30 seconds.",
+                  "icon": {
+                    "styleId": 141,
+                    "borderId": -1,
+                    "iconLocation": 586
+                  }
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Positional: Side",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 143,
+                  "name": "Basiliskfang",
+                  "iconId": 143,
+                  "growthRate": 0.781,
+                  "classId": 3,
+                  "level": 39,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 1,
+                  "openingRequirementType": 2,
+                  "specKeyName": "Thrust",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 5,
+                  "objectType": "Style",
+                  "description": "Decreases the target's combat speed by 34% for 20 seconds",
+                  "icon": {
+                    "styleId": 143,
+                    "borderId": -1,
+                    "iconLocation": 588
+                  }
+                }
+              ],
+              "abilities": []
+            }
+          ],
+          "isBaseLine": false,
+          "groupName": ""
+        },
+        {
+          "keyName": "Longbows",
+          "name": "Longbows",
+          "spellIds": [],
+          "styleIds": [],
+          "abilities": [],
+          "groups": [],
+          "isBaseLine": false,
+          "groupName": ""
+        },
+        {
+          "keyName": "Shields",
+          "name": "Shields",
+          "spellIds": [],
+          "styleIds": [
+            221,
+            222,
+            223,
+            224,
+            225,
+            226,
+            227,
+            228,
+            229
+          ],
+          "abilities": [],
+          "groups": [
+            {
+              "key": "After Block",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 222,
+                  "name": "Stun",
+                  "iconId": 222,
+                  "growthRate": 0.84,
+                  "classId": 3,
+                  "level": 8,
+                  "attackResultRequirement": 4,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 1,
+                  "specKeyName": "Shields",
+                  "enduranceCost": 15,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 3 seconds.",
+                  "icon": {
+                    "styleId": 222,
+                    "borderId": -1,
+                    "iconLocation": 775
+                  }
+                },
+                {
+                  "id": 224,
+                  "name": "Incapacitate",
+                  "iconId": 224,
+                  "growthRate": 0.859,
+                  "classId": 3,
+                  "level": 18,
+                  "attackResultRequirement": 4,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 1,
+                  "specKeyName": "Shields",
+                  "enduranceCost": 20,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 10,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 5 seconds.",
+                  "icon": {
+                    "styleId": 224,
+                    "borderId": -1,
+                    "iconLocation": 777
+                  }
+                },
+                {
+                  "id": 226,
+                  "name": "Bash",
+                  "iconId": 226,
+                  "growthRate": 0.85,
+                  "classId": 3,
+                  "level": 29,
+                  "attackResultRequirement": 4,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 1,
+                  "specKeyName": "Shields",
+                  "enduranceCost": 15,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 7 seconds.",
+                  "icon": {
+                    "styleId": 226,
+                    "borderId": -1,
+                    "iconLocation": 779
+                  }
+                },
+                {
+                  "id": 229,
+                  "name": "Brutalize",
+                  "iconId": 229,
+                  "growthRate": 0.85,
+                  "classId": 3,
+                  "level": 50,
+                  "attackResultRequirement": 4,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 1,
+                  "specKeyName": "Shields",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 229,
+                    "borderId": -1,
+                    "iconLocation": 782
+                  }
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Anytime",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 221,
+                  "name": "Numb",
+                  "iconId": 221,
+                  "growthRate": 0.347,
+                  "classId": 3,
+                  "level": 3,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Shields",
+                  "enduranceCost": 15,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 2 seconds.",
+                  "icon": {
+                    "styleId": 221,
+                    "borderId": -1,
+                    "iconLocation": 774
+                  }
+                },
+                {
+                  "id": 228,
+                  "name": "Slam",
+                  "iconId": 228,
+                  "growthRate": 0.759,
+                  "classId": 3,
+                  "level": 42,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Shields",
+                  "enduranceCost": 20,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 9 seconds.",
+                  "icon": {
+                    "styleId": 228,
+                    "borderId": -1,
+                    "iconLocation": 781
+                  }
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Positional: Back",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 225,
+                  "name": "Paralyze",
+                  "iconId": 225,
+                  "growthRate": 0.683,
+                  "classId": 3,
+                  "level": 23,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 2,
+                  "specKeyName": "Shields",
+                  "enduranceCost": 15,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 6 seconds.",
+                  "icon": {
+                    "styleId": 225,
+                    "borderId": -1,
+                    "iconLocation": 778
+                  }
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Positional: Side",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 223,
+                  "name": "Disable",
+                  "iconId": 223,
+                  "growthRate": 0.645,
+                  "classId": 3,
+                  "level": 13,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 1,
+                  "openingRequirementType": 2,
+                  "specKeyName": "Shields",
+                  "enduranceCost": 15,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 4 seconds.",
+                  "icon": {
+                    "styleId": 223,
+                    "borderId": -1,
+                    "iconLocation": 776
+                  }
+                },
+                {
+                  "id": 227,
+                  "name": "Mangle",
+                  "iconId": 227,
+                  "growthRate": 0.73,
+                  "classId": 3,
+                  "level": 35,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 1,
+                  "openingRequirementType": 2,
+                  "specKeyName": "Shields",
+                  "enduranceCost": 15,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 8 seconds.",
+                  "icon": {
+                    "styleId": 227,
+                    "borderId": -1,
+                    "iconLocation": 780
+                  }
+                }
+              ],
+              "abilities": []
+            }
+          ],
+          "isBaseLine": false,
+          "groupName": ""
+        },
+        {
+          "keyName": "Stealth",
+          "name": "Stealth",
+          "spellIds": [],
+          "styleIds": [],
+          "abilities": [],
+          "groups": [],
+          "isBaseLine": false,
+          "groupName": ""
+        }
+      ]
+    }
+  ]
+}

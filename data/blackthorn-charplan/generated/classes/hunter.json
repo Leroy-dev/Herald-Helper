@@ -1,0 +1,4957 @@
+{
+  "name": "Hunter",
+  "realm": "Midgard",
+  "playableRaces": [
+    "Dwarf",
+    "Kobold",
+    "Norseman",
+    "Valkyn"
+  ],
+  "classId": 25,
+  "specs": [
+    {
+      "keyName": "HunterBase",
+      "name": "Hunter",
+      "spellIds": [],
+      "styleIds": [],
+      "abilities": [
+        {
+          "key": "Camouflage",
+          "name": "Camouflage",
+          "level": 0,
+          "specLevel": 30,
+          "description": "Makes the archer undetectable to the Mastery of Stealth Realm Ability. Drawing a weapon or engaging in combat will cancel the effect and cause the player to be visible. This does not modify stealth skill and can be used only when the archer is stealthed."
+        },
+        {
+          "key": "Evade",
+          "name": "Evade 2 Ability",
+          "level": 2,
+          "specLevel": 20,
+          "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+        },
+        {
+          "key": "Evade",
+          "name": "Evade 1 Ability",
+          "level": 1,
+          "specLevel": 1,
+          "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+        },
+        {
+          "key": "Armor",
+          "name": "Armor Ability: Studded",
+          "level": 3,
+          "specLevel": 10,
+          "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+        },
+        {
+          "key": "Armor",
+          "name": "Armor Ability: Leather",
+          "level": 2,
+          "specLevel": 1,
+          "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+        },
+        {
+          "key": "Shield",
+          "name": "Shield Ability: Small Shields",
+          "level": 1,
+          "specLevel": 5,
+          "description": "An independent line of defense, which can be raised through training to gain special shield attacks.  The larger the shield, the more protection it provides"
+        }
+      ],
+      "isBaseLine": true,
+      "groups": [
+        {
+          "key": "Camouflage",
+          "spells": [],
+          "styles": [],
+          "abilities": [
+            {
+              "key": "Camouflage",
+              "name": "Camouflage",
+              "level": 0,
+              "specLevel": 30,
+              "description": "Makes the archer undetectable to the Mastery of Stealth Realm Ability. Drawing a weapon or engaging in combat will cancel the effect and cause the player to be visible. This does not modify stealth skill and can be used only when the archer is stealthed."
+            }
+          ]
+        },
+        {
+          "key": "Evade",
+          "spells": [],
+          "styles": [],
+          "abilities": [
+            {
+              "key": "Evade",
+              "name": "Evade 1 Ability",
+              "level": 1,
+              "specLevel": 1,
+              "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+            },
+            {
+              "key": "Evade",
+              "name": "Evade 2 Ability",
+              "level": 2,
+              "specLevel": 20,
+              "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+            }
+          ]
+        },
+        {
+          "key": "Armor",
+          "spells": [],
+          "styles": [],
+          "abilities": [
+            {
+              "key": "Armor",
+              "name": "Armor Ability: Leather",
+              "level": 2,
+              "specLevel": 1,
+              "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+            },
+            {
+              "key": "Armor",
+              "name": "Armor Ability: Studded",
+              "level": 3,
+              "specLevel": 10,
+              "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+            }
+          ]
+        },
+        {
+          "key": "Shield",
+          "spells": [],
+          "styles": [],
+          "abilities": [
+            {
+              "key": "Shield",
+              "name": "Shield Ability: Small Shields",
+              "level": 1,
+              "specLevel": 5,
+              "description": "An independent line of defense, which can be raised through training to gain special shield attacks.  The larger the shield, the more protection it provides"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "keyName": "Sword",
+      "name": "Sword",
+      "spellIds": [],
+      "styleIds": [
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155,
+        156,
+        157,
+        158,
+        159,
+        160
+      ],
+      "abilities": [],
+      "groups": [
+        {
+          "key": "After Block",
+          "spells": [],
+          "styles": [
+            {
+              "id": 154,
+              "name": "Reinforcement",
+              "iconId": 154,
+              "growthRate": 0.865,
+              "classId": 25,
+              "level": 21,
+              "attackResultRequirement": 4,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 1,
+              "specKeyName": "Sword",
+              "enduranceCost": 5,
+              "bonusToHit": 10,
+              "bonusToDefense": -5,
+              "objectType": "Style",
+              "description": "Does 7 damage to a target every 4 seconds for 40 seconds.",
+              "icon": {
+                "styleId": 154,
+                "borderId": -1,
+                "iconLocation": 622
+              }
+            },
+            {
+              "id": 156,
+              "name": "Rush",
+              "iconId": 156,
+              "growthRate": 0.893,
+              "classId": 25,
+              "level": 29,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 154,
+              "openingRequirementType": 0,
+              "specKeyName": "Sword",
+              "enduranceCost": 5,
+              "bonusToHit": 5,
+              "bonusToDefense": -10,
+              "objectType": "Style",
+              "description": "Decreases the target's combat speed by 21% for 20 seconds",
+              "icon": {
+                "styleId": 156,
+                "borderId": -1,
+                "iconLocation": 623
+              },
+              "openingStyle": "Reinforcement"
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "After Evade",
+          "spells": [],
+          "styles": [
+            {
+              "id": 147,
+              "name": "Frost Cut",
+              "iconId": 147,
+              "growthRate": 0.865,
+              "classId": 25,
+              "level": 4,
+              "attackResultRequirement": 5,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 1,
+              "specKeyName": "Sword",
+              "enduranceCost": 4,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Does 4 damage to a target every 4 seconds for 25 seconds.",
+              "icon": {
+                "styleId": 147,
+                "borderId": -1,
+                "iconLocation": 719
+              }
+            },
+            {
+              "id": 155,
+              "name": "Ice Storm",
+              "iconId": 155,
+              "growthRate": 0.904,
+              "classId": 25,
+              "level": 25,
+              "attackResultRequirement": 5,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 1,
+              "specKeyName": "Sword",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 155,
+                "borderId": -1,
+                "iconLocation": 656
+              }
+            },
+            {
+              "id": 158,
+              "name": "Niord's Fury",
+              "iconId": 158,
+              "growthRate": 0.88,
+              "classId": 25,
+              "level": 39,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 147,
+              "openingRequirementType": 0,
+              "specKeyName": "Sword",
+              "enduranceCost": 5,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Stuns the target for 7 seconds.",
+              "icon": {
+                "styleId": 158,
+                "borderId": -1,
+                "iconLocation": 629
+              },
+              "openingStyle": "Frost Cut"
+            },
+            {
+              "id": 159,
+              "name": "Sif's Revenge",
+              "iconId": 159,
+              "growthRate": 0.88,
+              "classId": 25,
+              "level": 44,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 155,
+              "openingRequirementType": 0,
+              "specKeyName": "Sword",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Does 10 damage to a target every 4 seconds for 40 seconds.",
+              "icon": {
+                "styleId": 159,
+                "borderId": -1,
+                "iconLocation": 724
+              },
+              "openingStyle": "Ice Storm"
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Anytime",
+          "spells": [],
+          "styles": [
+            {
+              "id": 146,
+              "name": "Whirling Blade",
+              "iconId": 146,
+              "growthRate": 0.325,
+              "classId": 25,
+              "level": 1,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Sword",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 146,
+                "borderId": -1,
+                "iconLocation": 718
+              }
+            },
+            {
+              "id": 148,
+              "name": "Draw Out",
+              "iconId": 148,
+              "growthRate": 0.574,
+              "classId": 25,
+              "level": 6,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Sword",
+              "enduranceCost": 10,
+              "bonusToHit": 15,
+              "bonusToDefense": -10,
+              "objectType": "Style",
+              "description": "Attracts the attention of a creature by 21, causing it to focus its attacks on the caster.",
+              "icon": {
+                "styleId": 148,
+                "borderId": -1,
+                "iconLocation": 720
+              }
+            },
+            {
+              "id": 150,
+              "name": "Assault",
+              "iconId": 150,
+              "growthRate": 0.459,
+              "classId": 25,
+              "level": 10,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Sword",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 150,
+                "borderId": -1,
+                "iconLocation": 721
+              }
+            },
+            {
+              "id": 151,
+              "name": "Temper",
+              "iconId": 151,
+              "growthRate": 0,
+              "classId": 25,
+              "level": 12,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Sword",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": 10,
+              "objectType": "Style",
+              "description": "Decreases your threat to monster targets by 19 damage.",
+              "icon": {
+                "styleId": 151,
+                "borderId": -1,
+                "iconLocation": 548
+              }
+            },
+            {
+              "id": 153,
+              "name": "Baldur's Fury",
+              "iconId": 153,
+              "growthRate": 0.682,
+              "classId": 25,
+              "level": 18,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 150,
+              "openingRequirementType": 0,
+              "specKeyName": "Sword",
+              "enduranceCost": 15,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Reduces the target's movement speed by 50% for 9 seconds.",
+              "icon": {
+                "styleId": 153,
+                "borderId": -1,
+                "iconLocation": 722
+              },
+              "openingStyle": "Assault"
+            },
+            {
+              "id": 157,
+              "name": "Polar Rift",
+              "iconId": 157,
+              "growthRate": 0.609,
+              "classId": 25,
+              "level": 34,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Sword",
+              "enduranceCost": 12,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 157,
+                "borderId": -1,
+                "iconLocation": 723
+              }
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Positional: Back",
+          "spells": [],
+          "styles": [
+            {
+              "id": 160,
+              "name": "Ragnarok",
+              "iconId": 160,
+              "growthRate": 0.957,
+              "classId": 25,
+              "level": 50,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 2,
+              "specKeyName": "Sword",
+              "enduranceCost": 10,
+              "bonusToHit": 15,
+              "bonusToDefense": 5,
+              "objectType": "Style",
+              "description": "Decreases the target's combat speed by 34% for 20 seconds",
+              "icon": {
+                "styleId": 160,
+                "borderId": -1,
+                "iconLocation": 725
+              }
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Positional: Side",
+          "spells": [],
+          "styles": [
+            {
+              "id": 149,
+              "name": "Northern Lights",
+              "iconId": 149,
+              "growthRate": 0.716,
+              "classId": 25,
+              "level": 8,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 1,
+              "openingRequirementType": 2,
+              "specKeyName": "Sword",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Reduces the target's movement speed by 50% for 16 seconds",
+              "icon": {
+                "styleId": 149,
+                "borderId": -1,
+                "iconLocation": 626
+              }
+            },
+            {
+              "id": 152,
+              "name": "Aurora",
+              "iconId": 152,
+              "growthRate": 0.886,
+              "classId": 25,
+              "level": 15,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 149,
+              "openingRequirementType": 0,
+              "specKeyName": "Sword",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Decreases the target's combat speed by 24% for 20 seconds.",
+              "icon": {
+                "styleId": 152,
+                "borderId": -1,
+                "iconLocation": 624
+              },
+              "openingStyle": "Northern Lights"
+            }
+          ],
+          "abilities": []
+        }
+      ],
+      "isBaseLine": false,
+      "groupName": ""
+    },
+    {
+      "keyName": "Beastcraft",
+      "name": "Beastcraft",
+      "spellIds": [
+        3586,
+        3581,
+        3570,
+        3557,
+        3588,
+        3553,
+        3571,
+        3578,
+        3563,
+        3582,
+        3572,
+        3551,
+        3567,
+        3589,
+        3554,
+        3558,
+        3579,
+        3573,
+        3583,
+        3564,
+        3576,
+        3559,
+        3574,
+        3590,
+        3555,
+        3584,
+        3565,
+        3580,
+        3568,
+        3560,
+        3585,
+        3575,
+        3566,
+        3556,
+        3561,
+        3562,
+        3587,
+        3552,
+        3569,
+        3577
+      ],
+      "styleIds": [],
+      "abilities": [],
+      "groups": [
+        {
+          "key": "Charm",
+          "spells": [
+            {
+              "name": "Minor Call of Gleipnir",
+              "value": 5,
+              "spellId": 3551,
+              "iconId": 3551,
+              "description": "Attempt to bring the target under the caster's control.",
+              "subSpellID": 0,
+              "target": "Enemy",
+              "range": 1200,
+              "recastDelay": 0,
+              "duration": 65535,
+              "castTime": 4,
+              "damage": 82,
+              "damageType": 15,
+              "frequency": 0,
+              "type": "Charm",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 1,
+              "friendlyName": "Charm",
+              "icon": {
+                "spellId": 3551,
+                "borderId": -1,
+                "iconLocation": 19
+              }
+            },
+            {
+              "name": "Influence Insect",
+              "value": 7,
+              "spellId": 3576,
+              "iconId": 3576,
+              "description": "Attempt to bring the target under the caster's control.",
+              "subSpellID": 0,
+              "target": "Enemy",
+              "range": 1200,
+              "recastDelay": 0,
+              "duration": 65535,
+              "castTime": 4,
+              "damage": 82,
+              "damageType": 15,
+              "frequency": 0,
+              "type": "Charm",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 3,
+              "friendlyName": "Charm",
+              "icon": {
+                "spellId": 3576,
+                "borderId": -1,
+                "iconLocation": 29
+              }
+            },
+            {
+              "name": "Lesser Call of Gleipnir",
+              "value": 10,
+              "spellId": 3552,
+              "iconId": 3552,
+              "description": "Attempt to bring the target under the caster's control.",
+              "subSpellID": 0,
+              "target": "Enemy",
+              "range": 1200,
+              "recastDelay": 0,
+              "duration": 65535,
+              "castTime": 4,
+              "damage": 82,
+              "damageType": 15,
+              "frequency": 0,
+              "type": "Charm",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 7,
+              "friendlyName": "Charm",
+              "icon": {
+                "spellId": 3552,
+                "borderId": 0,
+                "iconLocation": 19
+              }
+            },
+            {
+              "name": "Compel Insect",
+              "value": 14,
+              "spellId": 3577,
+              "iconId": 3577,
+              "description": "Attempt to bring the target under the caster's control.",
+              "subSpellID": 0,
+              "target": "Enemy",
+              "range": 1200,
+              "recastDelay": 0,
+              "duration": 65535,
+              "castTime": 4,
+              "damage": 82,
+              "damageType": 15,
+              "frequency": 0,
+              "type": "Charm",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 9,
+              "friendlyName": "Charm",
+              "icon": {
+                "spellId": 3577,
+                "borderId": 0,
+                "iconLocation": 29
+              }
+            },
+            {
+              "name": "Call of Gleipnir",
+              "value": 16,
+              "spellId": 3553,
+              "iconId": 3553,
+              "description": "Attempt to bring the target under the caster's control.",
+              "subSpellID": 0,
+              "target": "Enemy",
+              "range": 1200,
+              "recastDelay": 0,
+              "duration": 65535,
+              "castTime": 4,
+              "damage": 82,
+              "damageType": 15,
+              "frequency": 0,
+              "type": "Charm",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 13,
+              "friendlyName": "Charm",
+              "icon": {
+                "spellId": 3553,
+                "borderId": 1,
+                "iconLocation": 19
+              }
+            },
+            {
+              "name": "Charm Insect",
+              "value": 18,
+              "spellId": 3578,
+              "iconId": 3578,
+              "description": "Attempt to bring the target under the caster's control.",
+              "subSpellID": 0,
+              "target": "Enemy",
+              "range": 1200,
+              "recastDelay": 0,
+              "duration": 65535,
+              "castTime": 4,
+              "damage": 82,
+              "damageType": 15,
+              "frequency": 0,
+              "type": "Charm",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 15,
+              "friendlyName": "Charm",
+              "icon": {
+                "spellId": 3578,
+                "borderId": 1,
+                "iconLocation": 29
+              }
+            },
+            {
+              "name": "Greater Call of Gleipnir",
+              "value": 25,
+              "spellId": 3554,
+              "iconId": 3554,
+              "description": "Attempt to bring the target under the caster's control.",
+              "subSpellID": 0,
+              "target": "Enemy",
+              "range": 1200,
+              "recastDelay": 0,
+              "duration": 65535,
+              "castTime": 4,
+              "damage": 82,
+              "damageType": 15,
+              "frequency": 0,
+              "type": "Charm",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 20,
+              "friendlyName": "Charm",
+              "icon": {
+                "spellId": 3554,
+                "borderId": 2,
+                "iconLocation": 19
+              }
+            },
+            {
+              "name": "Control Insect",
+              "value": 28,
+              "spellId": 3579,
+              "iconId": 3579,
+              "description": "Attempt to bring the target under the caster's control.",
+              "subSpellID": 0,
+              "target": "Enemy",
+              "range": 1200,
+              "recastDelay": 0,
+              "duration": 65535,
+              "castTime": 4,
+              "damage": 82,
+              "damageType": 15,
+              "frequency": 0,
+              "type": "Charm",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 22,
+              "friendlyName": "Charm",
+              "icon": {
+                "spellId": 3579,
+                "borderId": 2,
+                "iconLocation": 29
+              }
+            },
+            {
+              "name": "Superior Call of Gleipnir",
+              "value": 49,
+              "spellId": 3555,
+              "iconId": 3555,
+              "description": "Attempt to bring the target under the caster's control.",
+              "subSpellID": 0,
+              "target": "Enemy",
+              "range": 1200,
+              "recastDelay": 0,
+              "duration": 65535,
+              "castTime": 4,
+              "damage": 82,
+              "damageType": 15,
+              "frequency": 0,
+              "type": "Charm",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 32,
+              "friendlyName": "Charm",
+              "icon": {
+                "spellId": 3555,
+                "borderId": 3,
+                "iconLocation": 19
+              }
+            },
+            {
+              "name": "Dominate Insect",
+              "value": 49,
+              "spellId": 3580,
+              "iconId": 3580,
+              "description": "Attempt to bring the target under the caster's control.",
+              "subSpellID": 0,
+              "target": "Enemy",
+              "range": 1200,
+              "recastDelay": 0,
+              "duration": 65535,
+              "castTime": 4,
+              "damage": 82,
+              "damageType": 15,
+              "frequency": 0,
+              "type": "Charm",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 35,
+              "friendlyName": "Charm",
+              "icon": {
+                "spellId": 3580,
+                "borderId": 3,
+                "iconLocation": 29
+              }
+            }
+          ],
+          "styles": [],
+          "abilities": []
+        },
+        {
+          "key": "Dexterity Quickness Buff",
+          "spells": [
+            {
+              "name": "Nimbleness of the Lynx",
+              "value": 21,
+              "spellId": 3556,
+              "iconId": 3556,
+              "description": "Increases target's Dex/Qui by 21",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "DexterityQuicknessBuff",
+              "power": 10,
+              "effectGroup": 203,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 5,
+              "friendlyName": "Dexterity Quickness Buff",
+              "icon": {
+                "spellId": 3556,
+                "borderId": -1,
+                "iconLocation": 227
+              }
+            },
+            {
+              "name": "Agility of the Lynx",
+              "value": 28,
+              "spellId": 3557,
+              "iconId": 3557,
+              "description": "Increases target's Dex/Qui by 28",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "DexterityQuicknessBuff",
+              "power": 20,
+              "effectGroup": 203,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 12,
+              "friendlyName": "Dexterity Quickness Buff",
+              "icon": {
+                "spellId": 3557,
+                "borderId": -1,
+                "iconLocation": 227
+              }
+            },
+            {
+              "name": "Dexterity of the Lynx",
+              "value": 37,
+              "spellId": 3558,
+              "iconId": 3558,
+              "description": "Increases target's Dex/Qui by 37",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "DexterityQuicknessBuff",
+              "power": 34,
+              "effectGroup": 203,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 21,
+              "friendlyName": "Dexterity Quickness Buff",
+              "icon": {
+                "spellId": 3558,
+                "borderId": 0,
+                "iconLocation": 227
+              }
+            },
+            {
+              "name": "Quickness of the Lynx",
+              "value": 49,
+              "spellId": 3559,
+              "iconId": 3559,
+              "description": "Increases target's Dex/Qui by 49",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "DexterityQuicknessBuff",
+              "power": 50,
+              "effectGroup": 203,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 30,
+              "friendlyName": "Dexterity Quickness Buff",
+              "icon": {
+                "spellId": 3559,
+                "borderId": 1,
+                "iconLocation": 227
+              }
+            },
+            {
+              "name": "Alacrity of the Lynx",
+              "value": 63,
+              "spellId": 3560,
+              "iconId": 3560,
+              "description": "Increases target's Dex/Qui by 63",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "DexterityQuicknessBuff",
+              "power": 68,
+              "effectGroup": 203,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 40,
+              "friendlyName": "Dexterity Quickness Buff",
+              "icon": {
+                "spellId": 3560,
+                "borderId": 2,
+                "iconLocation": 227
+              }
+            },
+            {
+              "name": "Heart of the Lynx",
+              "value": 75,
+              "spellId": 3561,
+              "iconId": 3561,
+              "description": "Increases target's Dex/Qui by 75",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "DexterityQuicknessBuff",
+              "power": 86,
+              "effectGroup": 203,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 50,
+              "friendlyName": "Dexterity Quickness Buff",
+              "icon": {
+                "spellId": 3561,
+                "borderId": 3,
+                "iconLocation": 227
+              }
+            }
+          ],
+          "styles": [],
+          "abilities": []
+        },
+        {
+          "key": "Speed Enhancement (inst)",
+          "spells": [
+            {
+              "name": "Speed of Prey",
+              "value": 135,
+              "spellId": 3562,
+              "iconId": 3562,
+              "description": "The movement speed of the target is increased by 135% for the duration of the spell.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 600,
+              "duration": 20,
+              "castTime": 0,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpeedEnhancement",
+              "power": 10,
+              "effectGroup": 10,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 6,
+              "friendlyName": "Speed Enhancement (inst)",
+              "icon": {
+                "spellId": 3562,
+                "borderId": -1,
+                "iconLocation": 132
+              }
+            },
+            {
+              "name": "Speed of Quarry",
+              "value": 150,
+              "spellId": 3563,
+              "iconId": 3563,
+              "description": "The movement speed of the target is increased by 150% for the duration of the spell.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 600,
+              "duration": 30,
+              "castTime": 0,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpeedEnhancement",
+              "power": 26,
+              "effectGroup": 10,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 16,
+              "friendlyName": "Speed Enhancement (inst)",
+              "icon": {
+                "spellId": 3563,
+                "borderId": 0,
+                "iconLocation": 132
+              }
+            },
+            {
+              "name": "Speed of the Chased",
+              "value": 165,
+              "spellId": 3564,
+              "iconId": 3564,
+              "description": "The movement speed of the target is increased by 165% for the duration of the spell.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 600,
+              "duration": 40,
+              "castTime": 0,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpeedEnhancement",
+              "power": 40,
+              "effectGroup": 10,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 25,
+              "friendlyName": "Speed Enhancement (inst)",
+              "icon": {
+                "spellId": 3564,
+                "borderId": 1,
+                "iconLocation": 132
+              }
+            },
+            {
+              "name": "Speed of the Pursued",
+              "value": 180,
+              "spellId": 3565,
+              "iconId": 3565,
+              "description": "The movement speed of the target is increased by 180% for the duration of the spell.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 600,
+              "duration": 50,
+              "castTime": 0,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpeedEnhancement",
+              "power": 56,
+              "effectGroup": 10,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 34,
+              "friendlyName": "Speed Enhancement (inst)",
+              "icon": {
+                "spellId": 3565,
+                "borderId": 2,
+                "iconLocation": 132
+              }
+            },
+            {
+              "name": "Speed of the Hunted",
+              "value": 195,
+              "spellId": 3566,
+              "iconId": 3566,
+              "description": "The movement speed of the target is increased by 195% for the duration of the spell.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 600,
+              "duration": 60,
+              "castTime": 0,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpeedEnhancement",
+              "power": 72,
+              "effectGroup": 10,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 43,
+              "friendlyName": "Speed Enhancement (inst)",
+              "icon": {
+                "spellId": 3566,
+                "borderId": 3,
+                "iconLocation": 132
+              }
+            }
+          ],
+          "styles": [],
+          "abilities": []
+        },
+        {
+          "key": "Spec Armor Factor Buff",
+          "spells": [
+            {
+              "name": "Lynx's Pelt",
+              "value": 12,
+              "spellId": 3567,
+              "iconId": 3567,
+              "description": "Adds 12 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpecArmorFactorBuff",
+              "power": 6,
+              "effectGroup": 2,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 2,
+              "friendlyName": "Spec Armor Factor Buff",
+              "icon": {
+                "spellId": 3567,
+                "borderId": -1,
+                "iconLocation": 110
+              }
+            },
+            {
+              "name": "Snake's Scales",
+              "value": 14,
+              "spellId": 3568,
+              "iconId": 3568,
+              "description": "Adds 14 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpecArmorFactorBuff",
+              "power": 8,
+              "effectGroup": 2,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 4,
+              "friendlyName": "Spec Armor Factor Buff",
+              "icon": {
+                "spellId": 3568,
+                "borderId": -1,
+                "iconLocation": 110
+              }
+            },
+            {
+              "name": "Wolf's Hide",
+              "value": 18,
+              "spellId": 3569,
+              "iconId": 3569,
+              "description": "Adds 18 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpecArmorFactorBuff",
+              "power": 14,
+              "effectGroup": 2,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 8,
+              "friendlyName": "Spec Armor Factor Buff",
+              "icon": {
+                "spellId": 3569,
+                "borderId": -1,
+                "iconLocation": 110
+              }
+            },
+            {
+              "name": "Turtle's Shell",
+              "value": 21,
+              "spellId": 3570,
+              "iconId": 3570,
+              "description": "Adds 21 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpecArmorFactorBuff",
+              "power": 18,
+              "effectGroup": 2,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 11,
+              "friendlyName": "Spec Armor Factor Buff",
+              "icon": {
+                "spellId": 3570,
+                "borderId": 0,
+                "iconLocation": 110
+              }
+            },
+            {
+              "name": "Bear's Mantle",
+              "value": 24,
+              "spellId": 3571,
+              "iconId": 3571,
+              "description": "Adds 24 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpecArmorFactorBuff",
+              "power": 22,
+              "effectGroup": 2,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 14,
+              "friendlyName": "Spec Armor Factor Buff",
+              "icon": {
+                "spellId": 3571,
+                "borderId": 0,
+                "iconLocation": 110
+              }
+            },
+            {
+              "name": "Crab's Shell",
+              "value": 28,
+              "spellId": 3572,
+              "iconId": 3572,
+              "description": "Adds 28 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpecArmorFactorBuff",
+              "power": 30,
+              "effectGroup": 2,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 18,
+              "friendlyName": "Spec Armor Factor Buff",
+              "icon": {
+                "spellId": 3572,
+                "borderId": 1,
+                "iconLocation": 110
+              }
+            },
+            {
+              "name": "Drake's Hide",
+              "value": 33,
+              "spellId": 3573,
+              "iconId": 3573,
+              "description": "Adds 33 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpecArmorFactorBuff",
+              "power": 38,
+              "effectGroup": 2,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 23,
+              "friendlyName": "Spec Armor Factor Buff",
+              "icon": {
+                "spellId": 3573,
+                "borderId": 1,
+                "iconLocation": 110
+              }
+            },
+            {
+              "name": "Wyvern's Scales",
+              "value": 41,
+              "spellId": 3574,
+              "iconId": 3574,
+              "description": "Adds 41 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpecArmorFactorBuff",
+              "power": 50,
+              "effectGroup": 2,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 31,
+              "friendlyName": "Spec Armor Factor Buff",
+              "icon": {
+                "spellId": 3574,
+                "borderId": 2,
+                "iconLocation": 110
+              }
+            },
+            {
+              "name": "Arachite's Chitin",
+              "value": 52,
+              "spellId": 3575,
+              "iconId": 3575,
+              "description": "Adds 52 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SpecArmorFactorBuff",
+              "power": 70,
+              "effectGroup": 2,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 42,
+              "friendlyName": "Spec Armor Factor Buff",
+              "icon": {
+                "spellId": 3575,
+                "borderId": 3,
+                "iconLocation": 110
+              }
+            }
+          ],
+          "styles": [],
+          "abilities": []
+        },
+        {
+          "key": "Strength Constitution Buff (pet)",
+          "spells": [
+            {
+              "name": "Wild Spirit",
+              "value": 18,
+              "spellId": 3581,
+              "iconId": 3581,
+              "description": "Decreases target's Str/Con by 18",
+              "subSpellID": 0,
+              "target": "Pet",
+              "range": 1000,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "StrengthConstitutionBuff",
+              "power": 16,
+              "effectGroup": 204,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 10,
+              "friendlyName": "Strength Constitution Buff (pet)",
+              "icon": {
+                "spellId": 3581,
+                "borderId": -1,
+                "iconLocation": 155
+              }
+            },
+            {
+              "name": "Feral Spirit",
+              "value": 23,
+              "spellId": 3582,
+              "iconId": 3582,
+              "description": "Decreases target's Str/Con by 23",
+              "subSpellID": 0,
+              "target": "Pet",
+              "range": 1000,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "StrengthConstitutionBuff",
+              "power": 28,
+              "effectGroup": 204,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 17,
+              "friendlyName": "Strength Constitution Buff (pet)",
+              "icon": {
+                "spellId": 3582,
+                "borderId": 0,
+                "iconLocation": 155
+              }
+            },
+            {
+              "name": "Furious Spirit",
+              "value": 29,
+              "spellId": 3583,
+              "iconId": 3583,
+              "description": "Decreases target's Str/Con by 29",
+              "subSpellID": 0,
+              "target": "Pet",
+              "range": 1000,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "StrengthConstitutionBuff",
+              "power": 38,
+              "effectGroup": 204,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 24,
+              "friendlyName": "Strength Constitution Buff (pet)",
+              "icon": {
+                "spellId": 3583,
+                "borderId": 1,
+                "iconLocation": 155
+              }
+            },
+            {
+              "name": "Raging Spirit",
+              "value": 36,
+              "spellId": 3584,
+              "iconId": 3584,
+              "description": "Decreases target's Str/Con by 36",
+              "subSpellID": 0,
+              "target": "Pet",
+              "range": 1000,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "StrengthConstitutionBuff",
+              "power": 54,
+              "effectGroup": 204,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 33,
+              "friendlyName": "Strength Constitution Buff (pet)",
+              "icon": {
+                "spellId": 3584,
+                "borderId": 2,
+                "iconLocation": 155
+              }
+            },
+            {
+              "name": "Frenzied Spirit",
+              "value": 42,
+              "spellId": 3585,
+              "iconId": 3585,
+              "description": "Decreases target's Str/Con by 42",
+              "subSpellID": 0,
+              "target": "Pet",
+              "range": 1000,
+              "recastDelay": 0,
+              "duration": 1200,
+              "castTime": 3,
+              "damage": 0,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "StrengthConstitutionBuff",
+              "power": 70,
+              "effectGroup": 204,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 41,
+              "friendlyName": "Strength Constitution Buff (pet)",
+              "icon": {
+                "spellId": 3585,
+                "borderId": 3,
+                "iconLocation": 155
+              }
+            }
+          ],
+          "styles": [],
+          "abilities": []
+        },
+        {
+          "key": "Summon Hunter Pet (inst)",
+          "spells": [
+            {
+              "name": "Hunter's Companion",
+              "value": 7,
+              "spellId": 3586,
+              "iconId": 3586,
+              "description": "Summons a pet to serve the caster.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 120,
+              "duration": 65535,
+              "castTime": 0,
+              "damage": -80,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SummonHunterPet",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 1,
+              "friendlyName": "Summon Hunter Pet (inst)",
+              "icon": {
+                "spellId": 3586,
+                "borderId": -1,
+                "iconLocation": 144
+              }
+            },
+            {
+              "name": "Hunter's Pet",
+              "value": 13,
+              "spellId": 3587,
+              "iconId": 3587,
+              "description": "Summons a pet to serve the caster.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 120,
+              "duration": 65535,
+              "castTime": 0,
+              "damage": -80,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SummonHunterPet",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 7,
+              "friendlyName": "Summon Hunter Pet (inst)",
+              "icon": {
+                "spellId": 3587,
+                "borderId": -1,
+                "iconLocation": 144
+              }
+            },
+            {
+              "name": "Hunter's Ally",
+              "value": 20,
+              "spellId": 3588,
+              "iconId": 3588,
+              "description": "Summons a pet to serve the caster.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 120,
+              "duration": 65535,
+              "castTime": 0,
+              "damage": -80,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SummonHunterPet",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 13,
+              "friendlyName": "Summon Hunter Pet (inst)",
+              "icon": {
+                "spellId": 3588,
+                "borderId": 0,
+                "iconLocation": 144
+              }
+            },
+            {
+              "name": "Hunter's Protector",
+              "value": 32,
+              "spellId": 3589,
+              "iconId": 3589,
+              "description": "Summons a pet to serve the caster.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 120,
+              "duration": 65535,
+              "castTime": 0,
+              "damage": -80,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SummonHunterPet",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 20,
+              "friendlyName": "Summon Hunter Pet (inst)",
+              "icon": {
+                "spellId": 3589,
+                "borderId": 1,
+                "iconLocation": 144
+              }
+            },
+            {
+              "name": "Hunter's Avatar",
+              "value": 45,
+              "spellId": 3590,
+              "iconId": 3590,
+              "description": "Summons a pet to serve the caster.",
+              "subSpellID": 0,
+              "target": "Self",
+              "range": 0,
+              "recastDelay": 120,
+              "duration": 65535,
+              "castTime": 0,
+              "damage": -82,
+              "damageType": 0,
+              "frequency": 0,
+              "type": "SummonHunterPet",
+              "power": -25,
+              "effectGroup": 0,
+              "radius": 0,
+              "objectType": "Spell",
+              "level": 32,
+              "friendlyName": "Summon Hunter Pet (inst)",
+              "icon": {
+                "spellId": 3590,
+                "borderId": 2,
+                "iconLocation": 144
+              }
+            }
+          ],
+          "styles": [],
+          "abilities": []
+        }
+      ],
+      "groupName": "Beastcraft",
+      "isBaseLine": 0
+    },
+    {
+      "keyName": "Spear",
+      "name": "Spear",
+      "spellIds": [],
+      "styleIds": [
+        206,
+        207,
+        208,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218,
+        219,
+        220
+      ],
+      "abilities": [],
+      "groups": [
+        {
+          "key": "After Evade",
+          "spells": [],
+          "styles": [
+            {
+              "id": 207,
+              "name": "Return Thrust",
+              "iconId": 207,
+              "growthRate": 0.856,
+              "classId": 25,
+              "level": 4,
+              "attackResultRequirement": 5,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 1,
+              "specKeyName": "Spear",
+              "enduranceCost": 5,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Does 3 damage to a target every 4 seconds for 20 seconds.",
+              "icon": {
+                "styleId": 207,
+                "borderId": -1,
+                "iconLocation": 741
+              }
+            },
+            {
+              "id": 209,
+              "name": "Extend Reach",
+              "iconId": 209,
+              "growthRate": 0.856,
+              "classId": 25,
+              "level": 8,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 207,
+              "openingRequirementType": 0,
+              "specKeyName": "Spear",
+              "enduranceCost": 5,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Decreases the target's combat speed by 18% for 20 seconds",
+              "icon": {
+                "styleId": 209,
+                "borderId": -1,
+                "iconLocation": 598
+              },
+              "openingStyle": "Return Thrust"
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Anytime",
+          "spells": [],
+          "styles": [
+            {
+              "id": 206,
+              "name": "Dazzling Spear",
+              "iconId": 206,
+              "growthRate": 0.392,
+              "classId": 25,
+              "level": 2,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Spear",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 206,
+                "borderId": -1,
+                "iconLocation": 740
+              }
+            },
+            {
+              "id": 208,
+              "name": "Engage",
+              "iconId": 208,
+              "growthRate": 0.575,
+              "classId": 25,
+              "level": 6,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Spear",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": -10,
+              "objectType": "Style",
+              "description": "Attracts the attention of a creature by 21, causing it to focus its attacks on the caster.",
+              "icon": {
+                "styleId": 208,
+                "borderId": -1,
+                "iconLocation": 742
+              }
+            },
+            {
+              "id": 210,
+              "name": "Lancer",
+              "iconId": 210,
+              "growthRate": 0.503,
+              "classId": 25,
+              "level": 10,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Spear",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": -5,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 210,
+                "borderId": -1,
+                "iconLocation": 692
+              }
+            },
+            {
+              "id": 211,
+              "name": "Dismissal",
+              "iconId": 211,
+              "growthRate": 0,
+              "classId": 25,
+              "level": 12,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Spear",
+              "enduranceCost": 5,
+              "bonusToHit": 5,
+              "bonusToDefense": 15,
+              "objectType": "Style",
+              "description": "Decreases your threat to monster targets by 19 damage.",
+              "icon": {
+                "styleId": 211,
+                "borderId": -1,
+                "iconLocation": 602
+              }
+            },
+            {
+              "id": 212,
+              "name": "Wounding Thrust",
+              "iconId": 212,
+              "growthRate": 0.856,
+              "classId": 25,
+              "level": 15,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 208,
+              "openingRequirementType": 0,
+              "specKeyName": "Spear",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Reduces the target's movement speed by 50% for 14 seconds.",
+              "icon": {
+                "styleId": 212,
+                "borderId": -1,
+                "iconLocation": 743
+              },
+              "openingStyle": "Engage"
+            },
+            {
+              "id": 213,
+              "name": "Stab",
+              "iconId": 213,
+              "growthRate": 0.692,
+              "classId": 25,
+              "level": 18,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 210,
+              "openingRequirementType": 0,
+              "specKeyName": "Spear",
+              "enduranceCost": 5,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Decreases the target's combat speed by 16% for 20 seconds",
+              "icon": {
+                "styleId": 213,
+                "borderId": -1,
+                "iconLocation": 744
+              },
+              "openingStyle": "Lancer"
+            },
+            {
+              "id": 215,
+              "name": "Lunging Thrust",
+              "iconId": 215,
+              "growthRate": 0.816,
+              "classId": 25,
+              "level": 25,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 210,
+              "openingRequirementType": 0,
+              "specKeyName": "Spear",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 215,
+                "borderId": -1,
+                "iconLocation": 746
+              },
+              "openingStyle": "Lancer"
+            },
+            {
+              "id": 216,
+              "name": "Raze",
+              "iconId": 216,
+              "growthRate": 0.839,
+              "classId": 25,
+              "level": 29,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 213,
+              "openingRequirementType": 0,
+              "specKeyName": "Spear",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Does 7 damage to a target every 4 seconds for 40 seconds.",
+              "icon": {
+                "styleId": 216,
+                "borderId": -1,
+                "iconLocation": 747
+              },
+              "openingStyle": "Stab"
+            },
+            {
+              "id": 217,
+              "name": "Whirling Spear",
+              "iconId": 217,
+              "growthRate": 0.663,
+              "classId": 25,
+              "level": 34,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 0,
+              "specKeyName": "Spear",
+              "enduranceCost": 12,
+              "bonusToHit": 5,
+              "bonusToDefense": -5,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 217,
+                "borderId": -1,
+                "iconLocation": 748
+              }
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Positional: Back",
+          "spells": [],
+          "styles": [
+            {
+              "id": 218,
+              "name": "Razor Edge",
+              "iconId": 218,
+              "growthRate": 0.788,
+              "classId": 25,
+              "level": 39,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 0,
+              "openingRequirementType": 2,
+              "specKeyName": "Spear",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": -5,
+              "objectType": "Style",
+              "description": "Stuns the target for 7 seconds.",
+              "icon": {
+                "styleId": 218,
+                "borderId": -1,
+                "iconLocation": 749
+              }
+            },
+            {
+              "id": 219,
+              "name": "Odin's Wrath",
+              "iconId": 219,
+              "growthRate": 0.905,
+              "classId": 25,
+              "level": 44,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 218,
+              "openingRequirementType": 0,
+              "specKeyName": "Spear",
+              "enduranceCost": 5,
+              "bonusToHit": 15,
+              "bonusToDefense": 5,
+              "objectType": "Style",
+              "icon": {
+                "styleId": 219,
+                "borderId": -1,
+                "iconLocation": 504
+              },
+              "openingStyle": "Razor Edge"
+            }
+          ],
+          "abilities": []
+        },
+        {
+          "key": "Positional: Side",
+          "spells": [],
+          "styles": [
+            {
+              "id": 214,
+              "name": "Perforate",
+              "iconId": 214,
+              "growthRate": 0.764,
+              "classId": 25,
+              "level": 21,
+              "attackResultRequirement": 0,
+              "openingRequirementValue": 1,
+              "openingRequirementType": 2,
+              "specKeyName": "Spear",
+              "enduranceCost": 10,
+              "bonusToHit": 5,
+              "bonusToDefense": -10,
+              "objectType": "Style",
+              "description": "Decreases the target's combat speed by 22% for 20 seconds",
+              "icon": {
+                "styleId": 214,
+                "borderId": -1,
+                "iconLocation": 745
+              }
+            },
+            {
+              "id": 220,
+              "name": "Gungnir's Fury",
+              "iconId": 220,
+              "growthRate": 0.828,
+              "classId": 25,
+              "level": 50,
+              "attackResultRequirement": 7,
+              "openingRequirementValue": 214,
+              "openingRequirementType": 0,
+              "specKeyName": "Spear",
+              "enduranceCost": 10,
+              "bonusToHit": 10,
+              "bonusToDefense": 0,
+              "objectType": "Style",
+              "description": "Does 11 damage to a target every 4 seconds for 40 seconds.",
+              "icon": {
+                "styleId": 220,
+                "borderId": -1,
+                "iconLocation": 542
+              },
+              "openingStyle": "Perforate"
+            }
+          ],
+          "abilities": []
+        }
+      ],
+      "isBaseLine": false,
+      "groupName": ""
+    },
+    {
+      "keyName": "Composite Bow",
+      "name": "Composite Bow",
+      "spellIds": [],
+      "styleIds": [],
+      "abilities": [],
+      "groups": [],
+      "isBaseLine": false,
+      "groupName": ""
+    },
+    {
+      "keyName": "Stealth",
+      "name": "Stealth",
+      "spellIds": [],
+      "styleIds": [],
+      "abilities": [],
+      "groups": [],
+      "isBaseLine": false,
+      "groupName": ""
+    }
+  ],
+  "specMultiplier": 20,
+  "realmAbilities": [
+    {
+      "name": "Arrow Salvaging",
+      "classId": 25,
+      "delve": "10% chance per level to not expend arrow on firing.\n\nLevel 1: Amount: 10%\nLevel 2: Amount: 20%\nLevel 3: Amount: 30%\nLevel 4: Amount: 40%\nLevel 5: Amount: 50%\nLevel 6: Amount: 60%\nLevel 7: Amount: 70%\nLevel 8: Amount: 80%\nLevel 9: Amount: 90%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        10,
+        20,
+        30,
+        40,
+        50,
+        60,
+        70,
+        80,
+        90
+      ]
+    },
+    {
+      "name": "Augmented Acuity",
+      "classId": 25,
+      "delve": "Increases primary casting stat by the listed amount per level.\n\nLevel 1: Amount: 6\nLevel 2: Amount: 12\nLevel 3: Amount: 18\nLevel 4: Amount: 23\nLevel 5: Amount: 28\nLevel 6: Amount: 32\nLevel 7: Amount: 36\nLevel 8: Amount: 40\nLevel 9: Amount: 44",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        6,
+        12,
+        18,
+        23,
+        28,
+        32,
+        36,
+        40,
+        44
+      ]
+    },
+    {
+      "name": "Augmented Constitution",
+      "classId": 25,
+      "delve": "Increases Constitution by the listed amount per level.\n\nLevel 1: Amount: 6\nLevel 2: Amount: 12\nLevel 3: Amount: 18\nLevel 4: Amount: 23\nLevel 5: Amount: 28\nLevel 6: Amount: 32\nLevel 7: Amount: 36\nLevel 8: Amount: 40\nLevel 9: Amount: 44",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        6,
+        12,
+        18,
+        23,
+        28,
+        32,
+        36,
+        40,
+        44
+      ]
+    },
+    {
+      "name": "Augmented Dexterity",
+      "classId": 25,
+      "delve": "Increases Dexterity by the listed amount per level.\n\nLevel 1: Amount: 6\nLevel 2: Amount: 12\nLevel 3: Amount: 18\nLevel 4: Amount: 23\nLevel 5: Amount: 28\nLevel 6: Amount: 32\nLevel 7: Amount: 36\nLevel 8: Amount: 40\nLevel 9: Amount: 44",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        6,
+        12,
+        18,
+        23,
+        28,
+        32,
+        36,
+        40,
+        44
+      ]
+    },
+    {
+      "name": "Augmented Quickness",
+      "classId": 25,
+      "delve": "Increases Quickness by the listed amount per level.\n\nLevel 1: Amount: 6\nLevel 2: Amount: 12\nLevel 3: Amount: 18\nLevel 4: Amount: 23\nLevel 5: Amount: 28\nLevel 6: Amount: 32\nLevel 7: Amount: 36\nLevel 8: Amount: 40\nLevel 9: Amount: 44",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        6,
+        12,
+        18,
+        23,
+        28,
+        32,
+        36,
+        40,
+        44
+      ]
+    },
+    {
+      "name": "Augmented Strength",
+      "classId": 25,
+      "delve": "Increases Strength by the listed amount per level.\n\nLevel 1: Amount: 6\nLevel 2: Amount: 12\nLevel 3: Amount: 18\nLevel 4: Amount: 23\nLevel 5: Amount: 28\nLevel 6: Amount: 32\nLevel 7: Amount: 36\nLevel 8: Amount: 40\nLevel 9: Amount: 44",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        6,
+        12,
+        18,
+        23,
+        28,
+        32,
+        36,
+        40,
+        44
+      ]
+    },
+    {
+      "name": "Avoid Pain",
+      "classId": 25,
+      "delve": "60 second boost to physical damage absorption, 10% per level of this ability. \n\nTarget: Self\nDuration: 60 sec\nCasting time: instant\n\nLevel 1: Can use every: 15:00 min\nLevel 2: Can use every: 15:00 min\nLevel 3: Can use every: 15:00 min",
+      "costs": [
+        3,
+        6,
+        10
+      ],
+      "values": []
+    },
+    {
+      "name": "Avoidance of Magic",
+      "classId": 25,
+      "delve": "Increases resistance to all types of magic by the listed percentage (This includes crowd control, debuffs, damage, etc).\n\nLevel 1: Amount: 2%\nLevel 2: Amount: 4%\nLevel 3: Amount: 6%\nLevel 4: Amount: 8%\nLevel 5: Amount: 10%\nLevel 6: Amount: 12%\nLevel 7: Amount: 14%\nLevel 8: Amount: 16%\nLevel 9: Amount: 18%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18
+      ]
+    },
+    {
+      "name": "Determination",
+      "classId": 25,
+      "delve": "Reduces the duration of all crowd control spells by the listed percentage. Effect is cumulative at each level increase.\n\nLevel 1: Amount: 8%\nLevel 2: Amount: 16%\nLevel 3: Amount: 22%\nLevel 4: Amount: 28%\nLevel 5: Amount: 34%\nLevel 6: Amount: 40%\nLevel 7: Amount: 45%\nLevel 8: Amount: 50%\nLevel 9: Amount: 55%",
+      "costs": [
+        1,
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        4,
+        5
+      ],
+      "values": [
+        8,
+        16,
+        22,
+        28,
+        34,
+        40,
+        45,
+        50,
+        55
+      ]
+    },
+    {
+      "name": "Dodger",
+      "classId": 25,
+      "delve": "Increases your chance to evade by the listed percentage amount. Advancing to Level 6 requires Augmented Quickness 2. Advancing to Level 8 requires Augmented Quickness 3.\n\nLevel 1: Amount: 2%\nLevel 2: Amount: 4%\nLevel 3: Amount: 6%\nLevel 4: Amount: 8%\nLevel 5: Amount: 10%\nLevel 6: Amount: 12%\nLevel 7: Amount: 14%\nLevel 8: Amount: 16%\nLevel 9: Amount: 18%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18
+      ]
+    },
+    {
+      "name": "Falcon's Eye",
+      "classId": 25,
+      "delve": "Increases the chance of dealing a critical hit with archery by the listed percentage amount. Advancing to level 6 requires Augmented Dexterity 2. Advancing to level 8 requires Augmented Dexterity 3.\n\nLevel 1: Amount: 4\nLevel 2: Amount: 8\nLevel 3: Amount: 12\nLevel 4: Amount: 15\nLevel 5: Amount: 18\nLevel 6: Amount: 21\nLevel 7: Amount: 24\nLevel 8: Amount: 27\nLevel 9: Amount: 30",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        4,
+        8,
+        12,
+        15,
+        18,
+        21,
+        24,
+        27,
+        30
+      ]
+    },
+    {
+      "name": "First Aid",
+      "classId": 25,
+      "delve": "Self heal that heals approximately 300 HP (at level 50) per level gained in the ability. It cannot be used in combat.\n\nLevel 1: Value: 300HP\nLevel 2: Value: 600HP\nLevel 3: Value: 900HP\n\nTarget: Self\nCasting time: instant\n\nLevel 1: Can use every: 05:00 min\nLevel 2: Can use every: 05:00 min\nLevel 3: Can use every: 05:00 min",
+      "costs": [
+        3,
+        6,
+        10
+      ],
+      "values": []
+    },
+    {
+      "name": "Hail of Blows ",
+      "classId": 25,
+      "delve": "5% per level boosted attack speed for 60 seconds. This ability is currently affected by the haste cap, and thus has less benefit on faster weapons.\n\nTarget: Self\nDuration: 60 sec\nCasting time: instant\n\nLevel 1: Can use every: 15:00 min\nLevel 2: Can use every: 15:00 min\nLevel 3: Can use every: 15:00 min",
+      "costs": [
+        3,
+        6,
+        10
+      ],
+      "values": []
+    },
+    {
+      "name": "Ignore Pain",
+      "classId": 25,
+      "delve": "Self heal that heals approximately 20% hit points per level, and can be used in combat. Requires First Aid 2.\n\nLevel 1: Value: 100%\n\nTarget: Self\nCasting time: instant\nReuse Timer : 30 mins\nPre-Requisit : First Aid lvl 2\n\nLevel 1: Can use every: 30:00 min",
+      "costs": [
+        14
+      ],
+      "values": []
+    },
+    {
+      "name": "Lifter",
+      "classId": 25,
+      "delve": "20% additional maximum carrying capacity per level.\n\nLevel 1: Amount: 20%\nLevel 2: Amount: 40%\nLevel 3: Amount: 60%\nLevel 4: Amount: 80%\nLevel 5: Amount: 100%",
+      "costs": [
+        1,
+        3,
+        6,
+        10,
+        14
+      ],
+      "values": [
+        20,
+        40,
+        60,
+        80,
+        100
+      ]
+    },
+    {
+      "name": "Long Wind",
+      "classId": 25,
+      "delve": "Decreases the amount of endurance taken per tick when sprinting, by the number listed.\n\nLevel 1: Amount: 20%\nLevel 2: Amount: 40%\nLevel 3: Amount: 60%\nLevel 4: Amount: 80%\nLevel 5: Amount: 100%",
+      "costs": [
+        1,
+        3,
+        6,
+        10,
+        14
+      ],
+      "values": [
+        20,
+        40,
+        60,
+        80,
+        100
+      ]
+    },
+    {
+      "name": "Longshot",
+      "classId": 25,
+      "delve": "A bow shot with no damage bonus that can be fired up to 150% of normal maximum bow range.\n\nLevel 1: Can use every: 05:00 min",
+      "costs": [
+        6
+      ],
+      "values": []
+    },
+    {
+      "name": "Majestic Will",
+      "classId": 25,
+      "delve": "Your targets chance of resisting your spells is reduced by 1% per level per level of this ability\nPassive Ability",
+      "costs": [
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3
+      ],
+      "values": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "name": "Mastery of Archery",
+      "classId": 25,
+      "delve": "Increases bow firing speed by the listed percentage. Advancing to Level 6 requires Augmented Dexterity 2. Advancing to Level 8 requires Augmented Dexterity 3.\n\nLevel 1: Amount: 2%\nLevel 2: Amount: 4%\nLevel 3: Amount: 6%\nLevel 4: Amount: 8%\nLevel 5: Amount: 10%\nLevel 6: Amount: 12%\nLevel 7: Amount: 14%\nLevel 8: Amount: 16%\nLevel 9: Amount: 18%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18
+      ]
+    },
+    {
+      "name": "Mastery of Arms",
+      "classId": 25,
+      "delve": "Increases melee attack speed by the listed percentage. Advancing to Level 6 requires Augmented Strength 2. Advancing to Level 8 requires Augmented Strength 3.\n\nLevel 1: Amount: 2%\nLevel 2: Amount: 4%\nLevel 3: Amount: 6%\nLevel 4: Amount: 8%\nLevel 5: Amount: 10%\nLevel 6: Amount: 12%\nLevel 7: Amount: 14%\nLevel 8: Amount: 16%\nLevel 9: Amount: 18%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18
+      ]
+    },
+    {
+      "name": "Mastery of Pain",
+      "classId": 25,
+      "delve": "Increases chance to deal a critical hit in melee per listed percentage (passes on to Necromancer's pets). Advancing to Level 6 requires Augmented Dexterity 2. Advancing to Level 8 requires Augmented Dexterity 3.\n\nLevel 1: Amount: 4%\nLevel 2: Amount: 8%\nLevel 3: Amount: 12%\nLevel 4: Amount: 15%\nLevel 5: Amount: 18%\nLevel 6: Amount: 21%\nLevel 7: Amount: 24%\nLevel 8: Amount: 27%\nLevel 9: Amount: 30%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        4,
+        8,
+        12,
+        15,
+        18,
+        21,
+        24,
+        27,
+        30
+      ]
+    },
+    {
+      "name": "Mastery of the Arcane",
+      "classId": 25,
+      "delve": "Increases effectiveness of your buff spells by the listed percentage. Advancing to level 6 requires Augmented Acuity 2. Advancing to level 8 requires Augmented Acuity 3.\n\nLevel 1: Amount: 4%\nLevel 2: Amount: 8%\nLevel 3: Amount: 12%\nLevel 4: Amount: 15%\nLevel 5: Amount: 18%\nLevel 6: Amount: 21%\nLevel 7: Amount: 24%\nLevel 8: Amount: 27%\nLevel 9: Amount: 30%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        4,
+        8,
+        12,
+        15,
+        18,
+        21,
+        24,
+        27,
+        30
+      ]
+    },
+    {
+      "name": "Mastery of Water",
+      "classId": 25,
+      "delve": "Increases swimming speed by the listed percentage.\n\nLevel 1: Amount: 2%\nLevel 2: Amount: 4%\nLevel 3: Amount: 6%\nLevel 4: Amount: 8%\nLevel 5: Amount: 10%\nLevel 6: Amount: 12%\nLevel 7: Amount: 14%\nLevel 8: Amount: 16%\nLevel 9: Amount: 18%",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18
+      ]
+    },
+    {
+      "name": "Purge",
+      "classId": 25,
+      "delve": "Removes all negative effects but leaves any applicable immunity timers in place.\n\nTarget: Self\nCasting time: instant\n\nLevel 1: Can use every: 20:00 min",
+      "costs": [
+        5
+      ],
+      "values": []
+    },
+    {
+      "name": "Regeneration",
+      "classId": 25,
+      "delve": "Your hit points regenerate faster than normal.\n\nLevel 1: Amount: 1\nLevel 2: Amount: 2\nLevel 3: Amount: 3\nLevel 4: Amount: 4\nLevel 5: Amount: 5",
+      "costs": [
+        1,
+        3,
+        6,
+        10,
+        14
+      ],
+      "values": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "name": "Second Wind",
+      "classId": 25,
+      "delve": "Completely restores your character's endurance.\n\nLevel 1: Can use every: 05:00 min",
+      "costs": [
+        10
+      ],
+      "values": []
+    },
+    {
+      "name": "The Empty Mind",
+      "classId": 25,
+      "delve": "5% per level boost to all magic resistances for 60 seconds.\n\nLevel 1: Can use every: 10:00 min\nLevel 2: Can use every: 10:00 min\nLevel 3: Can use every: 10:00 min",
+      "costs": [
+        3,
+        6,
+        10
+      ],
+      "values": []
+    },
+    {
+      "name": "Toughness",
+      "classId": 25,
+      "delve": "Increases hit points by a percentage of the listed amount. This is a percentage of their max health, not counting plus HP from items.\n\nLevel 1: Amount: 3\nLevel 2: Amount: 6\nLevel 3: Amount: 9\nLevel 4: Amount: 12\nLevel 5: Amount: 15\nLevel 6: Amount: 18\nLevel 7: Amount: 21\nLevel 8: Amount: 23\nLevel 9: Amount: 25",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        3,
+        6,
+        9,
+        12,
+        15,
+        18,
+        21,
+        23,
+        25
+      ]
+    },
+    {
+      "name": "True Sight",
+      "classId": 25,
+      "delve": "Detect all hidden characters for 60 seconds.\nCasting time: instant",
+      "costs": [
+        10
+      ],
+      "values": []
+    },
+    {
+      "name": "Veil Recovery",
+      "classId": 25,
+      "delve": "Removes resurrection sickness.\n\nTarget: Self\nRemoves all resurrection sickness effects\nCasting time: instant\n\nLevel 1: Can use every: 10:00 min",
+      "costs": [
+        5
+      ],
+      "values": []
+    },
+    {
+      "name": "Volley",
+      "classId": 25,
+      "delve": "Ground-targetted archery attack that fires successive arrows at a random target in a given area. To use this ability, choose a ground target. This target must be at least 66% of your bow's normal max range away from you.\nOnce you are ready to fire, you can fire up to 5 arrows by hitting your bow button in succession.\n\nTarget: Ground\nRange: Minimum 66% of player range.",
+      "costs": [
+        8
+      ],
+      "values": []
+    },
+    {
+      "name": "Wild Minion",
+      "classId": 25,
+      "delve": "Increases chance of pet dealing a critical hit with melee, archery, or spells, by the listed percentage. Advancing to Level 6 requires Augmented Acuity 2. Advancing to Level 8 requires Augmented Acuity 3.\n\nLevel 1: Amount: 4\nLevel 2: Amount: 8\nLevel 3: Amount: 12\nLevel 4: Amount: 15\nLevel 5: Amount: 18\nLevel 6: Amount: 21\nLevel 7: Amount: 24\nLevel 8: Amount: 27\nLevel 9: Amount: 30",
+      "costs": [
+        1,
+        1,
+        2,
+        3,
+        3,
+        5,
+        5,
+        7,
+        7
+      ],
+      "values": [
+        4,
+        8,
+        12,
+        15,
+        18,
+        21,
+        24,
+        27,
+        30
+      ]
+    }
+  ],
+  "isBaseClass": false,
+  "specGroups": [
+    {
+      "specs": [
+        {
+          "keyName": "HunterBase",
+          "name": "Hunter",
+          "spellIds": [],
+          "styleIds": [],
+          "abilities": [
+            {
+              "key": "Camouflage",
+              "name": "Camouflage",
+              "level": 0,
+              "specLevel": 30,
+              "description": "Makes the archer undetectable to the Mastery of Stealth Realm Ability. Drawing a weapon or engaging in combat will cancel the effect and cause the player to be visible. This does not modify stealth skill and can be used only when the archer is stealthed."
+            },
+            {
+              "key": "Evade",
+              "name": "Evade 2 Ability",
+              "level": 2,
+              "specLevel": 20,
+              "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+            },
+            {
+              "key": "Evade",
+              "name": "Evade 1 Ability",
+              "level": 1,
+              "specLevel": 1,
+              "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+            },
+            {
+              "key": "Armor",
+              "name": "Armor Ability: Studded",
+              "level": 3,
+              "specLevel": 10,
+              "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+            },
+            {
+              "key": "Armor",
+              "name": "Armor Ability: Leather",
+              "level": 2,
+              "specLevel": 1,
+              "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+            },
+            {
+              "key": "Shield",
+              "name": "Shield Ability: Small Shields",
+              "level": 1,
+              "specLevel": 5,
+              "description": "An independent line of defense, which can be raised through training to gain special shield attacks.  The larger the shield, the more protection it provides"
+            }
+          ],
+          "isBaseLine": true,
+          "groups": [
+            {
+              "key": "Camouflage",
+              "spells": [],
+              "styles": [],
+              "abilities": [
+                {
+                  "key": "Camouflage",
+                  "name": "Camouflage",
+                  "level": 0,
+                  "specLevel": 30,
+                  "description": "Makes the archer undetectable to the Mastery of Stealth Realm Ability. Drawing a weapon or engaging in combat will cancel the effect and cause the player to be visible. This does not modify stealth skill and can be used only when the archer is stealthed."
+                }
+              ]
+            },
+            {
+              "key": "Evade",
+              "spells": [],
+              "styles": [],
+              "abilities": [
+                {
+                  "key": "Evade",
+                  "name": "Evade 1 Ability",
+                  "level": 1,
+                  "specLevel": 1,
+                  "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+                },
+                {
+                  "key": "Evade",
+                  "name": "Evade 2 Ability",
+                  "level": 2,
+                  "specLevel": 20,
+                  "description": "The percent chance to dodge enemy swings. If the character's class has access to the increased versions of this ability, it will progress naturally as they level.  Evasion is a frontal-arc ability and only works against attacks that are coming from the front."
+                }
+              ]
+            },
+            {
+              "key": "Armor",
+              "spells": [],
+              "styles": [],
+              "abilities": [
+                {
+                  "key": "Armor",
+                  "name": "Armor Ability: Leather",
+                  "level": 2,
+                  "specLevel": 1,
+                  "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+                },
+                {
+                  "key": "Armor",
+                  "name": "Armor Ability: Studded",
+                  "level": 3,
+                  "specLevel": 10,
+                  "description": "Each class has access to at least one armor type. The different armors perform differently in terms of protection from and defense against enemy damage. Some classes have access to many different types of armor."
+                }
+              ]
+            },
+            {
+              "key": "Shield",
+              "spells": [],
+              "styles": [],
+              "abilities": [
+                {
+                  "key": "Shield",
+                  "name": "Shield Ability: Small Shields",
+                  "level": 1,
+                  "specLevel": 5,
+                  "description": "An independent line of defense, which can be raised through training to gain special shield attacks.  The larger the shield, the more protection it provides"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "",
+      "specs": [
+        {
+          "keyName": "Sword",
+          "name": "Sword",
+          "spellIds": [],
+          "styleIds": [
+            146,
+            147,
+            148,
+            149,
+            150,
+            151,
+            152,
+            153,
+            154,
+            155,
+            156,
+            157,
+            158,
+            159,
+            160
+          ],
+          "abilities": [],
+          "groups": [
+            {
+              "key": "After Block",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 154,
+                  "name": "Reinforcement",
+                  "iconId": 154,
+                  "growthRate": 0.865,
+                  "classId": 25,
+                  "level": 21,
+                  "attackResultRequirement": 4,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 1,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 5,
+                  "bonusToHit": 10,
+                  "bonusToDefense": -5,
+                  "objectType": "Style",
+                  "description": "Does 7 damage to a target every 4 seconds for 40 seconds.",
+                  "icon": {
+                    "styleId": 154,
+                    "borderId": -1,
+                    "iconLocation": 622
+                  }
+                },
+                {
+                  "id": 156,
+                  "name": "Rush",
+                  "iconId": 156,
+                  "growthRate": 0.893,
+                  "classId": 25,
+                  "level": 29,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 154,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 5,
+                  "bonusToHit": 5,
+                  "bonusToDefense": -10,
+                  "objectType": "Style",
+                  "description": "Decreases the target's combat speed by 21% for 20 seconds",
+                  "icon": {
+                    "styleId": 156,
+                    "borderId": -1,
+                    "iconLocation": 623
+                  },
+                  "openingStyle": "Reinforcement"
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "After Evade",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 147,
+                  "name": "Frost Cut",
+                  "iconId": 147,
+                  "growthRate": 0.865,
+                  "classId": 25,
+                  "level": 4,
+                  "attackResultRequirement": 5,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 1,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 4,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Does 4 damage to a target every 4 seconds for 25 seconds.",
+                  "icon": {
+                    "styleId": 147,
+                    "borderId": -1,
+                    "iconLocation": 719
+                  }
+                },
+                {
+                  "id": 155,
+                  "name": "Ice Storm",
+                  "iconId": 155,
+                  "growthRate": 0.904,
+                  "classId": 25,
+                  "level": 25,
+                  "attackResultRequirement": 5,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 1,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 155,
+                    "borderId": -1,
+                    "iconLocation": 656
+                  }
+                },
+                {
+                  "id": 158,
+                  "name": "Niord's Fury",
+                  "iconId": 158,
+                  "growthRate": 0.88,
+                  "classId": 25,
+                  "level": 39,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 147,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 5,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 7 seconds.",
+                  "icon": {
+                    "styleId": 158,
+                    "borderId": -1,
+                    "iconLocation": 629
+                  },
+                  "openingStyle": "Frost Cut"
+                },
+                {
+                  "id": 159,
+                  "name": "Sif's Revenge",
+                  "iconId": 159,
+                  "growthRate": 0.88,
+                  "classId": 25,
+                  "level": 44,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 155,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Does 10 damage to a target every 4 seconds for 40 seconds.",
+                  "icon": {
+                    "styleId": 159,
+                    "borderId": -1,
+                    "iconLocation": 724
+                  },
+                  "openingStyle": "Ice Storm"
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Anytime",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 146,
+                  "name": "Whirling Blade",
+                  "iconId": 146,
+                  "growthRate": 0.325,
+                  "classId": 25,
+                  "level": 1,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 146,
+                    "borderId": -1,
+                    "iconLocation": 718
+                  }
+                },
+                {
+                  "id": 148,
+                  "name": "Draw Out",
+                  "iconId": 148,
+                  "growthRate": 0.574,
+                  "classId": 25,
+                  "level": 6,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 10,
+                  "bonusToHit": 15,
+                  "bonusToDefense": -10,
+                  "objectType": "Style",
+                  "description": "Attracts the attention of a creature by 21, causing it to focus its attacks on the caster.",
+                  "icon": {
+                    "styleId": 148,
+                    "borderId": -1,
+                    "iconLocation": 720
+                  }
+                },
+                {
+                  "id": 150,
+                  "name": "Assault",
+                  "iconId": 150,
+                  "growthRate": 0.459,
+                  "classId": 25,
+                  "level": 10,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 150,
+                    "borderId": -1,
+                    "iconLocation": 721
+                  }
+                },
+                {
+                  "id": 151,
+                  "name": "Temper",
+                  "iconId": 151,
+                  "growthRate": 0,
+                  "classId": 25,
+                  "level": 12,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 10,
+                  "objectType": "Style",
+                  "description": "Decreases your threat to monster targets by 19 damage.",
+                  "icon": {
+                    "styleId": 151,
+                    "borderId": -1,
+                    "iconLocation": 548
+                  }
+                },
+                {
+                  "id": 153,
+                  "name": "Baldur's Fury",
+                  "iconId": 153,
+                  "growthRate": 0.682,
+                  "classId": 25,
+                  "level": 18,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 150,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 15,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Reduces the target's movement speed by 50% for 9 seconds.",
+                  "icon": {
+                    "styleId": 153,
+                    "borderId": -1,
+                    "iconLocation": 722
+                  },
+                  "openingStyle": "Assault"
+                },
+                {
+                  "id": 157,
+                  "name": "Polar Rift",
+                  "iconId": 157,
+                  "growthRate": 0.609,
+                  "classId": 25,
+                  "level": 34,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 12,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 157,
+                    "borderId": -1,
+                    "iconLocation": 723
+                  }
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Positional: Back",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 160,
+                  "name": "Ragnarok",
+                  "iconId": 160,
+                  "growthRate": 0.957,
+                  "classId": 25,
+                  "level": 50,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 2,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 10,
+                  "bonusToHit": 15,
+                  "bonusToDefense": 5,
+                  "objectType": "Style",
+                  "description": "Decreases the target's combat speed by 34% for 20 seconds",
+                  "icon": {
+                    "styleId": 160,
+                    "borderId": -1,
+                    "iconLocation": 725
+                  }
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Positional: Side",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 149,
+                  "name": "Northern Lights",
+                  "iconId": 149,
+                  "growthRate": 0.716,
+                  "classId": 25,
+                  "level": 8,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 1,
+                  "openingRequirementType": 2,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Reduces the target's movement speed by 50% for 16 seconds",
+                  "icon": {
+                    "styleId": 149,
+                    "borderId": -1,
+                    "iconLocation": 626
+                  }
+                },
+                {
+                  "id": 152,
+                  "name": "Aurora",
+                  "iconId": 152,
+                  "growthRate": 0.886,
+                  "classId": 25,
+                  "level": 15,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 149,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Sword",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Decreases the target's combat speed by 24% for 20 seconds.",
+                  "icon": {
+                    "styleId": 152,
+                    "borderId": -1,
+                    "iconLocation": 624
+                  },
+                  "openingStyle": "Northern Lights"
+                }
+              ],
+              "abilities": []
+            }
+          ],
+          "isBaseLine": false,
+          "groupName": ""
+        },
+        {
+          "keyName": "Spear",
+          "name": "Spear",
+          "spellIds": [],
+          "styleIds": [
+            206,
+            207,
+            208,
+            209,
+            210,
+            211,
+            212,
+            213,
+            214,
+            215,
+            216,
+            217,
+            218,
+            219,
+            220
+          ],
+          "abilities": [],
+          "groups": [
+            {
+              "key": "After Evade",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 207,
+                  "name": "Return Thrust",
+                  "iconId": 207,
+                  "growthRate": 0.856,
+                  "classId": 25,
+                  "level": 4,
+                  "attackResultRequirement": 5,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 1,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 5,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Does 3 damage to a target every 4 seconds for 20 seconds.",
+                  "icon": {
+                    "styleId": 207,
+                    "borderId": -1,
+                    "iconLocation": 741
+                  }
+                },
+                {
+                  "id": 209,
+                  "name": "Extend Reach",
+                  "iconId": 209,
+                  "growthRate": 0.856,
+                  "classId": 25,
+                  "level": 8,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 207,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 5,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Decreases the target's combat speed by 18% for 20 seconds",
+                  "icon": {
+                    "styleId": 209,
+                    "borderId": -1,
+                    "iconLocation": 598
+                  },
+                  "openingStyle": "Return Thrust"
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Anytime",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 206,
+                  "name": "Dazzling Spear",
+                  "iconId": 206,
+                  "growthRate": 0.392,
+                  "classId": 25,
+                  "level": 2,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 206,
+                    "borderId": -1,
+                    "iconLocation": 740
+                  }
+                },
+                {
+                  "id": 208,
+                  "name": "Engage",
+                  "iconId": 208,
+                  "growthRate": 0.575,
+                  "classId": 25,
+                  "level": 6,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": -10,
+                  "objectType": "Style",
+                  "description": "Attracts the attention of a creature by 21, causing it to focus its attacks on the caster.",
+                  "icon": {
+                    "styleId": 208,
+                    "borderId": -1,
+                    "iconLocation": 742
+                  }
+                },
+                {
+                  "id": 210,
+                  "name": "Lancer",
+                  "iconId": 210,
+                  "growthRate": 0.503,
+                  "classId": 25,
+                  "level": 10,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": -5,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 210,
+                    "borderId": -1,
+                    "iconLocation": 692
+                  }
+                },
+                {
+                  "id": 211,
+                  "name": "Dismissal",
+                  "iconId": 211,
+                  "growthRate": 0,
+                  "classId": 25,
+                  "level": 12,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 5,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 15,
+                  "objectType": "Style",
+                  "description": "Decreases your threat to monster targets by 19 damage.",
+                  "icon": {
+                    "styleId": 211,
+                    "borderId": -1,
+                    "iconLocation": 602
+                  }
+                },
+                {
+                  "id": 212,
+                  "name": "Wounding Thrust",
+                  "iconId": 212,
+                  "growthRate": 0.856,
+                  "classId": 25,
+                  "level": 15,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 208,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Reduces the target's movement speed by 50% for 14 seconds.",
+                  "icon": {
+                    "styleId": 212,
+                    "borderId": -1,
+                    "iconLocation": 743
+                  },
+                  "openingStyle": "Engage"
+                },
+                {
+                  "id": 213,
+                  "name": "Stab",
+                  "iconId": 213,
+                  "growthRate": 0.692,
+                  "classId": 25,
+                  "level": 18,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 210,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 5,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Decreases the target's combat speed by 16% for 20 seconds",
+                  "icon": {
+                    "styleId": 213,
+                    "borderId": -1,
+                    "iconLocation": 744
+                  },
+                  "openingStyle": "Lancer"
+                },
+                {
+                  "id": 215,
+                  "name": "Lunging Thrust",
+                  "iconId": 215,
+                  "growthRate": 0.816,
+                  "classId": 25,
+                  "level": 25,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 210,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 215,
+                    "borderId": -1,
+                    "iconLocation": 746
+                  },
+                  "openingStyle": "Lancer"
+                },
+                {
+                  "id": 216,
+                  "name": "Raze",
+                  "iconId": 216,
+                  "growthRate": 0.839,
+                  "classId": 25,
+                  "level": 29,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 213,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Does 7 damage to a target every 4 seconds for 40 seconds.",
+                  "icon": {
+                    "styleId": 216,
+                    "borderId": -1,
+                    "iconLocation": 747
+                  },
+                  "openingStyle": "Stab"
+                },
+                {
+                  "id": 217,
+                  "name": "Whirling Spear",
+                  "iconId": 217,
+                  "growthRate": 0.663,
+                  "classId": 25,
+                  "level": 34,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 12,
+                  "bonusToHit": 5,
+                  "bonusToDefense": -5,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 217,
+                    "borderId": -1,
+                    "iconLocation": 748
+                  }
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Positional: Back",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 218,
+                  "name": "Razor Edge",
+                  "iconId": 218,
+                  "growthRate": 0.788,
+                  "classId": 25,
+                  "level": 39,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 0,
+                  "openingRequirementType": 2,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": -5,
+                  "objectType": "Style",
+                  "description": "Stuns the target for 7 seconds.",
+                  "icon": {
+                    "styleId": 218,
+                    "borderId": -1,
+                    "iconLocation": 749
+                  }
+                },
+                {
+                  "id": 219,
+                  "name": "Odin's Wrath",
+                  "iconId": 219,
+                  "growthRate": 0.905,
+                  "classId": 25,
+                  "level": 44,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 218,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 5,
+                  "bonusToHit": 15,
+                  "bonusToDefense": 5,
+                  "objectType": "Style",
+                  "icon": {
+                    "styleId": 219,
+                    "borderId": -1,
+                    "iconLocation": 504
+                  },
+                  "openingStyle": "Razor Edge"
+                }
+              ],
+              "abilities": []
+            },
+            {
+              "key": "Positional: Side",
+              "spells": [],
+              "styles": [
+                {
+                  "id": 214,
+                  "name": "Perforate",
+                  "iconId": 214,
+                  "growthRate": 0.764,
+                  "classId": 25,
+                  "level": 21,
+                  "attackResultRequirement": 0,
+                  "openingRequirementValue": 1,
+                  "openingRequirementType": 2,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 10,
+                  "bonusToHit": 5,
+                  "bonusToDefense": -10,
+                  "objectType": "Style",
+                  "description": "Decreases the target's combat speed by 22% for 20 seconds",
+                  "icon": {
+                    "styleId": 214,
+                    "borderId": -1,
+                    "iconLocation": 745
+                  }
+                },
+                {
+                  "id": 220,
+                  "name": "Gungnir's Fury",
+                  "iconId": 220,
+                  "growthRate": 0.828,
+                  "classId": 25,
+                  "level": 50,
+                  "attackResultRequirement": 7,
+                  "openingRequirementValue": 214,
+                  "openingRequirementType": 0,
+                  "specKeyName": "Spear",
+                  "enduranceCost": 10,
+                  "bonusToHit": 10,
+                  "bonusToDefense": 0,
+                  "objectType": "Style",
+                  "description": "Does 11 damage to a target every 4 seconds for 40 seconds.",
+                  "icon": {
+                    "styleId": 220,
+                    "borderId": -1,
+                    "iconLocation": 542
+                  },
+                  "openingStyle": "Perforate"
+                }
+              ],
+              "abilities": []
+            }
+          ],
+          "isBaseLine": false,
+          "groupName": ""
+        },
+        {
+          "keyName": "Composite Bow",
+          "name": "Composite Bow",
+          "spellIds": [],
+          "styleIds": [],
+          "abilities": [],
+          "groups": [],
+          "isBaseLine": false,
+          "groupName": ""
+        },
+        {
+          "keyName": "Stealth",
+          "name": "Stealth",
+          "spellIds": [],
+          "styleIds": [],
+          "abilities": [],
+          "groups": [],
+          "isBaseLine": false,
+          "groupName": ""
+        }
+      ]
+    },
+    {
+      "name": "Beastcraft",
+      "specs": [
+        {
+          "keyName": "Beastcraft",
+          "name": "Beastcraft",
+          "spellIds": [
+            3586,
+            3581,
+            3570,
+            3557,
+            3588,
+            3553,
+            3571,
+            3578,
+            3563,
+            3582,
+            3572,
+            3551,
+            3567,
+            3589,
+            3554,
+            3558,
+            3579,
+            3573,
+            3583,
+            3564,
+            3576,
+            3559,
+            3574,
+            3590,
+            3555,
+            3584,
+            3565,
+            3580,
+            3568,
+            3560,
+            3585,
+            3575,
+            3566,
+            3556,
+            3561,
+            3562,
+            3587,
+            3552,
+            3569,
+            3577
+          ],
+          "styleIds": [],
+          "abilities": [],
+          "groups": [
+            {
+              "key": "Charm",
+              "spells": [
+                {
+                  "name": "Minor Call of Gleipnir",
+                  "value": 5,
+                  "spellId": 3551,
+                  "iconId": 3551,
+                  "description": "Attempt to bring the target under the caster's control.",
+                  "subSpellID": 0,
+                  "target": "Enemy",
+                  "range": 1200,
+                  "recastDelay": 0,
+                  "duration": 65535,
+                  "castTime": 4,
+                  "damage": 82,
+                  "damageType": 15,
+                  "frequency": 0,
+                  "type": "Charm",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 1,
+                  "friendlyName": "Charm",
+                  "icon": {
+                    "spellId": 3551,
+                    "borderId": -1,
+                    "iconLocation": 19
+                  }
+                },
+                {
+                  "name": "Influence Insect",
+                  "value": 7,
+                  "spellId": 3576,
+                  "iconId": 3576,
+                  "description": "Attempt to bring the target under the caster's control.",
+                  "subSpellID": 0,
+                  "target": "Enemy",
+                  "range": 1200,
+                  "recastDelay": 0,
+                  "duration": 65535,
+                  "castTime": 4,
+                  "damage": 82,
+                  "damageType": 15,
+                  "frequency": 0,
+                  "type": "Charm",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 3,
+                  "friendlyName": "Charm",
+                  "icon": {
+                    "spellId": 3576,
+                    "borderId": -1,
+                    "iconLocation": 29
+                  }
+                },
+                {
+                  "name": "Lesser Call of Gleipnir",
+                  "value": 10,
+                  "spellId": 3552,
+                  "iconId": 3552,
+                  "description": "Attempt to bring the target under the caster's control.",
+                  "subSpellID": 0,
+                  "target": "Enemy",
+                  "range": 1200,
+                  "recastDelay": 0,
+                  "duration": 65535,
+                  "castTime": 4,
+                  "damage": 82,
+                  "damageType": 15,
+                  "frequency": 0,
+                  "type": "Charm",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 7,
+                  "friendlyName": "Charm",
+                  "icon": {
+                    "spellId": 3552,
+                    "borderId": 0,
+                    "iconLocation": 19
+                  }
+                },
+                {
+                  "name": "Compel Insect",
+                  "value": 14,
+                  "spellId": 3577,
+                  "iconId": 3577,
+                  "description": "Attempt to bring the target under the caster's control.",
+                  "subSpellID": 0,
+                  "target": "Enemy",
+                  "range": 1200,
+                  "recastDelay": 0,
+                  "duration": 65535,
+                  "castTime": 4,
+                  "damage": 82,
+                  "damageType": 15,
+                  "frequency": 0,
+                  "type": "Charm",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 9,
+                  "friendlyName": "Charm",
+                  "icon": {
+                    "spellId": 3577,
+                    "borderId": 0,
+                    "iconLocation": 29
+                  }
+                },
+                {
+                  "name": "Call of Gleipnir",
+                  "value": 16,
+                  "spellId": 3553,
+                  "iconId": 3553,
+                  "description": "Attempt to bring the target under the caster's control.",
+                  "subSpellID": 0,
+                  "target": "Enemy",
+                  "range": 1200,
+                  "recastDelay": 0,
+                  "duration": 65535,
+                  "castTime": 4,
+                  "damage": 82,
+                  "damageType": 15,
+                  "frequency": 0,
+                  "type": "Charm",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 13,
+                  "friendlyName": "Charm",
+                  "icon": {
+                    "spellId": 3553,
+                    "borderId": 1,
+                    "iconLocation": 19
+                  }
+                },
+                {
+                  "name": "Charm Insect",
+                  "value": 18,
+                  "spellId": 3578,
+                  "iconId": 3578,
+                  "description": "Attempt to bring the target under the caster's control.",
+                  "subSpellID": 0,
+                  "target": "Enemy",
+                  "range": 1200,
+                  "recastDelay": 0,
+                  "duration": 65535,
+                  "castTime": 4,
+                  "damage": 82,
+                  "damageType": 15,
+                  "frequency": 0,
+                  "type": "Charm",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 15,
+                  "friendlyName": "Charm",
+                  "icon": {
+                    "spellId": 3578,
+                    "borderId": 1,
+                    "iconLocation": 29
+                  }
+                },
+                {
+                  "name": "Greater Call of Gleipnir",
+                  "value": 25,
+                  "spellId": 3554,
+                  "iconId": 3554,
+                  "description": "Attempt to bring the target under the caster's control.",
+                  "subSpellID": 0,
+                  "target": "Enemy",
+                  "range": 1200,
+                  "recastDelay": 0,
+                  "duration": 65535,
+                  "castTime": 4,
+                  "damage": 82,
+                  "damageType": 15,
+                  "frequency": 0,
+                  "type": "Charm",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 20,
+                  "friendlyName": "Charm",
+                  "icon": {
+                    "spellId": 3554,
+                    "borderId": 2,
+                    "iconLocation": 19
+                  }
+                },
+                {
+                  "name": "Control Insect",
+                  "value": 28,
+                  "spellId": 3579,
+                  "iconId": 3579,
+                  "description": "Attempt to bring the target under the caster's control.",
+                  "subSpellID": 0,
+                  "target": "Enemy",
+                  "range": 1200,
+                  "recastDelay": 0,
+                  "duration": 65535,
+                  "castTime": 4,
+                  "damage": 82,
+                  "damageType": 15,
+                  "frequency": 0,
+                  "type": "Charm",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 22,
+                  "friendlyName": "Charm",
+                  "icon": {
+                    "spellId": 3579,
+                    "borderId": 2,
+                    "iconLocation": 29
+                  }
+                },
+                {
+                  "name": "Superior Call of Gleipnir",
+                  "value": 49,
+                  "spellId": 3555,
+                  "iconId": 3555,
+                  "description": "Attempt to bring the target under the caster's control.",
+                  "subSpellID": 0,
+                  "target": "Enemy",
+                  "range": 1200,
+                  "recastDelay": 0,
+                  "duration": 65535,
+                  "castTime": 4,
+                  "damage": 82,
+                  "damageType": 15,
+                  "frequency": 0,
+                  "type": "Charm",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 32,
+                  "friendlyName": "Charm",
+                  "icon": {
+                    "spellId": 3555,
+                    "borderId": 3,
+                    "iconLocation": 19
+                  }
+                },
+                {
+                  "name": "Dominate Insect",
+                  "value": 49,
+                  "spellId": 3580,
+                  "iconId": 3580,
+                  "description": "Attempt to bring the target under the caster's control.",
+                  "subSpellID": 0,
+                  "target": "Enemy",
+                  "range": 1200,
+                  "recastDelay": 0,
+                  "duration": 65535,
+                  "castTime": 4,
+                  "damage": 82,
+                  "damageType": 15,
+                  "frequency": 0,
+                  "type": "Charm",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 35,
+                  "friendlyName": "Charm",
+                  "icon": {
+                    "spellId": 3580,
+                    "borderId": 3,
+                    "iconLocation": 29
+                  }
+                }
+              ],
+              "styles": [],
+              "abilities": []
+            },
+            {
+              "key": "Dexterity Quickness Buff",
+              "spells": [
+                {
+                  "name": "Nimbleness of the Lynx",
+                  "value": 21,
+                  "spellId": 3556,
+                  "iconId": 3556,
+                  "description": "Increases target's Dex/Qui by 21",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "DexterityQuicknessBuff",
+                  "power": 10,
+                  "effectGroup": 203,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 5,
+                  "friendlyName": "Dexterity Quickness Buff",
+                  "icon": {
+                    "spellId": 3556,
+                    "borderId": -1,
+                    "iconLocation": 227
+                  }
+                },
+                {
+                  "name": "Agility of the Lynx",
+                  "value": 28,
+                  "spellId": 3557,
+                  "iconId": 3557,
+                  "description": "Increases target's Dex/Qui by 28",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "DexterityQuicknessBuff",
+                  "power": 20,
+                  "effectGroup": 203,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 12,
+                  "friendlyName": "Dexterity Quickness Buff",
+                  "icon": {
+                    "spellId": 3557,
+                    "borderId": -1,
+                    "iconLocation": 227
+                  }
+                },
+                {
+                  "name": "Dexterity of the Lynx",
+                  "value": 37,
+                  "spellId": 3558,
+                  "iconId": 3558,
+                  "description": "Increases target's Dex/Qui by 37",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "DexterityQuicknessBuff",
+                  "power": 34,
+                  "effectGroup": 203,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 21,
+                  "friendlyName": "Dexterity Quickness Buff",
+                  "icon": {
+                    "spellId": 3558,
+                    "borderId": 0,
+                    "iconLocation": 227
+                  }
+                },
+                {
+                  "name": "Quickness of the Lynx",
+                  "value": 49,
+                  "spellId": 3559,
+                  "iconId": 3559,
+                  "description": "Increases target's Dex/Qui by 49",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "DexterityQuicknessBuff",
+                  "power": 50,
+                  "effectGroup": 203,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 30,
+                  "friendlyName": "Dexterity Quickness Buff",
+                  "icon": {
+                    "spellId": 3559,
+                    "borderId": 1,
+                    "iconLocation": 227
+                  }
+                },
+                {
+                  "name": "Alacrity of the Lynx",
+                  "value": 63,
+                  "spellId": 3560,
+                  "iconId": 3560,
+                  "description": "Increases target's Dex/Qui by 63",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "DexterityQuicknessBuff",
+                  "power": 68,
+                  "effectGroup": 203,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 40,
+                  "friendlyName": "Dexterity Quickness Buff",
+                  "icon": {
+                    "spellId": 3560,
+                    "borderId": 2,
+                    "iconLocation": 227
+                  }
+                },
+                {
+                  "name": "Heart of the Lynx",
+                  "value": 75,
+                  "spellId": 3561,
+                  "iconId": 3561,
+                  "description": "Increases target's Dex/Qui by 75",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "DexterityQuicknessBuff",
+                  "power": 86,
+                  "effectGroup": 203,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 50,
+                  "friendlyName": "Dexterity Quickness Buff",
+                  "icon": {
+                    "spellId": 3561,
+                    "borderId": 3,
+                    "iconLocation": 227
+                  }
+                }
+              ],
+              "styles": [],
+              "abilities": []
+            },
+            {
+              "key": "Speed Enhancement (inst)",
+              "spells": [
+                {
+                  "name": "Speed of Prey",
+                  "value": 135,
+                  "spellId": 3562,
+                  "iconId": 3562,
+                  "description": "The movement speed of the target is increased by 135% for the duration of the spell.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 600,
+                  "duration": 20,
+                  "castTime": 0,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpeedEnhancement",
+                  "power": 10,
+                  "effectGroup": 10,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 6,
+                  "friendlyName": "Speed Enhancement (inst)",
+                  "icon": {
+                    "spellId": 3562,
+                    "borderId": -1,
+                    "iconLocation": 132
+                  }
+                },
+                {
+                  "name": "Speed of Quarry",
+                  "value": 150,
+                  "spellId": 3563,
+                  "iconId": 3563,
+                  "description": "The movement speed of the target is increased by 150% for the duration of the spell.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 600,
+                  "duration": 30,
+                  "castTime": 0,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpeedEnhancement",
+                  "power": 26,
+                  "effectGroup": 10,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 16,
+                  "friendlyName": "Speed Enhancement (inst)",
+                  "icon": {
+                    "spellId": 3563,
+                    "borderId": 0,
+                    "iconLocation": 132
+                  }
+                },
+                {
+                  "name": "Speed of the Chased",
+                  "value": 165,
+                  "spellId": 3564,
+                  "iconId": 3564,
+                  "description": "The movement speed of the target is increased by 165% for the duration of the spell.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 600,
+                  "duration": 40,
+                  "castTime": 0,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpeedEnhancement",
+                  "power": 40,
+                  "effectGroup": 10,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 25,
+                  "friendlyName": "Speed Enhancement (inst)",
+                  "icon": {
+                    "spellId": 3564,
+                    "borderId": 1,
+                    "iconLocation": 132
+                  }
+                },
+                {
+                  "name": "Speed of the Pursued",
+                  "value": 180,
+                  "spellId": 3565,
+                  "iconId": 3565,
+                  "description": "The movement speed of the target is increased by 180% for the duration of the spell.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 600,
+                  "duration": 50,
+                  "castTime": 0,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpeedEnhancement",
+                  "power": 56,
+                  "effectGroup": 10,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 34,
+                  "friendlyName": "Speed Enhancement (inst)",
+                  "icon": {
+                    "spellId": 3565,
+                    "borderId": 2,
+                    "iconLocation": 132
+                  }
+                },
+                {
+                  "name": "Speed of the Hunted",
+                  "value": 195,
+                  "spellId": 3566,
+                  "iconId": 3566,
+                  "description": "The movement speed of the target is increased by 195% for the duration of the spell.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 600,
+                  "duration": 60,
+                  "castTime": 0,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpeedEnhancement",
+                  "power": 72,
+                  "effectGroup": 10,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 43,
+                  "friendlyName": "Speed Enhancement (inst)",
+                  "icon": {
+                    "spellId": 3566,
+                    "borderId": 3,
+                    "iconLocation": 132
+                  }
+                }
+              ],
+              "styles": [],
+              "abilities": []
+            },
+            {
+              "key": "Spec Armor Factor Buff",
+              "spells": [
+                {
+                  "name": "Lynx's Pelt",
+                  "value": 12,
+                  "spellId": 3567,
+                  "iconId": 3567,
+                  "description": "Adds 12 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpecArmorFactorBuff",
+                  "power": 6,
+                  "effectGroup": 2,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 2,
+                  "friendlyName": "Spec Armor Factor Buff",
+                  "icon": {
+                    "spellId": 3567,
+                    "borderId": -1,
+                    "iconLocation": 110
+                  }
+                },
+                {
+                  "name": "Snake's Scales",
+                  "value": 14,
+                  "spellId": 3568,
+                  "iconId": 3568,
+                  "description": "Adds 14 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpecArmorFactorBuff",
+                  "power": 8,
+                  "effectGroup": 2,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 4,
+                  "friendlyName": "Spec Armor Factor Buff",
+                  "icon": {
+                    "spellId": 3568,
+                    "borderId": -1,
+                    "iconLocation": 110
+                  }
+                },
+                {
+                  "name": "Wolf's Hide",
+                  "value": 18,
+                  "spellId": 3569,
+                  "iconId": 3569,
+                  "description": "Adds 18 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpecArmorFactorBuff",
+                  "power": 14,
+                  "effectGroup": 2,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 8,
+                  "friendlyName": "Spec Armor Factor Buff",
+                  "icon": {
+                    "spellId": 3569,
+                    "borderId": -1,
+                    "iconLocation": 110
+                  }
+                },
+                {
+                  "name": "Turtle's Shell",
+                  "value": 21,
+                  "spellId": 3570,
+                  "iconId": 3570,
+                  "description": "Adds 21 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpecArmorFactorBuff",
+                  "power": 18,
+                  "effectGroup": 2,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 11,
+                  "friendlyName": "Spec Armor Factor Buff",
+                  "icon": {
+                    "spellId": 3570,
+                    "borderId": 0,
+                    "iconLocation": 110
+                  }
+                },
+                {
+                  "name": "Bear's Mantle",
+                  "value": 24,
+                  "spellId": 3571,
+                  "iconId": 3571,
+                  "description": "Adds 24 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpecArmorFactorBuff",
+                  "power": 22,
+                  "effectGroup": 2,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 14,
+                  "friendlyName": "Spec Armor Factor Buff",
+                  "icon": {
+                    "spellId": 3571,
+                    "borderId": 0,
+                    "iconLocation": 110
+                  }
+                },
+                {
+                  "name": "Crab's Shell",
+                  "value": 28,
+                  "spellId": 3572,
+                  "iconId": 3572,
+                  "description": "Adds 28 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpecArmorFactorBuff",
+                  "power": 30,
+                  "effectGroup": 2,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 18,
+                  "friendlyName": "Spec Armor Factor Buff",
+                  "icon": {
+                    "spellId": 3572,
+                    "borderId": 1,
+                    "iconLocation": 110
+                  }
+                },
+                {
+                  "name": "Drake's Hide",
+                  "value": 33,
+                  "spellId": 3573,
+                  "iconId": 3573,
+                  "description": "Adds 33 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpecArmorFactorBuff",
+                  "power": 38,
+                  "effectGroup": 2,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 23,
+                  "friendlyName": "Spec Armor Factor Buff",
+                  "icon": {
+                    "spellId": 3573,
+                    "borderId": 1,
+                    "iconLocation": 110
+                  }
+                },
+                {
+                  "name": "Wyvern's Scales",
+                  "value": 41,
+                  "spellId": 3574,
+                  "iconId": 3574,
+                  "description": "Adds 41 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpecArmorFactorBuff",
+                  "power": 50,
+                  "effectGroup": 2,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 31,
+                  "friendlyName": "Spec Armor Factor Buff",
+                  "icon": {
+                    "spellId": 3574,
+                    "borderId": 2,
+                    "iconLocation": 110
+                  }
+                },
+                {
+                  "name": "Arachite's Chitin",
+                  "value": 52,
+                  "spellId": 3575,
+                  "iconId": 3575,
+                  "description": "Adds 52 to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SpecArmorFactorBuff",
+                  "power": 70,
+                  "effectGroup": 2,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 42,
+                  "friendlyName": "Spec Armor Factor Buff",
+                  "icon": {
+                    "spellId": 3575,
+                    "borderId": 3,
+                    "iconLocation": 110
+                  }
+                }
+              ],
+              "styles": [],
+              "abilities": []
+            },
+            {
+              "key": "Strength Constitution Buff (pet)",
+              "spells": [
+                {
+                  "name": "Wild Spirit",
+                  "value": 18,
+                  "spellId": 3581,
+                  "iconId": 3581,
+                  "description": "Decreases target's Str/Con by 18",
+                  "subSpellID": 0,
+                  "target": "Pet",
+                  "range": 1000,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "StrengthConstitutionBuff",
+                  "power": 16,
+                  "effectGroup": 204,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 10,
+                  "friendlyName": "Strength Constitution Buff (pet)",
+                  "icon": {
+                    "spellId": 3581,
+                    "borderId": -1,
+                    "iconLocation": 155
+                  }
+                },
+                {
+                  "name": "Feral Spirit",
+                  "value": 23,
+                  "spellId": 3582,
+                  "iconId": 3582,
+                  "description": "Decreases target's Str/Con by 23",
+                  "subSpellID": 0,
+                  "target": "Pet",
+                  "range": 1000,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "StrengthConstitutionBuff",
+                  "power": 28,
+                  "effectGroup": 204,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 17,
+                  "friendlyName": "Strength Constitution Buff (pet)",
+                  "icon": {
+                    "spellId": 3582,
+                    "borderId": 0,
+                    "iconLocation": 155
+                  }
+                },
+                {
+                  "name": "Furious Spirit",
+                  "value": 29,
+                  "spellId": 3583,
+                  "iconId": 3583,
+                  "description": "Decreases target's Str/Con by 29",
+                  "subSpellID": 0,
+                  "target": "Pet",
+                  "range": 1000,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "StrengthConstitutionBuff",
+                  "power": 38,
+                  "effectGroup": 204,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 24,
+                  "friendlyName": "Strength Constitution Buff (pet)",
+                  "icon": {
+                    "spellId": 3583,
+                    "borderId": 1,
+                    "iconLocation": 155
+                  }
+                },
+                {
+                  "name": "Raging Spirit",
+                  "value": 36,
+                  "spellId": 3584,
+                  "iconId": 3584,
+                  "description": "Decreases target's Str/Con by 36",
+                  "subSpellID": 0,
+                  "target": "Pet",
+                  "range": 1000,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "StrengthConstitutionBuff",
+                  "power": 54,
+                  "effectGroup": 204,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 33,
+                  "friendlyName": "Strength Constitution Buff (pet)",
+                  "icon": {
+                    "spellId": 3584,
+                    "borderId": 2,
+                    "iconLocation": 155
+                  }
+                },
+                {
+                  "name": "Frenzied Spirit",
+                  "value": 42,
+                  "spellId": 3585,
+                  "iconId": 3585,
+                  "description": "Decreases target's Str/Con by 42",
+                  "subSpellID": 0,
+                  "target": "Pet",
+                  "range": 1000,
+                  "recastDelay": 0,
+                  "duration": 1200,
+                  "castTime": 3,
+                  "damage": 0,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "StrengthConstitutionBuff",
+                  "power": 70,
+                  "effectGroup": 204,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 41,
+                  "friendlyName": "Strength Constitution Buff (pet)",
+                  "icon": {
+                    "spellId": 3585,
+                    "borderId": 3,
+                    "iconLocation": 155
+                  }
+                }
+              ],
+              "styles": [],
+              "abilities": []
+            },
+            {
+              "key": "Summon Hunter Pet (inst)",
+              "spells": [
+                {
+                  "name": "Hunter's Companion",
+                  "value": 7,
+                  "spellId": 3586,
+                  "iconId": 3586,
+                  "description": "Summons a pet to serve the caster.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 120,
+                  "duration": 65535,
+                  "castTime": 0,
+                  "damage": -80,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SummonHunterPet",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 1,
+                  "friendlyName": "Summon Hunter Pet (inst)",
+                  "icon": {
+                    "spellId": 3586,
+                    "borderId": -1,
+                    "iconLocation": 144
+                  }
+                },
+                {
+                  "name": "Hunter's Pet",
+                  "value": 13,
+                  "spellId": 3587,
+                  "iconId": 3587,
+                  "description": "Summons a pet to serve the caster.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 120,
+                  "duration": 65535,
+                  "castTime": 0,
+                  "damage": -80,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SummonHunterPet",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 7,
+                  "friendlyName": "Summon Hunter Pet (inst)",
+                  "icon": {
+                    "spellId": 3587,
+                    "borderId": -1,
+                    "iconLocation": 144
+                  }
+                },
+                {
+                  "name": "Hunter's Ally",
+                  "value": 20,
+                  "spellId": 3588,
+                  "iconId": 3588,
+                  "description": "Summons a pet to serve the caster.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 120,
+                  "duration": 65535,
+                  "castTime": 0,
+                  "damage": -80,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SummonHunterPet",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 13,
+                  "friendlyName": "Summon Hunter Pet (inst)",
+                  "icon": {
+                    "spellId": 3588,
+                    "borderId": 0,
+                    "iconLocation": 144
+                  }
+                },
+                {
+                  "name": "Hunter's Protector",
+                  "value": 32,
+                  "spellId": 3589,
+                  "iconId": 3589,
+                  "description": "Summons a pet to serve the caster.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 120,
+                  "duration": 65535,
+                  "castTime": 0,
+                  "damage": -80,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SummonHunterPet",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 20,
+                  "friendlyName": "Summon Hunter Pet (inst)",
+                  "icon": {
+                    "spellId": 3589,
+                    "borderId": 1,
+                    "iconLocation": 144
+                  }
+                },
+                {
+                  "name": "Hunter's Avatar",
+                  "value": 45,
+                  "spellId": 3590,
+                  "iconId": 3590,
+                  "description": "Summons a pet to serve the caster.",
+                  "subSpellID": 0,
+                  "target": "Self",
+                  "range": 0,
+                  "recastDelay": 120,
+                  "duration": 65535,
+                  "castTime": 0,
+                  "damage": -82,
+                  "damageType": 0,
+                  "frequency": 0,
+                  "type": "SummonHunterPet",
+                  "power": -25,
+                  "effectGroup": 0,
+                  "radius": 0,
+                  "objectType": "Spell",
+                  "level": 32,
+                  "friendlyName": "Summon Hunter Pet (inst)",
+                  "icon": {
+                    "spellId": 3590,
+                    "borderId": 2,
+                    "iconLocation": 144
+                  }
+                }
+              ],
+              "styles": [],
+              "abilities": []
+            }
+          ],
+          "groupName": "Beastcraft",
+          "isBaseLine": 0
+        }
+      ]
+    }
+  ]
+}
