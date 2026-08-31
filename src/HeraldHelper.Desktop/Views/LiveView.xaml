@@ -24,7 +24,12 @@
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <WrapPanel Margin="0,0,0,6">
-                                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Clear Log" Click="ClearResponseDiagnostics_Click" />
+                                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="ClearResponseDiagnostics_Click">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Delete" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                            <TextBlock Text="Clear Log" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
                                 </WrapPanel>
                                 <TextBox Grid.Row="1"
                                          x:Name="ResponseDiagnosticsBox" x:FieldModifier="public"

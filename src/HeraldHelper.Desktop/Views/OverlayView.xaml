@@ -10,8 +10,18 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <WrapPanel Grid.Row="0" Margin="0,0,0,10">
-                            <Button Style="{StaticResource ToolbarButtonStyle}" Content="Reload Overlay Settings" Click="ReloadOverlaySettings_Click" />
-                            <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Content="Save Overlay Settings" Click="SaveOverlaySettings_Click" />
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="ReloadOverlaySettings_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Refresh" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                    <TextBlock Text="Reload Overlay Settings" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Click="SaveOverlaySettings_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ContentSave" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                    <TextBlock Text="Save Overlay Settings" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
                         </WrapPanel>
 
                         <GroupBox Grid.Row="1" Header="Overlay Elements">
@@ -44,23 +54,48 @@
                                     <WrapPanel Margin="0,0,0,8">
                                         <TextBox Width="90" x:Name="OverlayXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target X" />
                                         <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target Y" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Drag" Click="PickTargetOverlayPosition_Click" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickTargetOverlayPosition_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="CursorMove" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Drag" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
                                     </WrapPanel>
                                     <WrapPanel Margin="0,0,0,8">
                                         <TextBox Width="90" x:Name="OverlayTimerXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Timer X" />
                                         <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayTimerYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Timer Y" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Drag" Click="PickTimerOverlayPosition_Click" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickTimerOverlayPosition_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="CursorMove" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Drag" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
                                     </WrapPanel>
                                     <WrapPanel>
                                         <TextBox Width="90" x:Name="OverlayFontSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target Font" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Resize" Click="PickTargetSize_Click" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickTargetSize_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="ArrowExpand" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Resize" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
                                         <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayTimerSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Timer Font" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Resize" Click="PickTimerSize_Click" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickTimerSize_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="ArrowExpand" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Resize" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
                                     </WrapPanel>
                                     <WrapPanel Margin="0,8,0,0">
                                         <TextBox Width="90" x:Name="OverlayCastXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Spellbar X" />
                                         <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayCastYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Spellbar Y" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Drag" Click="PickCastOverlayPosition_Click" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickCastOverlayPosition_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="CursorMove" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Drag" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
                                     </WrapPanel>
                                 </StackPanel>
                             </Border>
@@ -70,15 +105,30 @@
                                     <TextBlock Margin="0,0,0,8" FontWeight="SemiBold" Text="Colors" />
                                     <WrapPanel Margin="0,0,0,8">
                                         <TextBox Width="170" x:Name="TargetColorText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target Color (#RRGGBB)" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Pick" Click="PickTargetColor_Click" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickTargetColor_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="Eyedropper" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Pick" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
                                     </WrapPanel>
                                     <WrapPanel Margin="0,0,0,8">
                                         <TextBox Width="170" x:Name="TimerColorText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Timer Color (#RRGGBB)" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Pick" Click="PickTimerColor_Click" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickTimerColor_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="Eyedropper" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Pick" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
                                     </WrapPanel>
                                     <WrapPanel>
                                         <TextBox Width="170" x:Name="OutlineColorText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Outline Color (#RRGGBB)" />
-                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Content="Pick" Click="PickOutlineColor_Click" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickOutlineColor_Click">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="Eyedropper" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Pick" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
                                     </WrapPanel>
                                 </StackPanel>
                             </Border>
