@@ -407,7 +407,7 @@ Done when:
 - Split `AppDataStore` into settings (including auth), backup, ability profile, catalog override, stats, target-cache, and database-migrations repositories behind interfaces.
   - Done: all repositories.
 - Extract runtime/settings/character/profile controllers from `MainWindow`.
-  - Started: `SettingsController` (settings), `OverlaySettingsController` (overlay settings), `RuntimeController` (runtime composition), and `AuthController` (auth refresh / timer).
+  - Started: `SettingsController` (settings), `OverlaySettingsController` (overlay settings), `RuntimeController` (runtime composition), `AuthController` (auth refresh / timer), and `AbilityProfileController` (ability profile UI state/logic).
 - Split loop capture/parse processing from target-resolution state only after stage timings and characterization tests exist.
 - Rename shared browser/editor classes away from Eden-specific names.
 - Add CI for clean build, all tests, generated manifest validation.
