@@ -404,8 +404,8 @@ Done when:
 ### P2: maintainability
 
 - Extract runtime/settings/character/profile controllers from `MainWindow`.
-- Split `AppDataStore` into settings, auth, backup, ability profile, catalog override, stats, and target-cache repositories behind interfaces.
-  - Done: `SqliteConnectionFactory`, `SqliteSettingsRepository`, `SqliteCharacterStatsRepository`, `SqliteAbilitiesRepository`, `SqliteTargetProfileCache`, `SqliteCatalogOverrideRepository`, `SqliteAbilityProfileRepository`, `JsonBackupRepository`.
+- Split `AppDataStore` into settings (including auth), backup, ability profile, catalog override, stats, target-cache, and database-migrations repositories behind interfaces.
+  - Done: `SqliteConnectionFactory`, `SqliteSettingsRepository`, `SqliteCharacterStatsRepository`, `SqliteAbilitiesRepository`, `SqliteTargetProfileCache`, `SqliteCatalogOverrideRepository`, `SqliteAbilityProfileRepository`, `JsonBackupRepository`, `SqliteDatabaseMigrationsRepository`.
   - Remaining: controller extraction, loop state split.
 - Split loop capture/parse processing from target-resolution state only after stage timings and characterization tests exist.
 - Rename shared browser/editor classes away from Eden-specific names.
