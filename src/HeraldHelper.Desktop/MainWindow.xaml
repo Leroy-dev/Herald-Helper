@@ -181,14 +181,54 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <WrapPanel Grid.Column="0" VerticalAlignment="Center">
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Select Chat Area" Click="SelectChatArea_Click" />
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Select Stats Area" Click="SelectStatsArea_Click" />
-                    <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Content="Run One Tick" Click="RunTick_Click" />
-                    <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Name="ToggleLoopButton" Content="Start Loop" Click="ToggleLoop_Click" />
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Spell Browser" Click="OpenSpellBrowser_Click" />
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Browser" Click="OpenEdenBrowser_Click" />
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Refresh Auth (Shard)" Click="RefreshAuthCurrent_Click" />
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Content="Refresh Auth (All)" Click="RefreshAuthAll_Click" />
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="SelectChatArea_Click" ToolTip="Select the chat log capture region">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Chat" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Text="Chat" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="SelectStatsArea_Click" ToolTip="Select the player stats capture region">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ChartLine" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Text="Stats" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Click="RunTick_Click" ToolTip="Run a single OCR/parsing tick">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Play" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Text="Tick" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Name="ToggleLoopButton" Click="ToggleLoop_Click" ToolTip="Start or stop the background loop">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Run" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Text="Loop" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="OpenSpellBrowser_Click" ToolTip="Open the spell catalog browser">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="BookOpen" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Text="Spells" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="OpenEdenBrowser_Click" ToolTip="Open the item/eden browser">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Web" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Text="Browser" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="RefreshAuthCurrent_Click" ToolTip="Refresh auth for the current shard">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Refresh" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Text="Auth" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="RefreshAuthAll_Click" ToolTip="Refresh auth for all shards">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="CloudSync" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Text="Auth all" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </WrapPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
