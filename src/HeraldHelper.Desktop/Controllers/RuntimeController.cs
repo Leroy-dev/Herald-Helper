@@ -1,4 +1,5 @@
 using System.Net.Http;
+using System.Text;
 using HeraldHelper.Application.Contracts;
 using HeraldHelper.Application.Services;
 using HeraldHelper.Desktop.Repositories;
@@ -54,6 +55,41 @@ internal sealed class RuntimeController
     public DebugOverlayRenderer? DebugOverlay { get; private set; }
     public AppRuntimeSettings RuntimeSettings { get; private set; } = new(null, ShardType.Default, 0, OcrEngineMode.Adaptive, [], true, true, true, true);
     public ScreenCaptureOcrService? Capture { get; private set; }
+
+    public async Task<(string Output, OverlaySnapshot? Snapshot, string DiagnosticsText)> TickAsync(
+        ScreenRegion? chatRegion,
+        ShardType shard,
+        int resistPercent,
+        CancellationToken cancellationToken)
+    {
+        await Orchestrator!.TickAsync(
+            chatRegion ?? new ScreenRegion(0, 0, 1, 1),
+            shard,
+            resistPercent,
+            DateTimeOffset.UtcNow,
+            cancellationToken);
+        var output = DebugOverlay!.LastRendered;
+        var snapshot = DebugOverlay.LastSnapshot;
+        return (output, snapshot, BuildDiagnosticsText(snapshot));
+    }
+
+    private string BuildDiagnosticsText(OverlaySnapshot? snapshot)
+    {
+        var raw = snapshot?.RawOcrText ?? string.Empty;
+        if (raw.Length > 700)
+        {
+            raw = raw[..700] + " ...";
+        }
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"Engine: {Capture!.LastOcrEngineName}");
+        sb.AppendLine($"OCR time: {Capture.LastOcrDurationMs} ms");
+        sb.AppendLine($"OCR chars: {Capture.LastOcrTextLength}");
+        sb.AppendLine($"Target class: {snapshot?.Target?.Class ?? "Unknown"}");
+        sb.AppendLine("OCR preview:");
+        sb.AppendLine(raw);
+        return sb.ToString();
+    }
 
     public void Rebuild(IReadOnlyDictionary<string, string> settingsMap, Action onCharacterStatsSaved)
     {

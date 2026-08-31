@@ -582,10 +582,14 @@ public partial class MainWindow : Window
         _tickInProgress = true;
         try
         {
-            await _orchestrator.TickAsync(_chatRegion ?? new ScreenRegion(0, 0, 1, 1), _shardType, _resistPercent, DateTimeOffset.UtcNow, CancellationToken.None);
-            OutputBox.Text = _overlay.LastRendered;
-            _lastOverlaySnapshot = _overlay.LastSnapshot;
-            RefreshDiagnostics();
+            var (output, snapshot, diagnostics) = await _runtimeController.TickAsync(
+                _chatRegion,
+                _shardType,
+                _resistPercent,
+                CancellationToken.None);
+            OutputBox.Text = output;
+            _lastOverlaySnapshot = snapshot;
+            DiagnosticsBox.Text = diagnostics;
         }
         catch (Exception ex)
         {
@@ -992,25 +996,6 @@ public partial class MainWindow : Window
     private async void RefreshAuthAll_Click(object sender, RoutedEventArgs e)
     {
         await _authController.RefreshAllAsync();
-    }
-
-    private void RefreshDiagnostics()
-    {
-        var snapshot = _overlay.LastSnapshot;
-        var raw = snapshot?.RawOcrText ?? string.Empty;
-        if (raw.Length > 700)
-        {
-            raw = raw[..700] + " ...";
-        }
-
-        var sb = new StringBuilder();
-        sb.AppendLine($"Engine: {_capture.LastOcrEngineName}");
-        sb.AppendLine($"OCR time: {_capture.LastOcrDurationMs} ms");
-        sb.AppendLine($"OCR chars: {_capture.LastOcrTextLength}");
-        sb.AppendLine($"Target class: {snapshot?.Target?.Class ?? "Unknown"}");
-        sb.AppendLine("OCR preview:");
-        sb.AppendLine(raw);
-        DiagnosticsBox.Text = sb.ToString();
     }
 
     private void ClearResponseDiagnostics_Click(object sender, RoutedEventArgs e)
