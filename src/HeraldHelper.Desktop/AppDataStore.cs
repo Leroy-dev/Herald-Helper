@@ -12,7 +12,7 @@ using Microsoft.Data.Sqlite;
 
 namespace HeraldHelper.Desktop;
 
-public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICharacterStatsRepository
+public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICharacterStatsRepository, IAbilityRepository
 {
     public const int CurrentDatabaseMigrationVersion = 8;
     public const int CurrentBackupFormatVersion = 1;
@@ -20,6 +20,7 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
     private readonly SqliteConnectionFactory _connectionFactory;
     private readonly SqliteSettingsRepository _settingsRepository;
     private readonly SqliteCharacterStatsRepository _characterStatsRepository;
+    private readonly SqliteAbilitiesRepository _abilitiesRepository;
 
     public AppDataStore(string databasePath)
     {
@@ -33,6 +34,7 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
         _connectionFactory = new SqliteConnectionFactory(connectionString);
         _settingsRepository = new SqliteSettingsRepository(_connectionFactory);
         _characterStatsRepository = new SqliteCharacterStatsRepository(_connectionFactory);
+        _abilitiesRepository = new SqliteAbilitiesRepository(_connectionFactory);
     }
 
     public void Initialize()
@@ -67,65 +69,12 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
 
     public List<AbilityEditorRow> LoadAbilities()
     {
-        using var connection = _connectionFactory.OpenConnection();
-        using var cmd = connection.CreateCommand();
-        cmd.CommandText = "SELECT ability_name, skill_code, duration_seconds, effect_type FROM abilities ORDER BY id;";
-
-        var rows = new List<AbilityEditorRow>();
-        using var reader = cmd.ExecuteReader();
-        while (reader.Read())
-        {
-            rows.Add(new AbilityEditorRow
-            {
-                AbilityName = reader.GetString(0),
-                SkillCode = reader.GetString(1),
-                DurationSeconds = reader.GetInt32(2),
-                EffectType = reader.GetString(3)
-            });
-        }
-
-        return rows;
+        return _abilitiesRepository.LoadAbilities();
     }
 
     public void SaveAbilities(IEnumerable<AbilityEditorRow> rows)
     {
-        var list = rows
-            .Where(x => !string.IsNullOrWhiteSpace(x.AbilityName))
-            .Select(x => new AbilityEditorRow
-            {
-                AbilityName = x.AbilityName.Trim(),
-                SkillCode = NormalizeCode(x.SkillCode, "s"),
-                DurationSeconds = Math.Max(1, x.DurationSeconds),
-                EffectType = NormalizeCode(x.EffectType, "s")
-            })
-            .ToList();
-
-        using var connection = _connectionFactory.OpenConnection();
-        using var tx = connection.BeginTransaction();
-
-        using (var delete = connection.CreateCommand())
-        {
-            delete.Transaction = tx;
-            delete.CommandText = "DELETE FROM abilities;";
-            delete.ExecuteNonQuery();
-        }
-
-        foreach (var row in list)
-        {
-            using var insert = connection.CreateCommand();
-            insert.Transaction = tx;
-            insert.CommandText = """
-                INSERT INTO abilities(ability_name, skill_code, duration_seconds, effect_type)
-                VALUES($n, $s, $d, $e);
-                """;
-            insert.Parameters.AddWithValue("$n", row.AbilityName);
-            insert.Parameters.AddWithValue("$s", row.SkillCode);
-            insert.Parameters.AddWithValue("$d", row.DurationSeconds);
-            insert.Parameters.AddWithValue("$e", row.EffectType);
-            insert.ExecuteNonQuery();
-        }
-
-        tx.Commit();
+        _abilitiesRepository.SaveAbilities(rows);
     }
 
     public List<AbilityEditorRow> LoadAbilityProfile(ShardType shard, string characterName, string className)

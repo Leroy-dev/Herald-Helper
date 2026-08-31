@@ -36,4 +36,10 @@ internal abstract class SqliteRepositoryBase
     {
         return value.Trim().ToLowerInvariant();
     }
+
+    protected static string NormalizeCode(string value, string fallback)
+    {
+        var v = value.Trim().ToLowerInvariant();
+        return v is "m" or "s" or "r" ? v : fallback;
+    }
 }
