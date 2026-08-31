@@ -12,7 +12,7 @@ using Microsoft.Data.Sqlite;
 
 namespace HeraldHelper.Desktop;
 
-public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICharacterStatsRepository, IAbilityRepository, ICatalogOverrideRepository, IAbilityProfileRepository
+public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICharacterStatsRepository, IAbilityRepository, ICatalogOverrideRepository, IAbilityProfileRepository, IBackupRepository
 {
     public const int CurrentDatabaseMigrationVersion = 8;
     public const int CurrentBackupFormatVersion = 1;
@@ -24,6 +24,7 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
     private readonly SqliteTargetProfileCache _targetProfileCache;
     private readonly SqliteCatalogOverrideRepository _catalogOverrideRepository;
     private readonly SqliteAbilityProfileRepository _abilityProfileRepository;
+    private readonly JsonBackupRepository _backupRepository;
 
     public AppDataStore(string databasePath)
     {
@@ -41,6 +42,13 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
         _targetProfileCache = new SqliteTargetProfileCache(_connectionFactory);
         _catalogOverrideRepository = new SqliteCatalogOverrideRepository(_connectionFactory);
         _abilityProfileRepository = new SqliteAbilityProfileRepository(_connectionFactory);
+        _backupRepository = new JsonBackupRepository(
+            this,
+            this,
+            this,
+            this,
+            this,
+            GetDatabaseMigrationVersion);
     }
 
     public void Initialize()
@@ -132,7 +140,7 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
         _targetProfileCache.Save(shardType, profile);
     }
 
-    private List<CharacterStatsSnapshot> LoadAllCharacterStats()
+    public List<CharacterStatsSnapshot> LoadAllCharacterStats()
     {
         return _characterStatsRepository.LoadAllCharacterStats();
     }
@@ -174,158 +182,20 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
 
     public void ExportJson(string outputPath)
     {
-        var payload = new BackupPayload
-        {
-            BackupFormatVersion = CurrentBackupFormatVersion,
-            DatabaseMigrationVersion = GetDatabaseMigrationVersion(),
-            ExportedUtc = DateTimeOffset.UtcNow,
-            SecretsExcluded = true,
-            Settings = LoadConfigEntries().Where(x => !SqliteSettingsRepository.IsSensitiveKey(x.Key)).ToList(),
-            Abilities = LoadAbilities(),
-            CatalogEntryOverrides = LoadCatalogEntryOverrides().Values.ToList(),
-            AbilityProfileOverrides = LoadAbilityProfileOverrides(),
-            CharacterStats = LoadAllCharacterStats()
-        };
-
-        var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(outputPath, json, Encoding.UTF8);
+        _backupRepository.ExportJson(outputPath);
     }
 
     public void ImportJson(string inputPath, bool replaceExisting = true)
     {
-        var json = File.ReadAllText(inputPath, Encoding.UTF8);
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            throw new InvalidOperationException("Selected backup file is empty.");
-        }
-
-        BackupPayload payload;
-        try
-        {
-            payload = JsonSerializer.Deserialize<BackupPayload>(json) ?? new BackupPayload();
-        }
-        catch (JsonException ex)
-        {
-            throw new InvalidOperationException("Selected backup file is not valid HeraldHelper JSON.", ex);
-        }
-
-        var backupFormatVersion = payload.ResolvedBackupFormatVersion;
-        var databaseMigrationVersion = payload.ResolvedDatabaseMigrationVersion;
-
-        if (backupFormatVersion > CurrentBackupFormatVersion)
-        {
-            throw new InvalidOperationException(
-                $"Backup format version {backupFormatVersion} is newer than the supported version {CurrentBackupFormatVersion}.");
-        }
-
-        if (databaseMigrationVersion > CurrentDatabaseMigrationVersion)
-        {
-            throw new InvalidOperationException(
-                $"Database migration version {databaseMigrationVersion} is newer than the supported version {CurrentDatabaseMigrationVersion}.");
-        }
-
-        if (replaceExisting)
-        {
-            var restoredSettings = payload.Settings;
-            if (payload.SecretsExcluded)
-            {
-                restoredSettings = LoadConfigEntries()
-                    .Where(x => SqliteSettingsRepository.IsSensitiveKey(x.Key))
-                    .Concat(payload.Settings.Where(x => !SqliteSettingsRepository.IsSensitiveKey(x.Key)))
-                    .ToList();
-            }
-            SaveSettings(restoredSettings);
-            SaveAbilities(payload.Abilities);
-            if (payload.CatalogEntryOverrides is not null)
-            {
-                DeleteAllCatalogEntryOverrides();
-                foreach (var entryOverride in payload.CatalogEntryOverrides)
-                {
-                    SaveCatalogEntryOverride(entryOverride);
-                }
-            }
-
-            if (payload.AbilityProfileOverrides is not null)
-            {
-                DeleteAllAbilityProfiles();
-                RestoreAbilityProfileOverrides(payload.AbilityProfileOverrides);
-            }
-            else if (payload.AbilityProfiles is not null)
-            {
-                DeleteAllAbilityProfiles();
-                RestoreLegacyAbilityProfiles(payload.AbilityProfiles);
-            }
-
-            if (payload.CharacterStats is not null)
-            {
-                DeleteAllCharacterStats();
-                foreach (var stats in payload.CharacterStats)
-                {
-                    SaveCharacterStats(stats);
-                }
-            }
-
-            return;
-        }
-
-        var mergedSettings = LoadConfigEntries()
-            .Concat(payload.Settings)
-            .GroupBy(x => x.Key, StringComparer.OrdinalIgnoreCase)
-            .Select(g => g.Last())
-            .ToList();
-        SaveSettings(mergedSettings);
-
-        var mergedAbilities = LoadAbilities()
-            .Concat(payload.Abilities)
-            .ToList();
-        SaveAbilities(mergedAbilities);
-
-        if (payload.CatalogEntryOverrides is not null)
-        {
-            foreach (var entryOverride in payload.CatalogEntryOverrides)
-            {
-                SaveCatalogEntryOverride(entryOverride);
-            }
-        }
-
-        if (payload.AbilityProfileOverrides is not null)
-        {
-            RestoreAbilityProfileOverrides(payload.AbilityProfileOverrides);
-        }
-        else if (payload.AbilityProfiles is not null)
-        {
-            RestoreLegacyAbilityProfiles(payload.AbilityProfiles);
-        }
-
-        if (payload.CharacterStats is not null)
-        {
-            foreach (var stats in payload.CharacterStats)
-            {
-                SaveCharacterStats(stats);
-            }
-        }
+        _backupRepository.ImportJson(inputPath, replaceExisting);
     }
 
-    private void DeleteAllCatalogEntryOverrides()
+    public void DeleteAllCatalogEntryOverrides()
     {
         _catalogOverrideRepository.DeleteAllCatalogEntryOverrides();
     }
 
-    private void RestoreLegacyAbilityProfiles(IEnumerable<AbilityEditorRow> rows)
-    {
-        foreach (var group in rows
-            .Where(x => !string.IsNullOrWhiteSpace(x.Server) && !string.IsNullOrWhiteSpace(x.ClassName))
-            .GroupBy(x => $"{x.Server}|{x.ClassName}", StringComparer.OrdinalIgnoreCase))
-        {
-            var first = group.First();
-            if (Enum.TryParse<ShardType>(first.Server, true, out var shard))
-            {
-                SaveAbilityProfile(shard, first.CharacterName, first.ClassName, group);
-            }
-        }
-    }
-
-    private void DeleteAllCharacterStats()
+    public void DeleteAllCharacterStats()
     {
         _characterStatsRepository.DeleteAllCharacterStats();
     }
@@ -510,36 +380,4 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
         tx.Commit();
     }
 
-    private sealed class BackupPayload
-    {
-        [JsonPropertyName("backupFormatVersion")]
-        public int BackupFormatVersion { get; set; }
-
-        [JsonPropertyName("databaseMigrationVersion")]
-        public int DatabaseMigrationVersion { get; set; }
-
-        [JsonPropertyName("schemaVersion")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public int? SchemaVersion { get; set; }
-
-        public DateTimeOffset ExportedUtc { get; set; }
-        public bool SecretsExcluded { get; set; }
-        public List<ConfigEntry> Settings { get; set; } = [];
-        public List<AbilityEditorRow> Abilities { get; set; } = [];
-        public List<CatalogEntryOverride>? CatalogEntryOverrides { get; set; }
-        public List<AbilityProfileOverride>? AbilityProfileOverrides { get; set; }
-        public List<CharacterStatsSnapshot>? CharacterStats { get; set; }
-        // Kept for importing schema-4 backups.
-        public List<AbilityEditorRow>? AbilityProfiles { get; set; }
-
-        public int ResolvedBackupFormatVersion =>
-            BackupFormatVersion > 0
-                ? BackupFormatVersion
-                : SchemaVersion ?? 0;
-
-        public int ResolvedDatabaseMigrationVersion =>
-            DatabaseMigrationVersion > 0
-                ? DatabaseMigrationVersion
-                : SchemaVersion ?? CurrentDatabaseMigrationVersion;
-    }
 }

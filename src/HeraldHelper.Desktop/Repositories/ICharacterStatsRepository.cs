@@ -7,4 +7,6 @@ public interface ICharacterStatsRepository
 {
     CharacterStatsSnapshot? LoadCharacterStats(ShardType shard, string characterName);
     void SaveCharacterStats(CharacterStatsSnapshot stats);
+    List<CharacterStatsSnapshot> LoadAllCharacterStats();
+    void DeleteAllCharacterStats();
 }
