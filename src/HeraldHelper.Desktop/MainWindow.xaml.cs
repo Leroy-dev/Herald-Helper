@@ -34,6 +34,7 @@ public partial class MainWindow : Window
     private readonly AppDataStore _store;
     private readonly SettingsController _settingsController;
     private readonly OverlaySettingsController _overlaySettingsController;
+    private readonly RuntimeController _runtimeController;
     private readonly ResponseDiagnosticsBuffer _responseDiagnostics;
     private readonly IShardAuthRefreshService _authRefreshService;
     private readonly HttpClient _httpClient;
@@ -72,12 +73,13 @@ public partial class MainWindow : Window
         _store.Initialize();
         _settingsController = new SettingsController(_store);
         _overlaySettingsController = new OverlaySettingsController(_settingsController);
-        _responseDiagnostics = new ResponseDiagnosticsBuffer();
-        _responseDiagnostics.LineAdded += OnResponseDiagnosticLineAdded;
         _httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(8)
         };
+        _responseDiagnostics = new ResponseDiagnosticsBuffer();
+        _responseDiagnostics.LineAdded += OnResponseDiagnosticLineAdded;
+        _liveOverlay = new DesktopOverlayRenderer(() => _settingsController.LoadMap());
 
         var legacyCfgPath = FindFilePath("cfg.ini");
         var legacyAbilitiesPath = FindFilePath("abilities.txt");
@@ -92,6 +94,18 @@ public partial class MainWindow : Window
             shard => ShardAuthProfileResolver.Resolve(_settingsController.LoadMap(), shard),
             OnAuthRefreshed,
             profilesRoot);
+
+        _runtimeController = new RuntimeController(
+            _store,
+            _store,
+            _store,
+            _store,
+            _store,
+            _store,
+            _httpClient,
+            _authRefreshService,
+            _liveOverlay,
+            _responseDiagnostics);
 
         _loopTimer = new DispatcherTimer();
         _loopTimer.Interval = TimeSpan.FromMilliseconds(350);
@@ -136,62 +150,19 @@ public partial class MainWindow : Window
 
     private void RebuildRuntimeFromFiles()
     {
-        _orchestrator?.Dispose();
-        var settingsMap = _settingsController.LoadMap();
-        var selectedShard = AppRuntimeSettings.FromMap(settingsMap).ShardType;
-        var selectedCharacter = ReadOrDefault(
-            settingsMap,
-            $"daoc.character.{selectedShard.ToString().ToLowerInvariant()}",
-            string.Empty);
-        var abilities = LoadActiveAbilityDefinitions(settingsMap, selectedShard);
-        _liveOverlay ??= new DesktopOverlayRenderer(() => _settingsController.LoadMap());
-        (_orchestrator, _overlay, _runtimeSettings, _capture) = AppComposition.Build(
-            settingsMap,
-            abilities,
-            _httpClient,
-            () => _settingsController.LoadMap(),
-            _authRefreshService,
-            _liveOverlay,
-            _responseDiagnostics,
-            () => LoadCastSpellOverrides(selectedShard),
-            () => _store.LoadCharacterStats(selectedShard, selectedCharacter),
-            stats =>
-            {
-                _store.SaveCharacterStats(stats);
-                Dispatcher.BeginInvoke(UpdateRegionText);
-            },
-            _store);
+        _runtimeController.Rebuild(
+            _settingsController.LoadMap(),
+            () => Dispatcher.BeginInvoke(UpdateRegionText));
+        _orchestrator = _runtimeController.Orchestrator!;
+        _overlay = _runtimeController.DebugOverlay!;
+        _runtimeSettings = _runtimeController.RuntimeSettings;
+        _capture = _runtimeController.Capture!;
         _chatRegion = _runtimeSettings.ChatRegion;
         _shardType = _runtimeSettings.ShardType;
         _resistPercent = _runtimeSettings.ResistPercent;
         _ocrEngineMode = _runtimeSettings.OcrEngineMode;
         BindControlsFromSettings();
         UpdateRegionText();
-    }
-
-    private IReadOnlyCollection<CastSpellOverride> LoadCastSpellOverrides(ShardType shard)
-    {
-        var blackthorn = shard == ShardType.Blackthorn;
-        return _store.LoadCatalogEntryOverrides()
-            .Values
-            .Where(x => x.EntryKey.StartsWith("blackthorn|", StringComparison.OrdinalIgnoreCase) == blackthorn)
-            .Select(x => new CastSpellOverride(
-                GetOriginalEntryName(x.EntryKey, x.Name),
-                x.Name,
-                x.CastTimeSeconds,
-                x.Icon,
-                x.ClassName,
-                x.Level))
-            .ToList();
-    }
-
-    private static string GetOriginalEntryName(string entryKey, string fallbackName)
-    {
-        var segments = entryKey.Split('|');
-        var nameIndex = entryKey.StartsWith("blackthorn|", StringComparison.OrdinalIgnoreCase) ? 3 : 2;
-        return segments.Length > nameIndex && !string.IsNullOrWhiteSpace(segments[nameIndex])
-            ? segments[nameIndex]
-            : fallbackName;
     }
 
     private void BindControlsFromSettings()
@@ -290,35 +261,6 @@ public partial class MainWindow : Window
             : string.IsNullOrWhiteSpace(_abilityProfileClass)
                 ? "Choose a class to activate its profile."
                 : $"{_abilityProfileShard} / {DisplayProfileCharacter(_abilityProfileCharacter)} / {_abilityProfileClass}: {_abilityEntries.Count(x => x.IsEnabled)} of {_abilityEntries.Count} enabled";
-    }
-
-    private List<AbilityDefinition> LoadActiveAbilityDefinitions(
-        IReadOnlyDictionary<string, string> settingsMap,
-        ShardType shard)
-    {
-        if (SupportsAbilityProfiles(shard))
-        {
-            var characterName = ReadOrDefault(
-                settingsMap,
-                $"daoc.character.{shard.ToString().ToLowerInvariant()}",
-                string.Empty);
-            var className = ReadOrDefault(
-                settingsMap,
-                AbilityProfileClassSettingKey(shard, characterName),
-                ReadOrDefault(settingsMap, LegacyAbilityProfileClassSettingKey(shard), string.Empty));
-            if (!string.IsNullOrWhiteSpace(className))
-            {
-                return _store.LoadAbilityProfile(shard, characterName, className)
-                    .Where(x => x.IsEnabled)
-                    .Select(ToAbilityDefinition)
-                    .ToList();
-            }
-        }
-
-        return _store.LoadAbilities()
-            .Where(x => x.IsEnabled)
-            .Select(ToAbilityDefinition)
-            .ToList();
     }
 
     private static bool SupportsAbilityProfiles(ShardType shard)
@@ -1212,19 +1154,6 @@ public partial class MainWindow : Window
         }
 
         return Path.Combine(Directory.GetCurrentDirectory(), fileName);
-    }
-
-    private static AbilityDefinition ToAbilityDefinition(AbilityEditorRow row)
-    {
-        return new AbilityDefinition(
-            row.AbilityName.Trim(),
-            row.SkillCode.Trim().ToLowerInvariant(),
-            Math.Max(1, row.DurationSeconds),
-            AbilitiesChatEventParser.ParseEffectTypeCode(row.EffectType),
-            row.Aliases
-                .Split([';', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList());
     }
 
     private void ToggleTheme_Click(object sender, RoutedEventArgs e)
