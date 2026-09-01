@@ -31,14 +31,13 @@ public sealed class TitanHeraldClient : IHeraldClient
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
 
-        var name = root.GetProperty("name").GetString() ?? targetName;
         var guild = root.TryGetProperty("guild", out var guildElement) ? guildElement.GetString() : null;
         var @class = root.TryGetProperty("class", out var classElement) ? classElement.GetString() : null;
         int? level = root.TryGetProperty("level", out var levelElement) && levelElement.TryGetInt32(out var l) ? l : null;
         var rr = root.TryGetProperty("realmRank", out var rrElement) ? rrElement.GetString() : null;
         var solo = SumSoloKills(root);
 
-        return new TargetProfile(name, guild, @class, level, rr, solo);
+        return new TargetProfile(targetName, guild, @class, level, rr, solo);
     }
 
     private static int? SumSoloKills(JsonElement root)

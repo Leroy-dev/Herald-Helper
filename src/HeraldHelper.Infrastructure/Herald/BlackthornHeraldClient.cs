@@ -26,7 +26,6 @@ public sealed partial class BlackthornHeraldClient : IHeraldClient
         resp.EnsureSuccessStatusCode();
         var html = await resp.Content.ReadAsStringAsync(cancellationToken);
 
-        var name = MatchOne(html, @"<td\b[^>]*class=""[^""]*\bName\b[^""]*\bplayer\b[^""]*""[^>]*>(.*?)</td>") ?? targetName;
         var guild = MatchOne(html, @"<a\b[^>]*href=""/stats/guild/[^""]+""[^>]*>(.*?)</a>");
         var @class = MatchOne(html, @"<td\b[^>]*class=""[^""]*\bclassName\b[^""]*""[^>]*>.*?<a\b[^>]*href=""/stats/players/realmpoints/[^""]+""[^>]*>(.*?)</a>");
         var levelText = MatchOne(html, @"<td\b[^>]*class=""[^""]*\bLevel\b[^""]*""[^>]*>(.*?)</td>");
@@ -34,7 +33,7 @@ public sealed partial class BlackthornHeraldClient : IHeraldClient
         var solo = MatchStatAllTime(html, "Solo");
 
         int? level = int.TryParse(levelText, out var levelValue) ? levelValue : null;
-        return new TargetProfile(name, guild, @class, level, rr, solo);
+        return new TargetProfile(targetName, guild, @class, level, rr, solo);
     }
 
     private static string? MatchOne(string input, string pattern, int captureIndex = 1)

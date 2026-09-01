@@ -498,6 +498,11 @@ public sealed class GameLoopOrchestrator : IDisposable
             var cached = _targetProfileCache.Load(shardType, targetEvent.Name);
             if (cached is not null)
             {
+                if (!string.Equals(cached.Name, targetEvent.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    cached = cached with { Name = targetEvent.Name };
+                }
+
                 _lastTarget = cached;
                 _diagnostics?.Log($"[Target] cache hit for {cached.Name}; refreshing in background.");
             }
@@ -624,10 +629,16 @@ public sealed class GameLoopOrchestrator : IDisposable
             }
             else
             {
-                _lastTarget = result.Profile;
+                var profile = result.Profile;
+                if (!string.Equals(profile.Name, result.TargetName, StringComparison.OrdinalIgnoreCase))
+                {
+                    profile = profile with { Name = result.TargetName };
+                }
+
+                _lastTarget = profile;
                 _currentTargetMembership = TargetMembership.Member;
                 _nextTargetLookupAtUtc = DateTimeOffset.MaxValue;
-                profileToCache = result.Profile;
+                profileToCache = profile;
                 applied = true;
             }
         }

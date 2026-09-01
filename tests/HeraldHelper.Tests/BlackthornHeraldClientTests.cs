@@ -39,7 +39,7 @@ public sealed class BlackthornHeraldClientTests
         var profile = await client.GetTargetProfileAsync("Teagan", CancellationToken.None);
 
         Assert.NotNull(profile);
-        Assert.Equal("Teagan Presley", profile.Name);
+        Assert.Equal("Teagan", profile.Name);
         Assert.Equal("Tir na Nog Adventurers", profile.Guild);
         Assert.Equal("Nightshade", profile.Class);
         Assert.Equal(50, profile.Level);

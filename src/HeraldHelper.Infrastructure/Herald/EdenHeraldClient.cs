@@ -137,7 +137,6 @@ public sealed class EdenHeraldClient : IHeraldClient, IHeraldProfileUpdateSource
         using var doc = JsonDocument.Parse(json);
         var root = UnwrapPlayerRoot(doc.RootElement);
 
-        var name = TryGetString(root, "name") ?? targetName;
         var guild = ResolveGuild(root);
         var @class = ResolveClass(root);
         var xp = ResolveLong(root, "experience");
@@ -146,7 +145,7 @@ public sealed class EdenHeraldClient : IHeraldClient, IHeraldProfileUpdateSource
         var rr = ResolveRealmRank(root, rp);
         _soloKillsCache.TryGetValue(targetName, out var solo);
         TriggerSoloKillsRefresh(targetName);
-        var profile = new TargetProfile(name, guild, @class, level, rr, _soloKillsCache.ContainsKey(targetName) ? solo : null);
+        var profile = new TargetProfile(targetName, guild, @class, level, rr, _soloKillsCache.ContainsKey(targetName) ? solo : null);
         _latestProfiles[targetName] = profile;
         return profile;
     }

@@ -52,7 +52,6 @@ public sealed class CelestiusHeraldClient : IHeraldClient
             return null;
         }
 
-        var name = character.GetProperty("name").GetString() ?? targetName;
         var guild = TryGetNestedString(character, "guild", "name");
         var @class = TryGetNestedString(character, "class", "name");
         var rr = character.TryGetProperty("realmRank", out var rrEl) ? rrEl.ToString() : null;
@@ -62,7 +61,7 @@ public sealed class CelestiusHeraldClient : IHeraldClient
             ? soloInt
             : null;
 
-        return new TargetProfile(name, guild, @class, null, rr, solo);
+        return new TargetProfile(targetName, guild, @class, null, rr, solo);
     }
 
     private static string? TryGetNestedString(JsonElement root, string parent, string child)

@@ -45,7 +45,13 @@ internal sealed class RestOnlineTargetProfileClient : IOnlineTargetProfileClient
             }
 
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<TargetProfile>(JsonOptions, cancellationToken).ConfigureAwait(false);
+            var profile = await response.Content.ReadFromJsonAsync<TargetProfile>(JsonOptions, cancellationToken).ConfigureAwait(false);
+            if (profile is not null && !string.Equals(profile.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                profile = profile with { Name = name };
+            }
+
+            return profile;
         }
         catch
         {
