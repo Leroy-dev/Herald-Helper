@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using HeraldHelper.Domain.Enums;
 
 namespace HeraldHelper.Desktop.Models;
 
@@ -6,6 +7,7 @@ public sealed class HeraldHelperSettings : INotifyPropertyChanged
 {
     private OverlaySettings _overlay = new();
     private AuthSettings _auth = new();
+    private OnlineSettings _online = new();
     private DiagnosticsSettings _diagnostics = new();
     private AppearanceSettings _appearance = new();
 
@@ -26,6 +28,16 @@ public sealed class HeraldHelperSettings : INotifyPropertyChanged
         {
             _auth = value;
             OnPropertyChanged(nameof(Auth));
+        }
+    }
+
+    public OnlineSettings Online
+    {
+        get => _online;
+        set
+        {
+            _online = value;
+            OnPropertyChanged(nameof(Online));
         }
     }
 
@@ -60,11 +72,22 @@ public sealed class HeraldHelperSettings : INotifyPropertyChanged
 public sealed class AuthSettings : INotifyPropertyChanged
 {
     private int _autoRefreshMinutes = 25;
-    private bool _onlineSyncEnabled;
 
     public int AutoRefreshMinutes { get => _autoRefreshMinutes; set { _autoRefreshMinutes = value; OnPropertyChanged(nameof(AutoRefreshMinutes)); } }
 
-    public bool OnlineSyncEnabled { get => _onlineSyncEnabled; set { _onlineSyncEnabled = value; OnPropertyChanged(nameof(OnlineSyncEnabled)); } }
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+
+public sealed class OnlineSettings : INotifyPropertyChanged
+{
+    private OnlineSyncMode _mode = OnlineSyncMode.Disabled;
+
+    public OnlineSyncMode Mode { get => _mode; set { _mode = value; OnPropertyChanged(nameof(Mode)); } }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

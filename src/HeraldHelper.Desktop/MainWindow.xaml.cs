@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Windows;
@@ -43,7 +42,6 @@ public partial class MainWindow : Window
     private readonly AuthController _authController;
     private readonly ResponseDiagnosticsBuffer _responseDiagnostics;
     private readonly IShardAuthRefreshService _authRefreshService;
-    private readonly HttpClient _httpClient;
     private readonly DispatcherTimer _loopTimer;
     private bool _tickInProgress;
     private bool _isBindingControls;
@@ -62,7 +60,7 @@ public partial class MainWindow : Window
     private OverlaySnapshot? _lastOverlaySnapshot;
     private DataBrowserWindow? _edenBrowserWindow;
 
-    private System.Windows.Controls.TextBox OutputBox => LiveView!.OutputBox;
+    internal System.Windows.Controls.TextBox OutputBox => LiveView!.OutputBox;
     private System.Windows.Controls.TextBox DiagnosticsBox => LiveView!.DiagnosticsBox;
     private System.Windows.Controls.TextBox ResponseDiagnosticsBox => LiveView!.ResponseDiagnosticsBox;
     private System.Windows.Controls.StackPanel DaocCharacterPanel => ConfigView!.DaocCharacterPanel;
@@ -142,55 +140,20 @@ public partial class MainWindow : Window
         _writableSettings = services.GetRequiredService<IWritableSettings<HeraldHelperSettings>>();
         _writableSettings.Load();
         _overlaySettingsController = services.GetRequiredService<OverlaySettingsController>();
-        _abilityProfileController = new AbilityProfileController(_store, _store, _settingsController);
-        _daocCharacterController = new DaocCharacterController(_store);
-        _themeController = new ThemeController(_settingsController);
-        _httpClient = new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(8)
-        };
-        _responseDiagnostics = new ResponseDiagnosticsBuffer();
+        _abilityProfileController = services.GetRequiredService<AbilityProfileController>();
+        _daocCharacterController = services.GetRequiredService<DaocCharacterController>();
+        _themeController = services.GetRequiredService<ThemeController>();
+        _responseDiagnostics = services.GetRequiredService<ResponseDiagnosticsBuffer>();
         _responseDiagnostics.LineAdded += OnResponseDiagnosticLineAdded;
-        _liveOverlay = new DesktopOverlayRenderer(() => _overlaySettingsController.Load(), () => _settingsController.LoadMap());
+        _liveOverlay = services.GetRequiredService<DesktopOverlayRenderer>();
+        _authRefreshService = services.GetRequiredService<IShardAuthRefreshService>();
+        _runtimeController = services.GetRequiredService<RuntimeController>();
+        _authController = services.GetRequiredService<AuthController>();
 
         var legacyCfgPath = FindFilePath("cfg.ini");
         var legacyAbilitiesPath = FindFilePath("abilities.txt");
         LegacyTextImporter.ImportIfNeeded(_store, legacyCfgPath, legacyAbilitiesPath);
         _settingsController.EnsureDefaultAuthSettings();
-
-        var profilesRoot = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "HeraldHelper",
-            "browser-profiles");
-        _authRefreshService = new PlaywrightShardAuthRefreshService(
-            shard => ShardAuthProfileResolver.Resolve(_settingsController.LoadMap(), shard),
-            OnAuthRefreshed,
-            profilesRoot);
-
-        _runtimeController = new RuntimeController(
-            _store,
-            _store,
-            _store,
-            _store,
-            _store,
-            _store,
-            _httpClient,
-            _authRefreshService,
-            _liveOverlay,
-            _responseDiagnostics);
-
-        _authController = new AuthController(
-            _settingsController,
-            _authRefreshService,
-            TimeSpan.FromMinutes(25),
-            text => OutputBox.Text = text,
-            () =>
-            {
-                ReloadEditorData();
-                RebuildRuntimeFromFiles();
-                ReloadOverlaySettingsFromStore();
-                return;
-            });
 
         _loopTimer = new DispatcherTimer();
         _loopTimer.Interval = TimeSpan.FromMilliseconds(350);
@@ -218,7 +181,6 @@ public partial class MainWindow : Window
         _responseDiagnostics.LineAdded -= OnResponseDiagnosticLineAdded;
         _orchestrator?.Dispose();
         _liveOverlay?.Dispose();
-        _httpClient?.Dispose();
         base.OnClosed(e);
     }
 
@@ -264,7 +226,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void RebuildRuntimeFromFiles()
+    internal void RebuildRuntimeFromFiles()
     {
         _runtimeController.Rebuild(
             _settingsController.LoadMap(),
@@ -298,7 +260,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ReloadEditorData()
+    internal void ReloadEditorData()
     {
         _cfgEntries.Clear();
         foreach (var entry in _settingsController.LoadEntries())
@@ -879,11 +841,6 @@ public partial class MainWindow : Window
         });
     }
 
-    private void OnAuthRefreshed(ShardType shard, ShardAuthBundle bundle)
-    {
-        _authController.OnRefreshed(shard, bundle);
-    }
-
     private void PickOverlayPosition(bool isTimerOverlay)
     {
         var xText = isTimerOverlay ? OverlayTimerXText : OverlayXText;
@@ -964,7 +921,7 @@ public partial class MainWindow : Window
         SaveOverlaySettings_Click(this, new RoutedEventArgs());
     }
 
-    private void ReloadOverlaySettingsFromStore()
+    internal void ReloadOverlaySettingsFromStore()
     {
         var settings = _overlaySettingsController.Load();
         OverlayXText.Text = settings.X.ToString();
