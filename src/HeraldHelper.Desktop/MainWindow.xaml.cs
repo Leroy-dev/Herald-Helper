@@ -1,12 +1,10 @@
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Text;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
-using HeraldHelper.Application.Services;
 using HeraldHelper.Desktop.Controllers;
 using HeraldHelper.Desktop.Models;
 using HeraldHelper.Desktop.Services;
@@ -29,10 +27,8 @@ namespace HeraldHelper.Desktop;
 
 public partial class MainWindow : Window
 {
-    private GameLoopOrchestrator _orchestrator = null!;
-    private DebugOverlayRenderer _overlay = null!;
     private DesktopOverlayRenderer _liveOverlay = null!;
-    private ScreenCaptureOcrService _capture = null!;
+    private RuntimeSession _runtimeSession = null!;
     private readonly IServiceProvider _services;
     private readonly IWritableSettings<HeraldHelperSettings> _writableSettings;
     private readonly AppDataStore _store;
@@ -56,7 +52,6 @@ public partial class MainWindow : Window
     private readonly Dictionary<ShardType, WpfComboBox> _daocCharacterSelectors = new();
     private readonly Dictionary<ShardType, System.Windows.Controls.Button> _daocWindowButtons = new();
     private readonly Dictionary<ShardType, TextBlock> _daocCharacterSummaryBlocks = new();
-    private AppRuntimeSettings _runtimeSettings = new(null, ShardType.Default, 0, OcrEngineMode.Adaptive, [], true, true, true, true);
     private OverlaySnapshot? _lastOverlaySnapshot;
     private DataBrowserWindow? _edenBrowserWindow;
 
@@ -179,7 +174,7 @@ public partial class MainWindow : Window
         _loopTimer?.Stop();
         _authController?.AuthRefreshTimer?.Stop();
         _responseDiagnostics.LineAdded -= OnResponseDiagnosticLineAdded;
-        _orchestrator?.Dispose();
+        _runtimeSession?.Dispose();
         _liveOverlay?.Dispose();
         base.OnClosed(e);
     }
@@ -228,17 +223,14 @@ public partial class MainWindow : Window
 
     internal void RebuildRuntimeFromFiles()
     {
-        _runtimeController.Rebuild(
+        _runtimeSession?.Dispose();
+        _runtimeSession = _runtimeController.Rebuild(
             _settingsController.LoadMap(),
             () => Dispatcher.BeginInvoke(UpdateRegionText));
-        _orchestrator = _runtimeController.Orchestrator!;
-        _overlay = _runtimeController.DebugOverlay!;
-        _runtimeSettings = _runtimeController.RuntimeSettings;
-        _capture = _runtimeController.Capture!;
-        _chatRegion = _runtimeSettings.ChatRegion;
-        _shardType = _runtimeSettings.ShardType;
-        _resistPercent = _runtimeSettings.ResistPercent;
-        _ocrEngineMode = _runtimeSettings.OcrEngineMode;
+        _chatRegion = _runtimeSession.RuntimeSettings.ChatRegion;
+        _shardType = _runtimeSession.RuntimeSettings.ShardType;
+        _resistPercent = _runtimeSession.RuntimeSettings.ResistPercent;
+        _ocrEngineMode = _runtimeSession.RuntimeSettings.OcrEngineMode;
         BindControlsFromSettings();
         UpdateRegionText();
     }
@@ -510,7 +502,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (_chatRegion is null && _runtimeSettings.OcrWatchRegions.Count == 0)
+        if (_runtimeSession is null || (_chatRegion is null && _runtimeSession.RuntimeSettings.OcrWatchRegions.Count == 0))
         {
             OutputBox.Text = "Select chat area first (drag selection).";
             return;
@@ -519,7 +511,7 @@ public partial class MainWindow : Window
         _tickInProgress = true;
         try
         {
-            var (output, snapshot, diagnostics) = await _runtimeController.TickAsync(
+            var (output, snapshot, diagnostics) = await _runtimeSession.TickAsync(
                 _chatRegion,
                 _shardType,
                 _resistPercent,
@@ -734,17 +726,18 @@ public partial class MainWindow : Window
     {
         var modeLabel = _shardType == ShardType.Default ? "Default mode" : $"Shard: {_shardType}";
         var statsLabel = BuildCharacterStatsLabel();
+        var ocrWindowCount = _runtimeSession?.RuntimeSettings.OcrWatchRegions.Count ?? 0;
         if (_chatRegion is null)
         {
             RegionText.Text = _shardType == ShardType.Default
                 ? $"{modeLabel} | OCR: {_ocrEngineMode} | Resist: {_resistPercent}% | Region: not set | Independent mode"
-                : $"Shard: {_shardType} | OCR: {_ocrEngineMode} | Resist: {_resistPercent}% | Region: not set | OCR windows: {_runtimeSettings.OcrWatchRegions.Count} | {statsLabel}";
+                : $"Shard: {_shardType} | OCR: {_ocrEngineMode} | Resist: {_resistPercent}% | Region: not set | OCR windows: {ocrWindowCount} | {statsLabel}";
             return;
         }
 
         RegionText.Text = _shardType == ShardType.Default
             ? $"{modeLabel} | OCR: {_ocrEngineMode} | Resist: {_resistPercent}% | Region: X={_chatRegion.X}, Y={_chatRegion.Y}, W={_chatRegion.Width}, H={_chatRegion.Height} | Independent mode"
-            : $"Shard: {_shardType} | OCR: {_ocrEngineMode} | Resist: {_resistPercent}% | Region: X={_chatRegion.X}, Y={_chatRegion.Y}, W={_chatRegion.Width}, H={_chatRegion.Height} | OCR windows: {_runtimeSettings.OcrWatchRegions.Count} | {statsLabel}";
+            : $"Shard: {_shardType} | OCR: {_ocrEngineMode} | Resist: {_resistPercent}% | Region: X={_chatRegion.X}, Y={_chatRegion.Y}, W={_chatRegion.Width}, H={_chatRegion.Height} | OCR windows: {ocrWindowCount} | {statsLabel}";
     }
 
     private string BuildCharacterStatsLabel()
@@ -1126,7 +1119,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var snapshot = _overlay?.LastSnapshot ?? _lastOverlaySnapshot;
+        var snapshot = _runtimeSession?.LastSnapshot ?? _lastOverlaySnapshot;
         if (snapshot is null)
         {
             return;

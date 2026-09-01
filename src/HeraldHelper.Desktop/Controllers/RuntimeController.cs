@@ -1,12 +1,9 @@
 using System.Net.Http;
-using System.Text;
 using HeraldHelper.Application.Contracts;
-using HeraldHelper.Application.Services;
 using HeraldHelper.Desktop.Repositories;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 using HeraldHelper.Infrastructure.Auth;
-using HeraldHelper.Infrastructure.Capture;
 using HeraldHelper.Infrastructure.Composition;
 using HeraldHelper.Infrastructure.Configuration;
 using HeraldHelper.Infrastructure.Overlay;
@@ -26,7 +23,7 @@ internal sealed class RuntimeController
     private readonly IShardAuthRefreshService _authRefreshService;
     private readonly IOnlineSyncService? _onlineSync;
     private readonly IResponseDiagnostics? _responseDiagnostics;
-    private DesktopOverlayRenderer _liveOverlay;
+    private readonly DesktopOverlayRenderer _liveOverlay;
 
     public RuntimeController(
         ISettingsRepository settingsRepository,
@@ -54,49 +51,8 @@ internal sealed class RuntimeController
         _responseDiagnostics = responseDiagnostics;
     }
 
-    public GameLoopOrchestrator? Orchestrator { get; private set; }
-    public DebugOverlayRenderer? DebugOverlay { get; private set; }
-    public AppRuntimeSettings RuntimeSettings { get; private set; } = new(null, ShardType.Default, 0, OcrEngineMode.Adaptive, [], true, true, true, true);
-    public ScreenCaptureOcrService? Capture { get; private set; }
-
-    public async Task<(string Output, OverlaySnapshot? Snapshot, string DiagnosticsText)> TickAsync(
-        ScreenRegion? chatRegion,
-        ShardType shard,
-        int resistPercent,
-        CancellationToken cancellationToken)
+    public RuntimeSession Rebuild(IReadOnlyDictionary<string, string> settingsMap, Action onCharacterStatsSaved)
     {
-        await Orchestrator!.TickAsync(
-            chatRegion ?? new ScreenRegion(0, 0, 1, 1),
-            shard,
-            resistPercent,
-            DateTimeOffset.UtcNow,
-            cancellationToken);
-        var output = DebugOverlay!.LastRendered;
-        var snapshot = DebugOverlay.LastSnapshot;
-        return (output, snapshot, BuildDiagnosticsText(snapshot));
-    }
-
-    private string BuildDiagnosticsText(OverlaySnapshot? snapshot)
-    {
-        var raw = snapshot?.RawOcrText ?? string.Empty;
-        if (raw.Length > 700)
-        {
-            raw = raw[..700] + " ...";
-        }
-
-        var sb = new StringBuilder();
-        sb.AppendLine($"Engine: {Capture!.LastOcrEngineName}");
-        sb.AppendLine($"OCR time: {Capture.LastOcrDurationMs} ms");
-        sb.AppendLine($"OCR chars: {Capture.LastOcrTextLength}");
-        sb.AppendLine($"Target class: {snapshot?.Target?.Class ?? "Unknown"}");
-        sb.AppendLine("OCR preview:");
-        sb.AppendLine(raw);
-        return sb.ToString();
-    }
-
-    public void Rebuild(IReadOnlyDictionary<string, string> settingsMap, Action onCharacterStatsSaved)
-    {
-        Orchestrator?.Dispose();
         var selectedShard = AppRuntimeSettings.FromMap(settingsMap).ShardType;
         var selectedCharacter = ReadOrDefault(
             settingsMap,
@@ -105,7 +61,7 @@ internal sealed class RuntimeController
         var abilities = LoadActiveAbilityDefinitions(settingsMap, selectedShard);
         var getSettings = () => _settingsRepository.LoadSettingsMap();
 
-        (Orchestrator, DebugOverlay, RuntimeSettings, Capture) = AppComposition.Build(
+        var (orchestrator, debugOverlay, runtimeSettings, capture) = AppComposition.Build(
             settingsMap,
             abilities,
             _httpClient,
@@ -122,6 +78,8 @@ internal sealed class RuntimeController
             },
             _targetProfileCache,
             _onlineSync);
+
+        return new RuntimeSession(orchestrator, debugOverlay, runtimeSettings, capture);
     }
 
     private IReadOnlyCollection<CastSpellOverride> LoadCastSpellOverrides(ShardType shard)

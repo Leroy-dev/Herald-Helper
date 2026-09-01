@@ -72,8 +72,11 @@ public sealed class HeraldHelperSettings : INotifyPropertyChanged
 public sealed class AuthSettings : INotifyPropertyChanged
 {
     private int _autoRefreshMinutes = 25;
+    private bool _autoRefreshEnabled = true;
 
     public int AutoRefreshMinutes { get => _autoRefreshMinutes; set { _autoRefreshMinutes = value; OnPropertyChanged(nameof(AutoRefreshMinutes)); } }
+
+    public bool AutoRefreshEnabled { get => _autoRefreshEnabled; set { _autoRefreshEnabled = value; OnPropertyChanged(nameof(AutoRefreshEnabled)); } }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

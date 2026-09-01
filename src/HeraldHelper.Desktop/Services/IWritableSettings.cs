@@ -110,6 +110,11 @@ internal sealed class HeraldHelperSettingsService : SqliteWritableSettings<Heral
         overlay.TargetFontFamily = ReadString(map, "targetFontFamily", overlay.TargetFontFamily);
         overlay.TimerFontFamily = ReadString(map, "timerFontFamily", overlay.TimerFontFamily);
         overlay.CastbarFontFamily = ReadString(map, "castbarFontFamily", overlay.CastbarFontFamily);
+
+        settings.Appearance.Theme = ReadString(map, "ui.theme.mode", settings.Appearance.Theme);
+        settings.Appearance.AccentColor = ReadString(map, "ui.theme.accent", settings.Appearance.AccentColor);
+        settings.Auth.AutoRefreshEnabled = ReadBool(map, "auth.autoRefreshEnabled", settings.Auth.AutoRefreshEnabled);
+        settings.Auth.AutoRefreshMinutes = ReadInt(map, "auth.autoRefreshMinutes", settings.Auth.AutoRefreshMinutes);
     }
 
     private static int ReadInt(IReadOnlyDictionary<string, string> map, string key, int fallback)

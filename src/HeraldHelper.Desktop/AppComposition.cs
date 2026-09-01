@@ -79,11 +79,10 @@ internal static class AppServiceProvider
             var settings = sp.GetRequiredService<SettingsController>();
             var refresh = sp.GetRequiredService<IShardAuthRefreshService>();
             var liveSettings = sp.GetRequiredService<IWritableSettings<HeraldHelperSettings>>();
-            var interval = TimeSpan.FromMinutes(liveSettings.Value.Auth.AutoRefreshMinutes);
             return new AuthController(
                 settings,
+                liveSettings,
                 refresh,
-                interval,
                 text =>
                 {
                     var window = sp.GetRequiredService<MainWindow>();

@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
 using HeraldHelper.Desktop.Models;
+using HeraldHelper.Desktop.Services;
 using MaterialDesignThemes.Wpf;
 using Color = System.Windows.Media.Color;
 
@@ -10,11 +11,11 @@ namespace HeraldHelper.Desktop.Controllers;
 public sealed class ThemeController
 {
     private readonly PaletteHelper _paletteHelper = new();
-    private readonly SettingsController _settingsController;
+    private readonly IWritableSettings<HeraldHelperSettings> _writableSettings;
 
-    public ThemeController(SettingsController settingsController)
+    public ThemeController(IWritableSettings<HeraldHelperSettings> writableSettings)
     {
-        _settingsController = settingsController;
+        _writableSettings = writableSettings;
     }
 
     public ApplicationTheme Mode { get; private set; } = ApplicationTheme.Dark;
@@ -22,8 +23,8 @@ public sealed class ThemeController
 
     public void Initialize()
     {
-        var settings = _settingsController.LoadMap();
-        var mode = settings.TryGetValue("ui.theme.mode", out var modeRaw) ? modeRaw : "dark";
+        var appearance = _writableSettings.Value.Appearance;
+        var mode = !string.IsNullOrWhiteSpace(appearance.Theme) ? appearance.Theme : "dark";
         Mode = mode.ToLowerInvariant() switch
         {
             "light" => ApplicationTheme.Light,
@@ -31,7 +32,7 @@ public sealed class ThemeController
             _ => ApplicationTheme.Dark
         };
 
-        var accentRaw = settings.TryGetValue("ui.theme.accent", out var accentValue) ? accentValue : "#007ACC";
+        var accentRaw = !string.IsNullOrWhiteSpace(appearance.AccentColor) ? appearance.AccentColor : "#007ACC";
         Accent = TryParseColor(accentRaw) ?? Color.FromRgb(0x00, 0x7A, 0xCC);
 
         Apply(Mode, Accent);
@@ -60,10 +61,13 @@ public sealed class ThemeController
     {
         Mode = mode;
         Accent = accent;
-        _settingsController.Save([
-            new ConfigEntry { Key = "ui.theme.mode", Value = mode.ToString().ToLowerInvariant() },
-            new ConfigEntry { Key = "ui.theme.accent", Value = ToHex(accent) }
-        ]);
+
+        _writableSettings.Update(s =>
+        {
+            s.Appearance.Theme = mode.ToString().ToLowerInvariant();
+            s.Appearance.AccentColor = ToHex(accent);
+        });
+
         Apply(mode, accent);
     }
 

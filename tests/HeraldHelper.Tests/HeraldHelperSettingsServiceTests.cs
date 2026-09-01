@@ -43,6 +43,10 @@ public sealed class HeraldHelperSettingsServiceTests : IDisposable
         Assert.Equal("#FFFFFF", service.Value.Overlay.TargetColor);
         Assert.True(service.Value.Overlay.ShowTarget);
         Assert.Equal("Segoe UI", service.Value.Overlay.TargetFontFamily);
+        Assert.Equal("Dark", service.Value.Appearance.Theme);
+        Assert.Equal("#007ACC", service.Value.Appearance.AccentColor);
+        Assert.True(service.Value.Auth.AutoRefreshEnabled);
+        Assert.Equal(25, service.Value.Auth.AutoRefreshMinutes);
     }
 
     [Fact]
@@ -75,6 +79,26 @@ public sealed class HeraldHelperSettingsServiceTests : IDisposable
         Assert.True(map.ContainsKey("some.other.setting"));
         Assert.Equal("keep", map["some.other.setting"]);
         Assert.True(map.ContainsKey("heraldhelper.settings.v1"));
+    }
+
+    [Fact]
+    public void Load_LegacyFlatKeys_MigratesThemeAndAuth()
+    {
+        var settingsController = new SettingsController(_store);
+        settingsController.Save([
+            new ConfigEntry { Key = "ui.theme.mode", Value = "light" },
+            new ConfigEntry { Key = "ui.theme.accent", Value = "#FF5733" },
+            new ConfigEntry { Key = "auth.autoRefreshEnabled", Value = "false" },
+            new ConfigEntry { Key = "auth.autoRefreshMinutes", Value = "60" }
+        ]);
+
+        var service = CreateService();
+        service.Load();
+
+        Assert.Equal("light", service.Value.Appearance.Theme);
+        Assert.Equal("#FF5733", service.Value.Appearance.AccentColor);
+        Assert.False(service.Value.Auth.AutoRefreshEnabled);
+        Assert.Equal(60, service.Value.Auth.AutoRefreshMinutes);
     }
 
     [Fact]

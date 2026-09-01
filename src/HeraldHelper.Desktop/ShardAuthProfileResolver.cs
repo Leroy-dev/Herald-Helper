@@ -33,8 +33,6 @@ public static class ShardAuthProfileResolver
 
     public static IEnumerable<ConfigEntry> DefaultSettings()
     {
-        yield return new ConfigEntry { Key = "auth.autoRefreshEnabled", Value = "true" };
-        yield return new ConfigEntry { Key = "auth.autoRefreshMinutes", Value = "25" };
         yield return new ConfigEntry { Key = "auth.eden.enabled", Value = "true" };
         yield return new ConfigEntry { Key = "auth.eden.hubUrl", Value = "https://eden-daoc.net/hub" };
         yield return new ConfigEntry { Key = "auth.eden.domain", Value = "eden-daoc.net" };

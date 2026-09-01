@@ -1,5 +1,7 @@
 using System.Net.Http;
 using System.Windows.Threading;
+using HeraldHelper.Desktop.Models;
+using HeraldHelper.Desktop.Services;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Infrastructure.Auth;
 
@@ -8,6 +10,7 @@ namespace HeraldHelper.Desktop.Controllers;
 internal sealed class AuthController
 {
     private readonly SettingsController _settingsController;
+    private readonly IWritableSettings<HeraldHelperSettings> _writableSettings;
     private readonly IShardAuthRefreshService _authRefreshService;
     private readonly DispatcherTimer _authRefreshTimer;
     private readonly Action<string> _setOutput;
@@ -15,16 +18,17 @@ internal sealed class AuthController
 
     public AuthController(
         SettingsController settingsController,
+        IWritableSettings<HeraldHelperSettings> writableSettings,
         IShardAuthRefreshService authRefreshService,
-        TimeSpan defaultInterval,
         Action<string> setOutput,
         Action onAuthRefreshed)
     {
         _settingsController = settingsController;
+        _writableSettings = writableSettings;
         _authRefreshService = authRefreshService;
         _setOutput = setOutput;
         _onAuthRefreshed = onAuthRefreshed;
-        _authRefreshTimer = new DispatcherTimer { Interval = defaultInterval };
+        _authRefreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(writableSettings.Value.Auth.AutoRefreshMinutes) };
         _authRefreshTimer.Tick += async (_, _) =>
         {
             try
@@ -42,15 +46,11 @@ internal sealed class AuthController
 
     public void ConfigureTimer()
     {
-        var settings = _settingsController.LoadMap();
-        var enabled = !settings.TryGetValue("auth.autoRefreshEnabled", out var enabledRaw)
-            || !enabledRaw.Equals("false", StringComparison.OrdinalIgnoreCase);
-        var minutes = settings.TryGetValue("auth.autoRefreshMinutes", out var minsRaw) && int.TryParse(minsRaw, out var parsed)
-            ? Math.Clamp(parsed, 5, 240)
-            : 25;
+        var auth = _writableSettings.Value.Auth;
+        var minutes = Math.Clamp(auth.AutoRefreshMinutes, 5, 240);
 
         _authRefreshTimer.Interval = TimeSpan.FromMinutes(minutes);
-        if (enabled)
+        if (auth.AutoRefreshEnabled)
         {
             _authRefreshTimer.Start();
         }
