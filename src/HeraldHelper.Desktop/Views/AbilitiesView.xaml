@@ -27,37 +27,37 @@
                                        Foreground="{DynamicResource VsMutedTextBrush}" />
                         </WrapPanel>
                         <WrapPanel Grid.Row="1" Margin="0,0,0,10">
-                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="ReloadAbilities_Click">
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="ReloadAbilities_Click" ToolTip="Reload the ability list and runtime">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="Refresh" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                     <TextBlock Text="Reload Abilities" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="ReloadAbilityCatalogs_Click">
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="ReloadAbilityCatalogs_Click" ToolTip="Reload local Eden and Blackthorn catalogs">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="DatabaseRefresh" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                     <TextBlock Text="Reload Local Catalogs" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="UpdateCatalogsOnline_Click">
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="UpdateCatalogsOnline_Click" ToolTip="Download and validate fresh Eden and Blackthorn catalogs">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="CloudDownload" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                     <TextBlock Text="Update Catalogs Online" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Click="SaveAbilities_Click">
+                            <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Click="SaveAbilities_Click" ToolTip="Save the ability profile">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="ContentSave" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                     <TextBlock Text="Save Abilities" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="AddAbility_Click">
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="AddAbility_Click" ToolTip="Add a new ability">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="Plus" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                     <TextBlock Text="Add Ability" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="RemoveAbility_Click">
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="RemoveAbility_Click" ToolTip="Remove the selected ability">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="Minus" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                     <TextBlock Text="Remove Selected" VerticalAlignment="Center" />

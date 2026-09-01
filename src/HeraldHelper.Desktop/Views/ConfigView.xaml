@@ -13,25 +13,25 @@
                             <StackPanel x:Name="DaocCharacterPanel" x:FieldModifier="public" />
                         </GroupBox>
                         <WrapPanel Grid.Row="1" Margin="0,0,0,10">
-                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="ReloadConfig_Click">
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="ReloadConfig_Click" ToolTip="Reload the current configuration from the database">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="Refresh" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                     <TextBlock Text="Reload Config" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Click="SaveConfig_Click">
+                            <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Click="SaveConfig_Click" ToolTip="Save the configuration grid to the database">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="ContentSave" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                     <TextBlock Text="Save Config" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="ExportJson_Click">
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="ExportJson_Click" ToolTip="Export all settings to a JSON backup file">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="FileExport" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                     <TextBlock Text="Export JSON" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="ImportJson_Click">
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="ImportJson_Click" ToolTip="Import settings from a JSON backup file">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="FileImport" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                     <TextBlock Text="Import JSON" VerticalAlignment="Center" />
