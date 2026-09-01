@@ -39,7 +39,7 @@ public sealed class CastBarWindow : Window
         Topmost = true;
         Focusable = false;
         IsHitTestVisible = false;
-        Width = 280;
+        Width = 340;
         Height = 48;
 
         _iconImage = new Image
@@ -73,7 +73,10 @@ public sealed class CastBarWindow : Window
             FontSize = 12,
             FontFamily = new FontFamily("Segoe UI"),
             FontWeight = FontWeights.Normal,
-            HorizontalAlignment = System.Windows.HorizontalAlignment.Right
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch,
+            TextAlignment = TextAlignment.Right,
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            TextWrapping = TextWrapping.NoWrap
         };
 
         _progressBar = new ProgressBar
