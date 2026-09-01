@@ -41,7 +41,7 @@ public sealed class CastBarWindow : Window
         Focusable = false;
         IsHitTestVisible = false;
         Width = 340;
-        Height = 58;
+        Height = 70;
 
         _iconImage = new Image
         {
@@ -90,8 +90,8 @@ public sealed class CastBarWindow : Window
 
         _progressBarContainer = new Border
         {
-            Height = 6,
-            Margin = new Thickness(0, 4, 0, 0),
+            Height = 5,
+            Margin = new Thickness(0, 2, 0, 0),
             Background = new SolidColorBrush(MediaColor.FromArgb(120, 0, 0, 0)),
             Child = _progressBarFill,
             ClipToBounds = true
@@ -121,7 +121,7 @@ public sealed class CastBarWindow : Window
             Background = new SolidColorBrush(MediaColor.FromArgb(180, 20, 24, 31)),
             BorderBrush = new SolidColorBrush(_outlineColor),
             BorderThickness = new Thickness(1),
-            Padding = new Thickness(8),
+            Padding = new Thickness(6),
             Child = content
         };
 
