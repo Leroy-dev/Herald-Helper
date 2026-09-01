@@ -81,6 +81,7 @@ public partial class MainWindow : Window
     private System.Windows.Controls.TextBox OverlayCastXText => OverlayView!.OverlayCastXText;
     private System.Windows.Controls.TextBox OverlayCastYText => OverlayView!.OverlayCastYText;
     private System.Windows.Controls.TextBox TargetColorText => OverlayView!.TargetColorText;
+    private System.Windows.Controls.CheckBox UseRealmColorsCheckbox => OverlayView!.UseRealmColorsCheckbox;
     private System.Windows.Controls.TextBox TimerColorText => OverlayView!.TimerColorText;
     private System.Windows.Controls.TextBox OutlineColorText => OverlayView!.OutlineColorText;
     private System.Windows.Controls.ComboBox OverlayTargetFontCombo => OverlayView!.OverlayTargetFontCombo;
@@ -928,6 +929,7 @@ public partial class MainWindow : Window
         TargetColorText.Text = NormalizeColorText(settings.TargetColor, "#FFFFFF");
         TimerColorText.Text = NormalizeColorText(settings.TimerColor, "#FFFFFF");
         OutlineColorText.Text = NormalizeColorText(settings.OutlineColor, "#000000");
+        BindToggle(UseRealmColorsCheckbox, settings.UseRealmColors, OverlayVisibilityChanged);
 
         var map = _settingsController.LoadMap();
         var character = ReadOrDefault(map, $"daoc.character.{_shardType.ToString().ToLowerInvariant()}", string.Empty);
@@ -998,6 +1000,7 @@ public partial class MainWindow : Window
             ShowTargetCheckbox?.IsChecked ?? true,
             ShowTimersCheckbox?.IsChecked ?? true,
             ShowCastBarCheckbox?.IsChecked ?? true,
+            UseRealmColorsCheckbox?.IsChecked ?? true,
             DynamicCastSpeedCheckbox?.IsChecked ?? false,
             EstimatedSpellDamageCheckbox?.IsChecked ?? false,
             OcrReplayCheckbox?.IsChecked ?? false);

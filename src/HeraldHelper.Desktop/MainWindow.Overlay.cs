@@ -67,6 +67,7 @@ public partial class MainWindow : Window
             TargetColor = NormalizeColorText(TargetColorText.Text, "#FFFFFF"),
             TimerColor = NormalizeColorText(TimerColorText.Text, "#FFFFFF"),
             OutlineColor = NormalizeColorText(OutlineColorText.Text, "#000000"),
+            UseRealmColors = UseRealmColorsCheckbox?.IsChecked ?? true,
             ShowTarget = ShowTargetCheckbox?.IsChecked ?? true,
             ShowTimers = ShowTimersCheckbox?.IsChecked ?? true,
             ShowCastBar = ShowCastBarCheckbox?.IsChecked ?? true,

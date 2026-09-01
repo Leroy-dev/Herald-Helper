@@ -102,13 +102,25 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 f2 = _previewTimerFontSize.Value;
             }
 
-            var targetColor = ReadColor(overlay.TargetColor, Colors.White);
+            var baseTargetColor = ReadColor(overlay.TargetColor, Colors.White);
             var timerColor = ReadColor(overlay.TimerColor, Colors.White);
             var outlineColor = ReadColor(overlay.OutlineColor, Colors.Black);
+
+            var targetColor = baseTargetColor;
             if (_previewTargetColor is not null)
             {
                 targetColor = _previewTargetColor.Value;
             }
+            else if (overlay.UseRealmColors && snapshot.Target?.Class is { } targetClass)
+            {
+                var realm = ClassRealmResolver.Resolve(targetClass);
+                if (realm != Realm.Unknown)
+                {
+                    targetColor = ClassRealmResolver.ResolveColor(realm);
+                }
+            }
+
+            var castbarColor = _previewTargetColor ?? baseTargetColor;
 
             if (_previewTimerColor is not null)
             {
@@ -126,7 +138,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             _targetWindow.Update(targetText, ox, oy, f1, overlay.TargetFontFamily, targetColor, outlineColor, FontWeights.SemiBold);
             _timerWindow.Update(timerText, tx, ty, f2, overlay.TimerFontFamily, timerColor, outlineColor);
             var cast = overlay.ShowCastBar ? snapshot.ActiveCast : null;
-            _castBarWindow.Update(cast, cx, cy, targetColor, timerColor, outlineColor, overlay.CastbarFontFamily);
+            _castBarWindow.Update(cast, cx, cy, castbarColor, timerColor, outlineColor, overlay.CastbarFontFamily);
         }).Task;
     }
 

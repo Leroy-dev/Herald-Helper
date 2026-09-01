@@ -15,6 +15,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private string _targetColor = "#FFFFFF";
     private string _timerColor = "#FFFFFF";
     private string _outlineColor = "#000000";
+    private bool _useRealmColors = true;
     private bool _showTarget = true;
     private bool _showTimers = true;
     private bool _showCastBar = true;
@@ -36,6 +37,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public string TargetColor { get => _targetColor; set { _targetColor = value; OnPropertyChanged(nameof(TargetColor)); } }
     public string TimerColor { get => _timerColor; set { _timerColor = value; OnPropertyChanged(nameof(TimerColor)); } }
     public string OutlineColor { get => _outlineColor; set { _outlineColor = value; OnPropertyChanged(nameof(OutlineColor)); } }
+    public bool UseRealmColors { get => _useRealmColors; set { _useRealmColors = value; OnPropertyChanged(nameof(UseRealmColors)); } }
     public bool ShowTarget { get => _showTarget; set { _showTarget = value; OnPropertyChanged(nameof(ShowTarget)); } }
     public bool ShowTimers { get => _showTimers; set { _showTimers = value; OnPropertyChanged(nameof(ShowTimers)); } }
     public bool ShowCastBar { get => _showCastBar; set { _showCastBar = value; OnPropertyChanged(nameof(ShowCastBar)); } }

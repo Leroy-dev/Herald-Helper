@@ -110,6 +110,8 @@
                             <Border Grid.Column="1" Margin="8,0,0,0" Padding="10" Background="{DynamicResource VsPanelBrush}" BorderBrush="{DynamicResource VsBorderBrush}" BorderThickness="1" CornerRadius="4">
                                 <StackPanel>
                                     <TextBlock Margin="0,0,0,8" FontWeight="SemiBold" Text="Colors" />
+                                    <CheckBox x:Name="UseRealmColorsCheckbox" x:FieldModifier="public" Margin="0,0,0,8" VerticalAlignment="Center" Content="Use realm colors for target overlay"
+                                              ToolTip="Color the target overlay by the target's realm (Albion=red, Midgard=blue, Hibernia=green). Falls back to the Target Color when the realm is unknown." />
                                     <WrapPanel Margin="0,0,0,8">
                                         <TextBox Width="170" x:Name="TargetColorText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target Color (#RRGGBB)" />
                                         <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickTargetColor_Click" ToolTip="Pick the target overlay color">

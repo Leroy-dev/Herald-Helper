@@ -26,6 +26,7 @@ internal sealed class OverlaySettingsController
         bool showTarget,
         bool showTimers,
         bool showCastBar,
+        bool useRealmColors,
         bool dynamicCastSpeed,
         bool estimatedSpellDamage,
         bool ocrReplay)
@@ -35,6 +36,7 @@ internal sealed class OverlaySettingsController
             s.Overlay.ShowTarget = showTarget;
             s.Overlay.ShowTimers = showTimers;
             s.Overlay.ShowCastBar = showCastBar;
+            s.Overlay.UseRealmColors = useRealmColors;
             s.Overlay.DynamicCastSpeedEnabled = dynamicCastSpeed;
             s.Overlay.EstimatedSpellDamageEnabled = estimatedSpellDamage;
             s.Overlay.OcrReplayEnabled = ocrReplay;
