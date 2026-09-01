@@ -87,9 +87,26 @@ public partial class MainWindow : Window
     private System.Windows.Controls.TextBox TimerColorText => OverlayView!.TimerColorText;
     private System.Windows.Controls.TextBox OutlineColorText => OverlayView!.OutlineColorText;
 
+    public static readonly System.Windows.Input.RoutedUICommand SelectLiveViewCommand = new(
+        "Live", "SelectLiveView", typeof(MainWindow),
+        new System.Windows.Input.InputGestureCollection { new System.Windows.Input.KeyGesture(System.Windows.Input.Key.D1, System.Windows.Input.ModifierKeys.Alt) });
+
+    public static readonly System.Windows.Input.RoutedUICommand SelectConfigViewCommand = new(
+        "Config", "SelectConfigView", typeof(MainWindow),
+        new System.Windows.Input.InputGestureCollection { new System.Windows.Input.KeyGesture(System.Windows.Input.Key.D2, System.Windows.Input.ModifierKeys.Alt) });
+
+    public static readonly System.Windows.Input.RoutedUICommand SelectAbilitiesViewCommand = new(
+        "Abilities", "SelectAbilitiesView", typeof(MainWindow),
+        new System.Windows.Input.InputGestureCollection { new System.Windows.Input.KeyGesture(System.Windows.Input.Key.D3, System.Windows.Input.ModifierKeys.Alt) });
+
+    public static readonly System.Windows.Input.RoutedUICommand SelectOverlayViewCommand = new(
+        "Overlay", "SelectOverlayView", typeof(MainWindow),
+        new System.Windows.Input.InputGestureCollection { new System.Windows.Input.KeyGesture(System.Windows.Input.Key.D4, System.Windows.Input.ModifierKeys.Alt) });
+
     public MainWindow()
     {
         InitializeComponent();
+        BindViewCommands();
         var dbPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "HeraldHelper",
@@ -176,6 +193,24 @@ public partial class MainWindow : Window
         _liveOverlay?.Dispose();
         _httpClient?.Dispose();
         base.OnClosed(e);
+    }
+
+    private void BindViewCommands()
+    {
+        CommandBindings.Add(new System.Windows.Input.CommandBinding(SelectLiveViewCommand, (_, _) => SelectView(0)));
+        CommandBindings.Add(new System.Windows.Input.CommandBinding(SelectConfigViewCommand, (_, _) => SelectView(1)));
+        CommandBindings.Add(new System.Windows.Input.CommandBinding(SelectAbilitiesViewCommand, (_, _) => SelectView(2)));
+        CommandBindings.Add(new System.Windows.Input.CommandBinding(SelectOverlayViewCommand, (_, _) => SelectView(3)));
+    }
+
+    private void SelectView(int index)
+    {
+        if (_isBindingControls || SidebarList is null)
+        {
+            return;
+        }
+
+        SidebarList.SelectedIndex = index;
     }
 
     private void RebuildRuntimeFromFiles()
