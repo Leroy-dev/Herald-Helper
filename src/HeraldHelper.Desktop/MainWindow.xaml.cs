@@ -111,6 +111,10 @@ public partial class MainWindow : Window
         "Run Tick", "RunTick", typeof(MainWindow),
         new System.Windows.Input.InputGestureCollection { new System.Windows.Input.KeyGesture(System.Windows.Input.Key.F5) });
 
+    public static readonly System.Windows.Input.RoutedUICommand SaveCommand = new(
+        "Save", "Save", typeof(MainWindow),
+        new System.Windows.Input.InputGestureCollection { new System.Windows.Input.KeyGesture(System.Windows.Input.Key.S, System.Windows.Input.ModifierKeys.Control) });
+
     public MainWindow()
     {
         InitializeComponent();
@@ -211,6 +215,7 @@ public partial class MainWindow : Window
         CommandBindings.Add(new System.Windows.Input.CommandBinding(SelectOverlayViewCommand, (_, _) => SelectView(3)));
         CommandBindings.Add(new System.Windows.Input.CommandBinding(ToggleLoopCommand, (_, _) => ToggleLoop_Click(this, new System.Windows.RoutedEventArgs())));
         CommandBindings.Add(new System.Windows.Input.CommandBinding(RunTickCommand, (_, _) => RunTick_Click(this, new System.Windows.RoutedEventArgs())));
+        CommandBindings.Add(new System.Windows.Input.CommandBinding(SaveCommand, (_, _) => SaveCurrentView()));
     }
 
     private void SelectView(int index)
@@ -221,6 +226,27 @@ public partial class MainWindow : Window
         }
 
         SidebarList.SelectedIndex = index;
+    }
+
+    private void SaveCurrentView()
+    {
+        if (_isBindingControls)
+        {
+            return;
+        }
+
+        if (ConfigView.Visibility == System.Windows.Visibility.Visible)
+        {
+            SaveConfig_Click(this, new System.Windows.RoutedEventArgs());
+        }
+        else if (AbilitiesView.Visibility == System.Windows.Visibility.Visible)
+        {
+            SaveAbilities_Click(this, new System.Windows.RoutedEventArgs());
+        }
+        else if (OverlayView.Visibility == System.Windows.Visibility.Visible)
+        {
+            SaveOverlaySettings_Click(this, new System.Windows.RoutedEventArgs());
+        }
     }
 
     private void RebuildRuntimeFromFiles()
