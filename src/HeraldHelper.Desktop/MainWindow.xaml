@@ -35,6 +35,7 @@
                     <Button Name="ThemeToggleButton"
                             Style="{StaticResource ToolbarButtonStyle}"
                             Content="Light Mode"
+                            ToolTip="Toggle between dark and light mode"
                             Click="ToggleTheme_Click" />
                     <Button Style="{StaticResource ToolbarButtonStyle}"
                             Click="OpenAppearanceSettings_Click"
