@@ -40,7 +40,7 @@ public sealed class CastBarWindow : Window
         Focusable = false;
         IsHitTestVisible = false;
         Width = 340;
-        Height = 48;
+        Height = 58;
 
         _iconImage = new Image
         {
