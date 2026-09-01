@@ -46,6 +46,7 @@
         <GroupBox Grid.Row="2" Header="Theme">
             <ComboBox Name="ThemeCombo"
                       materialDesign:HintAssist.Hint="Theme"
+                      ToolTip="Choose dark, light or follow the system theme"
                       Background="{DynamicResource VsPanelAltBrush}"
                       Foreground="{DynamicResource VsTextBrush}"
                       BorderBrush="{DynamicResource VsBorderBrush}"
@@ -78,6 +79,7 @@
                     <TextBox Name="CustomColorText"
                              Width="180"
                              materialDesign:HintAssist.Hint="Custom color (#RRGGBB)"
+                             ToolTip="Enter a custom accent color in #RRGGBB format"
                              Background="{DynamicResource VsPanelAltBrush}"
                              Foreground="{DynamicResource VsTextBrush}"
                              BorderBrush="{DynamicResource VsBorderBrush}"
@@ -89,7 +91,8 @@
                             BorderBrush="{DynamicResource VsBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="4"
-                            Background="{DynamicResource VsAccentBrush}" />
+                            Background="{DynamicResource VsAccentBrush}"
+                            ToolTip="Preview of the current accent color" />
                 </StackPanel>
             </Grid>
         </GroupBox>
@@ -118,14 +121,17 @@
             <Button Grid.Column="0"
                     Style="{StaticResource MaterialDesignOutlinedButton}"
                     Content="Reset to defaults"
+                    ToolTip="Reset all appearance settings to defaults"
                     Click="Reset_Click" />
             <StackPanel Grid.Column="2" Orientation="Horizontal">
                 <Button Style="{StaticResource MaterialDesignOutlinedButton}"
                         Margin="0,0,8,0"
                         Content="Cancel"
+                        ToolTip="Discard changes"
                         Click="Cancel_Click" />
                 <Button Style="{StaticResource MaterialDesignRaisedButton}"
                         Content="OK"
+                        ToolTip="Apply and save appearance settings"
                         Click="Ok_Click" />
             </StackPanel>
         </Grid>
