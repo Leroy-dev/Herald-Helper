@@ -13,8 +13,6 @@
         Background="{DynamicResource VsWindowBackgroundBrush}"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True">
-    
-
     <DockPanel LastChildFill="True" Background="{DynamicResource VsWindowBackgroundBrush}">
         <!-- Title bar -->
         <Border DockPanel.Dock="Top"
