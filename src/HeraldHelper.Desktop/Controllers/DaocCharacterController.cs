@@ -57,20 +57,20 @@ internal sealed class DaocCharacterController
     public void SaveOcrWindows(ShardType shard, string characterName, IReadOnlyCollection<DaocWindowDefinition> selected)
     {
         var windows = selected.Select(x => new OcrWatchRegion(x.Key, x.Label, x.Region)).ToList();
+        var raw = JsonSerializer.Serialize(windows);
         var settings = _settingsRepository.LoadSettingsMap();
         var prefix = $"daoc.ocr.windows.{shard.ToString().ToLowerInvariant()}.";
         var key = prefix + NormalizeSettingSegment(characterName);
 
-        var raw = JsonSerializer.Serialize(windows);
-        var updates = new List<ConfigEntry> { new() { Key = key, Value = raw } };
+        settings[key] = raw;
 
         var legacyKey = prefix + characterName.Trim().ToLowerInvariant();
-        if (settings.ContainsKey(legacyKey))
+        if (!string.Equals(key, legacyKey, StringComparison.OrdinalIgnoreCase) && settings.ContainsKey(legacyKey))
         {
-            updates.Add(new ConfigEntry { Key = legacyKey, Value = string.Empty });
+            settings[legacyKey] = string.Empty;
         }
 
-        _settingsRepository.SaveSettings(updates);
+        _settingsRepository.SaveSettings(settings.Select(x => new ConfigEntry { Key = x.Key, Value = x.Value }));
     }
 
     private static string NormalizeSettingSegment(string? value)

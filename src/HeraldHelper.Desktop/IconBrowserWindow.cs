@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 using HeraldHelper.Domain.Models;
 using Binding = System.Windows.Data.Binding;
 using Button = System.Windows.Controls.Button;
@@ -73,6 +74,8 @@ internal sealed class IconBrowserWindow : Window
         iconFactory.SetBinding(Image.SourceProperty, new Binding(nameof(IconRow.Image)));
         iconFactory.SetValue(Image.WidthProperty, 32.0);
         iconFactory.SetValue(Image.HeightProperty, 32.0);
+        iconFactory.SetValue(Image.StretchProperty, Stretch.Uniform);
+        iconFactory.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.NearestNeighbor);
         iconTemplate.VisualTree = iconFactory;
 
         _grid.Columns.Add(new DataGridTemplateColumn { Header = "", Width = 46, CellTemplate = iconTemplate });

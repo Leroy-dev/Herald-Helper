@@ -53,8 +53,10 @@ internal sealed class CatalogEntryEditWindow : Window
             Width = 48,
             Height = 48,
             Margin = new Thickness(0, 0, 12, 0),
+            Stretch = Stretch.UniformToFill,
             Source = _iconLoader.Load(CurrentIcon)
         };
+        RenderOptions.SetBitmapScalingMode(_iconPreview, BitmapScalingMode.NearestNeighbor);
 
         var form = new StackPanel
         {

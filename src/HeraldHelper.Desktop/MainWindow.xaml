@@ -200,14 +200,12 @@
                 </ListBox>
             </Border>
 
-            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <Grid>
-                    <views:LiveView x:Name="LiveView" Visibility="Visible" />
-                    <views:ConfigView x:Name="ConfigView" Visibility="Collapsed" />
-                    <views:AbilitiesView x:Name="AbilitiesView" Visibility="Collapsed" />
-                    <views:OverlayView x:Name="OverlayView" Visibility="Collapsed" />
-                </Grid>
-            </ScrollViewer>
+            <Grid Grid.Column="1">
+                <views:LiveView x:Name="LiveView" Visibility="Visible" />
+                <views:ConfigView x:Name="ConfigView" Visibility="Collapsed" />
+                <views:AbilitiesView x:Name="AbilitiesView" Visibility="Collapsed" />
+                <views:OverlayView x:Name="OverlayView" Visibility="Collapsed" />
+            </Grid>
         </Grid>
     </DockPanel>
 </Window>
