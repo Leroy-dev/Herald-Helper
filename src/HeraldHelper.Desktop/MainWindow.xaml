@@ -172,25 +172,25 @@
                          Style="{StaticResource SidebarListBoxStyle}"
                          ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}"
                          SelectionChanged="SidebarList_SelectionChanged">
-                    <ListBoxItem Tag="Live" IsSelected="True">
+                    <ListBoxItem Tag="Live" IsSelected="True" ToolTip="Live status and diagnostics (Alt+1)">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="HeartPulse" Width="20" Height="20" Margin="0,0,10,0" Foreground="{DynamicResource VsTextBrush}" />
                             <TextBlock Text="Live" VerticalAlignment="Center" />
                         </StackPanel>
                     </ListBoxItem>
-                    <ListBoxItem Tag="Config">
+                    <ListBoxItem Tag="Config" ToolTip="DAoC character and configuration (Alt+2)">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Cog" Width="20" Height="20" Margin="0,0,10,0" Foreground="{DynamicResource VsTextBrush}" />
                             <TextBlock Text="Config" VerticalAlignment="Center" />
                         </StackPanel>
                     </ListBoxItem>
-                    <ListBoxItem Tag="Abilities">
+                    <ListBoxItem Tag="Abilities" ToolTip="Ability profiles and catalogs (Alt+3)">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Flash" Width="20" Height="20" Margin="0,0,10,0" Foreground="{DynamicResource VsTextBrush}" />
                             <TextBlock Text="Abilities" VerticalAlignment="Center" />
                         </StackPanel>
                     </ListBoxItem>
-                    <ListBoxItem Tag="Overlay">
+                    <ListBoxItem Tag="Overlay" ToolTip="Overlay position, size and colors (Alt+4)">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Eye" Width="20" Height="20" Margin="0,0,10,0" Foreground="{DynamicResource VsTextBrush}" />
                             <TextBlock Text="Overlay" VerticalAlignment="Center" />
