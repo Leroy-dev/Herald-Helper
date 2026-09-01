@@ -86,8 +86,11 @@ public sealed class AuthSettings : INotifyPropertyChanged
 public sealed class OnlineSettings : INotifyPropertyChanged
 {
     private OnlineSyncMode _mode = OnlineSyncMode.Disabled;
+    private string _serverUrl = string.Empty;
 
     public OnlineSyncMode Mode { get => _mode; set { _mode = value; OnPropertyChanged(nameof(Mode)); } }
+
+    public string ServerUrl { get => _serverUrl; set { _serverUrl = value ?? string.Empty; OnPropertyChanged(nameof(ServerUrl)); } }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

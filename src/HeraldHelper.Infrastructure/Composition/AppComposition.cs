@@ -26,7 +26,8 @@ public static class AppComposition
         Func<IReadOnlyCollection<CastSpellOverride>>? getCastSpellOverrides = null,
         Func<CharacterStatsSnapshot?>? loadCharacterStats = null,
         Action<CharacterStatsSnapshot>? saveCharacterStats = null,
-        ITargetProfileCache? targetProfileCache = null)
+        ITargetProfileCache? targetProfileCache = null,
+        IOnlineSyncService? onlineSync = null)
     {
         getSettings ??= () => settingsMap;
         var settings = AppRuntimeSettings.FromMap(settingsMap);
@@ -80,7 +81,8 @@ public static class AppComposition
             settings.DynamicCastSpeed,
             settings.EstimatedSpellDamage,
             replaySink,
-            targetProfileCache);
+            targetProfileCache,
+            onlineSync);
 
         return (orchestrator, overlay, settings, capture);
     }

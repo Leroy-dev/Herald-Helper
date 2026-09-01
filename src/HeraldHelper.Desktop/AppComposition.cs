@@ -69,7 +69,7 @@ internal static class AppServiceProvider
         });
 
         services.AddSingleton<ITargetProfileRepository, LocalTargetProfileRepository>();
-        services.AddSingleton<IOnlineTargetProfileClient, NoOpOnlineTargetProfileClient>();
+        services.AddSingleton<IOnlineTargetProfileClient, RestOnlineTargetProfileClient>();
         services.AddSingleton<IOnlineSyncService, OnlineSyncService>();
 
         services.AddSingleton<RuntimeController>();

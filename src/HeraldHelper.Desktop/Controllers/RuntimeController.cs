@@ -24,6 +24,7 @@ internal sealed class RuntimeController
     private readonly IAbilityRepository _abilityRepository;
     private readonly HttpClient _httpClient;
     private readonly IShardAuthRefreshService _authRefreshService;
+    private readonly IOnlineSyncService? _onlineSync;
     private readonly IResponseDiagnostics? _responseDiagnostics;
     private DesktopOverlayRenderer _liveOverlay;
 
@@ -37,6 +38,7 @@ internal sealed class RuntimeController
         HttpClient httpClient,
         IShardAuthRefreshService authRefreshService,
         DesktopOverlayRenderer liveOverlay,
+        IOnlineSyncService? onlineSync = null,
         IResponseDiagnostics? responseDiagnostics = null)
     {
         _settingsRepository = settingsRepository;
@@ -47,6 +49,7 @@ internal sealed class RuntimeController
         _abilityRepository = abilityRepository;
         _httpClient = httpClient;
         _authRefreshService = authRefreshService;
+        _onlineSync = onlineSync;
         _liveOverlay = liveOverlay;
         _responseDiagnostics = responseDiagnostics;
     }
@@ -117,7 +120,8 @@ internal sealed class RuntimeController
                 _characterStatsRepository.SaveCharacterStats(stats);
                 onCharacterStatsSaved();
             },
-            _targetProfileCache);
+            _targetProfileCache,
+            _onlineSync);
     }
 
     private IReadOnlyCollection<CastSpellOverride> LoadCastSpellOverrides(ShardType shard)

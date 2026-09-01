@@ -47,6 +47,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     private int _pendingStatsObservations;
     private readonly IOcrReplaySink? _ocrReplaySink;
     private readonly ITargetProfileCache? _targetProfileCache;
+    private readonly IOnlineSyncService? _onlineSync;
     private CastBarState? _activeCast;
 
     public GameLoopOrchestrator(
@@ -66,7 +67,8 @@ public sealed class GameLoopOrchestrator : IDisposable
         bool dynamicCastSpeed = false,
         bool estimatedSpellDamage = false,
         IOcrReplaySink? ocrReplaySink = null,
-        ITargetProfileCache? targetProfileCache = null)
+        ITargetProfileCache? targetProfileCache = null,
+        IOnlineSyncService? onlineSync = null)
     {
         _chatCaptureService = chatCaptureService;
         _chatEventParser = chatEventParser;
@@ -85,6 +87,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         _estimatedSpellDamage = estimatedSpellDamage;
         _ocrReplaySink = ocrReplaySink;
         _targetProfileCache = targetProfileCache;
+        _onlineSync = onlineSync;
 
         foreach (var shard in Enum.GetValues<ShardType>())
         {
@@ -525,6 +528,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         _targetLookupCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _targetLookupTask = LookupTargetAsync(
             client,
+            _onlineSync,
             targetName,
             shardType,
             _targetGeneration,
@@ -534,11 +538,28 @@ public sealed class GameLoopOrchestrator : IDisposable
 
     private static async Task<TargetLookupResult> LookupTargetAsync(
         IHeraldClient client,
+        IOnlineSyncService? onlineSync,
         string targetName,
         ShardType shardType,
         long generation,
         CancellationToken cancellationToken)
     {
+        if (onlineSync is not null)
+        {
+            try
+            {
+                var onlineResult = await onlineSync.TryDownloadAsync(shardType, targetName, cancellationToken).ConfigureAwait(false);
+                if (onlineResult.Profile is not null)
+                {
+                    return new TargetLookupResult(targetName, shardType, generation, onlineResult.Profile, null, false);
+                }
+            }
+            catch
+            {
+                // Swallow online lookup errors and fall through to herald.
+            }
+        }
+
         try
         {
             var profile = await client.GetTargetProfileAsync(targetName, cancellationToken).ConfigureAwait(false);
@@ -629,6 +650,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         if (profileToCache is not null)
         {
             TrySaveTargetProfile(result.ShardType, profileToCache);
+            TryUploadProfileOnline(result.ShardType, profileToCache);
         }
     }
 
@@ -695,6 +717,26 @@ public sealed class GameLoopOrchestrator : IDisposable
         {
             _diagnostics?.Log($"[Target] cache write failed for {profile.Name}: {ex.Message}");
         }
+    }
+
+    private void TryUploadProfileOnline(ShardType shardType, TargetProfile profile)
+    {
+        if (_onlineSync is null || _onlineSync.Mode != OnlineSyncMode.ReadWrite)
+        {
+            return;
+        }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _onlineSync.TryUploadAsync(shardType, profile).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Best-effort upload; diagnostics are handled by the sync service/client.
+            }
+        });
     }
 
     public void Dispose()
