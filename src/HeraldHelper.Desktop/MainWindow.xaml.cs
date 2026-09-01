@@ -103,6 +103,14 @@ public partial class MainWindow : Window
         "Overlay", "SelectOverlayView", typeof(MainWindow),
         new System.Windows.Input.InputGestureCollection { new System.Windows.Input.KeyGesture(System.Windows.Input.Key.D4, System.Windows.Input.ModifierKeys.Alt) });
 
+    public static readonly System.Windows.Input.RoutedUICommand ToggleLoopCommand = new(
+        "Toggle Loop", "ToggleLoop", typeof(MainWindow),
+        new System.Windows.Input.InputGestureCollection { new System.Windows.Input.KeyGesture(System.Windows.Input.Key.F6) });
+
+    public static readonly System.Windows.Input.RoutedUICommand RunTickCommand = new(
+        "Run Tick", "RunTick", typeof(MainWindow),
+        new System.Windows.Input.InputGestureCollection { new System.Windows.Input.KeyGesture(System.Windows.Input.Key.F5) });
+
     public MainWindow()
     {
         InitializeComponent();
@@ -201,6 +209,8 @@ public partial class MainWindow : Window
         CommandBindings.Add(new System.Windows.Input.CommandBinding(SelectConfigViewCommand, (_, _) => SelectView(1)));
         CommandBindings.Add(new System.Windows.Input.CommandBinding(SelectAbilitiesViewCommand, (_, _) => SelectView(2)));
         CommandBindings.Add(new System.Windows.Input.CommandBinding(SelectOverlayViewCommand, (_, _) => SelectView(3)));
+        CommandBindings.Add(new System.Windows.Input.CommandBinding(ToggleLoopCommand, (_, _) => ToggleLoop_Click(this, new System.Windows.RoutedEventArgs())));
+        CommandBindings.Add(new System.Windows.Input.CommandBinding(RunTickCommand, (_, _) => RunTick_Click(this, new System.Windows.RoutedEventArgs())));
     }
 
     private void SelectView(int index)
