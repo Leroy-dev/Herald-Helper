@@ -798,42 +798,6 @@ public partial class MainWindow : Window
         _authController.OnRefreshed(shard, bundle);
     }
 
-    internal void ReloadOverlaySettings_Click(object sender, RoutedEventArgs e)
-    {
-        ReloadOverlaySettingsFromStore();
-        OutputBox.Text = "Overlay settings reloaded.";
-    }
-
-    internal void SaveOverlaySettings_Click(object sender, RoutedEventArgs e)
-    {
-        var settings = new OverlaySettings(
-            NormalizeIntText(OverlayXText.Text, 1200),
-            NormalizeIntText(OverlayYText.Text, 900),
-            NormalizeIntText(OverlayTimerXText.Text, 1580),
-            NormalizeIntText(OverlayTimerYText.Text, 900),
-            NormalizeIntText(OverlayCastXText.Text, 1200),
-            NormalizeIntText(OverlayCastYText.Text, 986),
-            NormalizeIntText(OverlayFontSizeText.Text, 20),
-            NormalizeIntText(OverlayTimerSizeText.Text, 20),
-            NormalizeColorText(TargetColorText.Text, "#FFFFFF"),
-            NormalizeColorText(TimerColorText.Text, "#FFFFFF"),
-            NormalizeColorText(OutlineColorText.Text, "#000000"),
-            ShowTargetCheckbox?.IsChecked ?? true,
-            ShowTimersCheckbox?.IsChecked ?? true,
-            ShowCastBarCheckbox?.IsChecked ?? true,
-            DynamicCastSpeedCheckbox?.IsChecked ?? false,
-            EstimatedSpellDamageCheckbox?.IsChecked ?? false,
-            OcrReplayCheckbox?.IsChecked ?? false);
-
-        _settingsController.Save(_overlaySettingsController.Save(settings));
-        SaveCurrentCharacterStatBonuses();
-        ReloadEditorData();
-        _liveOverlay?.ClearPreview();
-        ReloadOverlaySettingsFromStore();
-        RenderLiveOverlayPreview();
-        OutputBox.Text = "Overlay settings saved.";
-    }
-
     private void PickOverlayPosition(bool isTimerOverlay)
     {
         var xText = isTimerOverlay ? OverlayTimerXText : OverlayXText;
