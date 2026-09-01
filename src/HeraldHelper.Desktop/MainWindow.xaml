@@ -129,18 +129,21 @@
                               Name="ShardCombo"
                               Style="{StaticResource CompactInputComboBoxStyle}"
                               materialDesign:HintAssist.Hint="Mode / Shard"
+                              ToolTip="Choose the active shard/mode"
                               SelectionChanged="ShardCombo_SelectionChanged" />
                     <TextBox Margin="6,0,0,0"
                              Width="70"
                              Name="ResistText"
                              Style="{StaticResource CompactInputTextBoxStyle}"
                              materialDesign:HintAssist.Hint="Resist %"
+                             ToolTip="Base resist percentage used for rough damage estimates"
                              TextChanged="ResistText_TextChanged" />
                     <TextBox Margin="6,0,0,0"
                              Width="80"
                              Name="LoopMsText"
                              Style="{StaticResource CompactInputTextBoxStyle}"
                              materialDesign:HintAssist.Hint="Loop ms"
+                             ToolTip="Background loop interval in milliseconds"
                              Text="350"
                              TextChanged="LoopMsText_TextChanged" />
                     <ComboBox Margin="6,0,0,0"
@@ -148,6 +151,7 @@
                               Name="OcrEngineCombo"
                               Style="{StaticResource CompactInputComboBoxStyle}"
                               materialDesign:HintAssist.Hint="OCR Engine"
+                              ToolTip="OCR engine selection: adaptive, Tesseract only, or Windows OCR only"
                               SelectionChanged="OcrEngineCombo_SelectionChanged" />
                 </StackPanel>
             </Grid>
