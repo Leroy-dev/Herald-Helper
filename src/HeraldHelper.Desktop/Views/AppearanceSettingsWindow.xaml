@@ -128,10 +128,12 @@
                         Margin="0,0,8,0"
                         Content="Cancel"
                         ToolTip="Discard changes"
+                        IsCancel="True"
                         Click="Cancel_Click" />
                 <Button Style="{StaticResource MaterialDesignRaisedButton}"
                         Content="OK"
                         ToolTip="Apply and save appearance settings"
+                        IsDefault="True"
                         Click="Ok_Click" />
             </StackPanel>
         </Grid>
