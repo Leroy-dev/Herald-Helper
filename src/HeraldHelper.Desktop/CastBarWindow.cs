@@ -55,7 +55,8 @@ public sealed class CastBarWindow : Window
         {
             Foreground = new SolidColorBrush(_targetColor),
             FontSize = 15,
-            FontFamily = new FontFamily("Segoe UI Semibold"),
+            FontFamily = new FontFamily("Segoe UI"),
+            FontWeight = FontWeights.SemiBold,
             TextTrimming = TextTrimming.CharacterEllipsis,
             Effect = new DropShadowEffect
             {
@@ -71,6 +72,7 @@ public sealed class CastBarWindow : Window
             Foreground = new SolidColorBrush(_timerColor),
             FontSize = 12,
             FontFamily = new FontFamily("Segoe UI"),
+            FontWeight = FontWeights.Normal,
             HorizontalAlignment = System.Windows.HorizontalAlignment.Right
         };
 
@@ -131,11 +133,17 @@ public sealed class CastBarWindow : Window
         OverlayTextWindowInterop.SetWindowLongPtr(hwnd, new IntPtr(exStyle));
     }
 
-    public void Update(CastBarState? state, double x, double y, MediaColor targetColor, MediaColor timerColor, MediaColor outlineColor)
+    public void Update(CastBarState? state, double x, double y, MediaColor targetColor, MediaColor timerColor, MediaColor outlineColor, string fontFamily)
     {
         _state = state;
         Left = x;
         Top = y;
+
+        var family = new FontFamily(fontFamily);
+        _spellNameText.FontFamily = family;
+        _spellNameText.FontWeight = FontWeights.SemiBold;
+        _secondsText.FontFamily = family;
+        _secondsText.FontWeight = FontWeights.Normal;
 
         if (_targetColor != targetColor || _outlineColor != outlineColor)
         {

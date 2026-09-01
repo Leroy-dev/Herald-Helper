@@ -54,26 +54,31 @@ public partial class MainWindow : Window
 
     internal void SaveOverlaySettings_Click(object sender, RoutedEventArgs e)
     {
-        var settings = new OverlaySettings(
-            NormalizeIntText(OverlayXText.Text, 1200),
-            NormalizeIntText(OverlayYText.Text, 900),
-            NormalizeIntText(OverlayTimerXText.Text, 1580),
-            NormalizeIntText(OverlayTimerYText.Text, 900),
-            NormalizeIntText(OverlayCastXText.Text, 1200),
-            NormalizeIntText(OverlayCastYText.Text, 986),
-            NormalizeIntText(OverlayFontSizeText.Text, 20),
-            NormalizeIntText(OverlayTimerSizeText.Text, 20),
-            NormalizeColorText(TargetColorText.Text, "#FFFFFF"),
-            NormalizeColorText(TimerColorText.Text, "#FFFFFF"),
-            NormalizeColorText(OutlineColorText.Text, "#000000"),
-            ShowTargetCheckbox?.IsChecked ?? true,
-            ShowTimersCheckbox?.IsChecked ?? true,
-            ShowCastBarCheckbox?.IsChecked ?? true,
-            DynamicCastSpeedCheckbox?.IsChecked ?? false,
-            EstimatedSpellDamageCheckbox?.IsChecked ?? false,
-            OcrReplayCheckbox?.IsChecked ?? false);
+        var settings = new OverlaySettings
+        {
+            X = NormalizeIntText(OverlayXText.Text, 1200),
+            Y = NormalizeIntText(OverlayYText.Text, 900),
+            TimerX = NormalizeIntText(OverlayTimerXText.Text, 1580),
+            TimerY = NormalizeIntText(OverlayTimerYText.Text, 900),
+            CastX = NormalizeIntText(OverlayCastXText.Text, 1200),
+            CastY = NormalizeIntText(OverlayCastYText.Text, 986),
+            FontSize = NormalizeIntText(OverlayFontSizeText.Text, 20),
+            TimerSize = NormalizeIntText(OverlayTimerSizeText.Text, 20),
+            TargetColor = NormalizeColorText(TargetColorText.Text, "#FFFFFF"),
+            TimerColor = NormalizeColorText(TimerColorText.Text, "#FFFFFF"),
+            OutlineColor = NormalizeColorText(OutlineColorText.Text, "#000000"),
+            ShowTarget = ShowTargetCheckbox?.IsChecked ?? true,
+            ShowTimers = ShowTimersCheckbox?.IsChecked ?? true,
+            ShowCastBar = ShowCastBarCheckbox?.IsChecked ?? true,
+            DynamicCastSpeedEnabled = DynamicCastSpeedCheckbox?.IsChecked ?? false,
+            EstimatedSpellDamageEnabled = EstimatedSpellDamageCheckbox?.IsChecked ?? false,
+            OcrReplayEnabled = OcrReplayCheckbox?.IsChecked ?? false,
+            TargetFontFamily = OverlayTargetFontCombo?.SelectedItem as string ?? "Segoe UI",
+            TimerFontFamily = OverlayTimerFontCombo?.SelectedItem as string ?? "Segoe UI",
+            CastbarFontFamily = OverlayCastbarFontCombo?.SelectedItem as string ?? "Segoe UI"
+        };
 
-        _settingsController.Save(_overlaySettingsController.Save(settings));
+        _overlaySettingsController.Save(settings);
         SaveCurrentCharacterStatBonuses();
         ReloadEditorData();
         _liveOverlay?.ClearPreview();

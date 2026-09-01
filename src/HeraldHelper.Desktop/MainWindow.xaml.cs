@@ -10,7 +10,9 @@ using System.Windows.Threading;
 using HeraldHelper.Application.Services;
 using HeraldHelper.Desktop.Controllers;
 using HeraldHelper.Desktop.Models;
+using HeraldHelper.Desktop.Services;
 using HeraldHelper.Desktop.Views;
+using Microsoft.Extensions.DependencyInjection;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 using HeraldHelper.Infrastructure.Auth;
@@ -32,6 +34,8 @@ public partial class MainWindow : Window
     private DebugOverlayRenderer _overlay = null!;
     private DesktopOverlayRenderer _liveOverlay = null!;
     private ScreenCaptureOcrService _capture = null!;
+    private readonly IServiceProvider _services;
+    private readonly IWritableSettings<HeraldHelperSettings> _writableSettings;
     private readonly AppDataStore _store;
     private readonly SettingsController _settingsController;
     private readonly OverlaySettingsController _overlaySettingsController;
@@ -86,6 +90,9 @@ public partial class MainWindow : Window
     private System.Windows.Controls.TextBox TargetColorText => OverlayView!.TargetColorText;
     private System.Windows.Controls.TextBox TimerColorText => OverlayView!.TimerColorText;
     private System.Windows.Controls.TextBox OutlineColorText => OverlayView!.OutlineColorText;
+    private System.Windows.Controls.ComboBox OverlayTargetFontCombo => OverlayView!.OverlayTargetFontCombo;
+    private System.Windows.Controls.ComboBox OverlayTimerFontCombo => OverlayView!.OverlayTimerFontCombo;
+    private System.Windows.Controls.ComboBox OverlayCastbarFontCombo => OverlayView!.OverlayCastbarFontCombo;
 
     public static readonly System.Windows.Input.RoutedUICommand SelectLiveViewCommand = new(
         "Live", "SelectLiveView", typeof(MainWindow),
@@ -115,18 +122,26 @@ public partial class MainWindow : Window
         "Save", "Save", typeof(MainWindow),
         new System.Windows.Input.InputGestureCollection { new System.Windows.Input.KeyGesture(System.Windows.Input.Key.S, System.Windows.Input.ModifierKeys.Control) });
 
-    public MainWindow()
+    public MainWindow(IServiceProvider services)
     {
         InitializeComponent();
         BindViewCommands();
-        var dbPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "HeraldHelper",
-            "heraldhelper.db");
-        _store = new AppDataStore(dbPath);
-        _store.Initialize();
-        _settingsController = new SettingsController(_store);
-        _overlaySettingsController = new OverlaySettingsController(_settingsController);
+
+        var fontFamilies = Fonts.SystemFontFamilies
+            .Select(f => f.Source)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(f => f, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        OverlayTargetFontCombo.ItemsSource = fontFamilies;
+        OverlayTimerFontCombo.ItemsSource = fontFamilies;
+        OverlayCastbarFontCombo.ItemsSource = fontFamilies;
+
+        _services = services;
+        _store = services.GetRequiredService<AppDataStore>();
+        _settingsController = services.GetRequiredService<SettingsController>();
+        _writableSettings = services.GetRequiredService<IWritableSettings<HeraldHelperSettings>>();
+        _writableSettings.Load();
+        _overlaySettingsController = services.GetRequiredService<OverlaySettingsController>();
         _abilityProfileController = new AbilityProfileController(_store, _store, _settingsController);
         _daocCharacterController = new DaocCharacterController(_store);
         _themeController = new ThemeController(_settingsController);
@@ -136,7 +151,7 @@ public partial class MainWindow : Window
         };
         _responseDiagnostics = new ResponseDiagnosticsBuffer();
         _responseDiagnostics.LineAdded += OnResponseDiagnosticLineAdded;
-        _liveOverlay = new DesktopOverlayRenderer(() => _settingsController.LoadMap());
+        _liveOverlay = new DesktopOverlayRenderer(() => _overlaySettingsController.Load(), () => _settingsController.LoadMap());
 
         var legacyCfgPath = FindFilePath("cfg.ini");
         var legacyAbilitiesPath = FindFilePath("abilities.txt");
@@ -976,6 +991,21 @@ public partial class MainWindow : Window
         BindToggle(DynamicCastSpeedCheckbox, settings.DynamicCastSpeedEnabled, OverlayVisibilityChanged);
         BindToggle(EstimatedSpellDamageCheckbox, settings.EstimatedSpellDamageEnabled, OverlayVisibilityChanged);
         BindToggle(OcrReplayCheckbox, settings.OcrReplayEnabled, OverlayVisibilityChanged);
+
+        SelectFont(OverlayTargetFontCombo, settings.TargetFontFamily);
+        SelectFont(OverlayTimerFontCombo, settings.TimerFontFamily);
+        SelectFont(OverlayCastbarFontCombo, settings.CastbarFontFamily);
+    }
+
+    private static void SelectFont(System.Windows.Controls.ComboBox? comboBox, string fontFamily)
+    {
+        if (comboBox is null)
+        {
+            return;
+        }
+
+        var item = comboBox.Items.OfType<string>().FirstOrDefault(x => x.Equals(fontFamily, StringComparison.OrdinalIgnoreCase));
+        comboBox.SelectedItem = item ?? "Segoe UI";
     }
 
     private void BindToggle(System.Windows.Controls.CheckBox? checkBox, bool value, RoutedEventHandler? handler = null)
@@ -1014,13 +1044,13 @@ public partial class MainWindow : Window
 
     private void OverlayVisibilityChanged(object sender, RoutedEventArgs e)
     {
-        _settingsController.Save(_overlaySettingsController.SaveVisibility(
+        _overlaySettingsController.SaveVisibility(
             ShowTargetCheckbox?.IsChecked ?? true,
             ShowTimersCheckbox?.IsChecked ?? true,
             ShowCastBarCheckbox?.IsChecked ?? true,
             DynamicCastSpeedCheckbox?.IsChecked ?? false,
             EstimatedSpellDamageCheckbox?.IsChecked ?? false,
-            OcrReplayCheckbox?.IsChecked ?? false));
+            OcrReplayCheckbox?.IsChecked ?? false);
         RebuildRuntimeFromFiles();
     }
 

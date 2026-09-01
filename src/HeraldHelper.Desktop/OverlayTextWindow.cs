@@ -75,7 +75,7 @@ public sealed class OverlayTextWindow : Window
         OverlayTextWindowInterop.SetWindowLongPtr(hwnd, new IntPtr(exStyle));
     }
 
-    public void Update(string text, double x, double y, double fontSize, MediaColor foregroundColor, MediaColor outlineColor)
+    public void Update(string text, double x, double y, double fontSize, string fontFamily, MediaColor foregroundColor, MediaColor outlineColor, FontWeight? fontWeight = null)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -83,8 +83,15 @@ public sealed class OverlayTextWindow : Window
             return;
         }
 
+        var family = new System.Windows.Media.FontFamily(fontFamily);
+
         _mainTextBlock.Text = text;
         _mainTextBlock.FontSize = fontSize;
+        _mainTextBlock.FontFamily = family;
+        if (fontWeight is not null)
+        {
+            _mainTextBlock.FontWeight = fontWeight.Value;
+        }
         _mainTextBlock.Foreground = new SolidColorBrush(foregroundColor);
         if (_mainTextBlock.Effect is DropShadowEffect shadow)
         {
@@ -95,6 +102,11 @@ public sealed class OverlayTextWindow : Window
         {
             outline.Text = text;
             outline.FontSize = fontSize;
+            outline.FontFamily = family;
+            if (fontWeight is not null)
+            {
+                outline.FontWeight = fontWeight.Value;
+            }
             outline.Foreground = new SolidColorBrush(outlineColor);
         }
 

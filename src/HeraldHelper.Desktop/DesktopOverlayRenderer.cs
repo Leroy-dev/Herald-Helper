@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Media;
 using HeraldHelper.Application.Contracts;
+using HeraldHelper.Desktop.Models;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 using MediaColor = System.Windows.Media.Color;
@@ -9,7 +10,8 @@ namespace HeraldHelper.Desktop;
 
 public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
 {
-    private readonly Func<IReadOnlyDictionary<string, string>> _getSettings;
+    private readonly Func<OverlaySettings> _getOverlay;
+    private readonly Func<IReadOnlyDictionary<string, string>>? _getMap;
     private readonly OverlayTextWindow _targetWindow;
     private readonly OverlayTextWindow _timerWindow;
     private readonly CastBarWindow _castBarWindow;
@@ -26,9 +28,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private int? _previewTimerFontSize;
     private bool _disposed;
 
-    public DesktopOverlayRenderer(Func<IReadOnlyDictionary<string, string>> getSettings)
+    public DesktopOverlayRenderer(Func<OverlaySettings> getOverlay, Func<IReadOnlyDictionary<string, string>>? getMap = null)
     {
-        _getSettings = getSettings;
+        _getOverlay = getOverlay;
+        _getMap = getMap;
         _targetWindow = new OverlayTextWindow();
         _timerWindow = new OverlayTextWindow();
         _castBarWindow = new CastBarWindow();
@@ -48,20 +51,15 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 return;
             }
 
-            var settings = _getSettings();
-            var showTarget = ReadBool(settings, "overlayShowTarget", true);
-            var showTimers = ReadBool(settings, "overlayShowTimers", true);
-            var showCastBar = ReadBool(settings, "overlayShowCastBar", true);
+            var overlay = _getOverlay();
 
-            var targetText = showTarget ? BuildTargetText(snapshot.Target, settings) : string.Empty;
-            var timerText = showTimers ? BuildTimerText(snapshot.Timers) : string.Empty;
+            var ox = overlay.X;
+            var oy = overlay.Y;
+            var tx = overlay.TimerX;
+            var ty = overlay.TimerY;
+            var cx = overlay.CastX;
+            var cy = overlay.CastY;
 
-            var ox = ReadInt(settings, "overlayX", 1200);
-            var oy = ReadInt(settings, "overlayY", 900);
-            var tx = ReadInt(settings, "overlayXTimer", ox + 380);
-            var ty = ReadInt(settings, "overlayYTimer", oy);
-            var cx = ReadInt(settings, "overlayXCast", ox);
-            var cy = ReadInt(settings, "overlayYCast", oy + 86);
             if (_previewTargetX is not null)
             {
                 ox = _previewTargetX.Value;
@@ -92,8 +90,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 cy = _previewCastY.Value;
             }
 
-            var f1 = ReadInt(settings, "fontSize", 20);
-            var f2 = ReadInt(settings, "timerSize", f1);
+            var f1 = overlay.FontSize;
+            var f2 = overlay.TimerSize;
             if (_previewTargetFontSize is not null)
             {
                 f1 = _previewTargetFontSize.Value;
@@ -104,9 +102,9 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 f2 = _previewTimerFontSize.Value;
             }
 
-            var targetColor = ReadColor(settings, "targetColor", Colors.White);
-            var timerColor = ReadColor(settings, "timerColor", Colors.White);
-            var outlineColor = ReadColor(settings, "outlineColor", Colors.Black);
+            var targetColor = ReadColor(overlay.TargetColor, Colors.White);
+            var timerColor = ReadColor(overlay.TimerColor, Colors.White);
+            var outlineColor = ReadColor(overlay.OutlineColor, Colors.Black);
             if (_previewTargetColor is not null)
             {
                 targetColor = _previewTargetColor.Value;
@@ -122,10 +120,13 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 outlineColor = _previewOutlineColor.Value;
             }
 
-            _targetWindow.Update(targetText, ox, oy, f1, targetColor, outlineColor);
-            _timerWindow.Update(timerText, tx, ty, f2, timerColor, outlineColor);
-            var cast = showCastBar ? snapshot.ActiveCast : null;
-            _castBarWindow.Update(cast, cx, cy, targetColor, timerColor, outlineColor);
+            var targetText = overlay.ShowTarget ? BuildTargetText(snapshot.Target, _getMap) : string.Empty;
+            var timerText = overlay.ShowTimers ? BuildTimerText(snapshot.Timers) : string.Empty;
+
+            _targetWindow.Update(targetText, ox, oy, f1, overlay.TargetFontFamily, targetColor, outlineColor, FontWeights.SemiBold);
+            _timerWindow.Update(timerText, tx, ty, f2, overlay.TimerFontFamily, timerColor, outlineColor);
+            var cast = overlay.ShowCastBar ? snapshot.ActiveCast : null;
+            _castBarWindow.Update(cast, cx, cy, targetColor, timerColor, outlineColor, overlay.CastbarFontFamily);
         }).Task;
     }
 
@@ -200,29 +201,20 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         dispatcher.Invoke(CloseWindows);
     }
 
-    private static bool ReadBool(IReadOnlyDictionary<string, string> map, string key, bool fallback)
+    internal static string BuildTargetText(TargetProfile? target, IReadOnlyDictionary<string, string>? map)
     {
-        if (!map.TryGetValue(key, out var raw) || string.IsNullOrWhiteSpace(raw))
-        {
-            return fallback;
-        }
-
-        return raw.Trim().ToLowerInvariant() switch
-        {
-            "1" or "true" or "yes" => true,
-            "0" or "false" or "no" => false,
-            _ => fallback
-        };
+        return BuildTargetText(target, map is null ? null : () => map);
     }
 
-    internal static string BuildTargetText(TargetProfile? target, IReadOnlyDictionary<string, string> settings)
+    internal static string BuildTargetText(TargetProfile? target, Func<IReadOnlyDictionary<string, string>>? getMap)
     {
         if (target is null || string.IsNullOrWhiteSpace(target.Name) || !IsRealPlayerTarget(target))
         {
             return string.Empty;
         }
 
-        var show = settings.TryGetValue("show", out var bits) ? bits : "111110011";
+        var map = getMap?.Invoke();
+        var show = map is not null && map.TryGetValue("show", out var bits) ? bits : "111110011";
         bool Flag(int index, bool fallback = true) => show.Length > index ? show[index] == '1' : fallback;
 
         var line1 = target.Name;
@@ -314,14 +306,9 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         };
     }
 
-    private static int ReadInt(IReadOnlyDictionary<string, string> settings, string key, int fallback)
+    private static MediaColor ReadColor(string? raw, MediaColor fallback)
     {
-        return settings.TryGetValue(key, out var raw) && int.TryParse(raw, out var parsed) ? parsed : fallback;
-    }
-
-    private static MediaColor ReadColor(IReadOnlyDictionary<string, string> settings, string key, MediaColor fallback)
-    {
-        if (!settings.TryGetValue(key, out var raw) || string.IsNullOrWhiteSpace(raw))
+        if (string.IsNullOrWhiteSpace(raw))
         {
             return fallback;
         }

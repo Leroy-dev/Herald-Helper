@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 namespace HeraldHelper.Desktop;
 
 public partial class App : System.Windows.Application
@@ -16,7 +17,8 @@ public partial class App : System.Windows.Application
 
         try
         {
-            var window = new MainWindow();
+            var services = AppServiceProvider.BuildProvider();
+            var window = services.GetRequiredService<MainWindow>();
             ShutdownMode = System.Windows.ShutdownMode.OnMainWindowClose;
             MainWindow = window;
             window.Show();
