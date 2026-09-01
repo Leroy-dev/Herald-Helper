@@ -21,7 +21,8 @@ public sealed class CastBarWindow : Window
     private readonly Image _iconImage;
     private readonly TextBlock _spellNameText;
     private readonly TextBlock _secondsText;
-    private readonly ProgressBar _progressBar;
+    private readonly Border _progressBarContainer;
+    private readonly Border _progressBarFill;
     private readonly Border _border;
     private readonly DispatcherTimer _timer;
     private CastBarState? _state;
@@ -79,15 +80,21 @@ public sealed class CastBarWindow : Window
             TextWrapping = TextWrapping.NoWrap
         };
 
-        _progressBar = new ProgressBar
+        _progressBarFill = new Border
         {
-            Minimum = 0,
-            Maximum = 1,
-            Height = 4,
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            Background = new SolidColorBrush(_timerColor),
+            Width = 0
+        };
+
+        _progressBarContainer = new Border
+        {
+            Height = 6,
             Margin = new Thickness(0, 4, 0, 0),
-            Foreground = new SolidColorBrush(_timerColor),
             Background = new SolidColorBrush(MediaColor.FromArgb(120, 0, 0, 0)),
-            BorderThickness = new Thickness(0)
+            Child = _progressBarFill,
+            ClipToBounds = true
         };
 
         var textGrid = new Grid();
@@ -99,7 +106,7 @@ public sealed class CastBarWindow : Window
 
         var infoPanel = new StackPanel { Orientation = System.Windows.Controls.Orientation.Vertical };
         infoPanel.Children.Add(textGrid);
-        infoPanel.Children.Add(_progressBar);
+        infoPanel.Children.Add(_progressBarContainer);
 
         var content = new Grid();
         content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -167,7 +174,7 @@ public sealed class CastBarWindow : Window
         {
             _timerColor = timerColor;
             _secondsText.Foreground = new SolidColorBrush(timerColor);
-            _progressBar.Foreground = new SolidColorBrush(timerColor);
+            _progressBarFill.Background = new SolidColorBrush(timerColor);
         }
 
         Refresh();
@@ -191,7 +198,9 @@ public sealed class CastBarWindow : Window
             ? $" · ~{_state.EstimatedDamage:0} dmg"
             : string.Empty;
         _secondsText.Text = $"{_state.RemainingSeconds(nowUtc):0.0}s{damage}";
-        _progressBar.Value = _state.Progress(nowUtc);
+        var progress = _state.Progress(nowUtc);
+        var containerWidth = _progressBarContainer.ActualWidth;
+        _progressBarFill.Width = containerWidth > 0 ? Math.Max(0, containerWidth * progress) : 0;
         _iconImage.Source = ResolveImage(_state.Icon);
         _iconImage.Visibility = _iconImage.Source is null ? Visibility.Collapsed : Visibility.Visible;
 
