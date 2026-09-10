@@ -201,7 +201,7 @@ Configuration changes are loaded into an immutable `AppRuntimeSettings` snapshot
 
 Prerequisites: Windows 10/11, .NET 10 SDK, PowerShell, and Node.js 18+ only for catalog generation. Tesseract is optional. Windows OCR requires the corresponding Windows OCR language capability; chat phrase parsing currently expects English game messages.
 
-From `D:\Projects\Daoc\HeraldHelperAHK`:
+From the repository root (the folder containing `HeraldHelper.slnx`):
 
 ```powershell
 dotnet --version
@@ -425,4 +425,4 @@ Done when:
 9. Confirm that Mauler remains excluded only from Eden and is accepted on shards that actually provide it.
 10. Should authentication remain machine/account-local through DPAPI with no portable secret export?
 11. What end-to-end target-display latency is acceptable on the actual gaming machine for cached and uncached targets?
-12. Confirm that `D:\Projects\Daoc\HeraldHelperAHK` is the canonical development directory; it currently does not expose Git worktree metadata, so the expected source-control workflow is unclear.
+12. Confirm that the repository root (the folder containing `HeraldHelper.slnx`) is the canonical development directory; it currently does not expose Git worktree metadata, so the expected source-control workflow is unclear.
