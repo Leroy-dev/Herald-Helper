@@ -112,6 +112,26 @@ public sealed class GameLoopOrchestrator : IDisposable
         DateTimeOffset nowUtc,
         CancellationToken cancellationToken)
     {
+        var tickStopwatch = Stopwatch.StartNew();
+        var frame = await CaptureFrameAsync(region, shardType, cancellationToken);
+        ObserveCharacterStats(frame.OcrText, shardType, nowUtc);
+        var parseResult = ParseFrame(frame, shardType, nowUtc);
+        TrackCastEvents(parseResult, nowUtc);
+        ApplyCompletedTargetLookup(nowUtc);
+        TrackTargetEvents(parseResult, shardType, nowUtc, cancellationToken);
+        TrackAbilityHits(parseResult, resistPercent, nowUtc);
+        await RenderFrameAsync(frame.OcrText, nowUtc, cancellationToken);
+        tickStopwatch.Stop();
+        _diagnostics?.Log($"[Timing] tick: {tickStopwatch.ElapsedMilliseconds} ms");
+    }
+
+    private sealed record FrameCapture(string OcrText, List<OcrReplayCapture> ReplayCaptures);
+
+    private async Task<FrameCapture> CaptureFrameAsync(
+        ScreenRegion region,
+        ShardType shardType,
+        CancellationToken cancellationToken)
+    {
         var configuredCaptureRegions = _ocrWatchRegions.Count > 0;
         var captureRegions = _ocrWatchRegions.ToList();
         if (captureRegions.Count == 0 ||
@@ -123,7 +143,6 @@ public sealed class GameLoopOrchestrator : IDisposable
         var ocrSegments = new List<string>();
         var replayCaptures = new List<OcrReplayCapture>();
         var batchDiagnostics = _chatCaptureService as IOcrCaptureBatchDiagnostics;
-        var tickStopwatch = Stopwatch.StartNew();
         batchDiagnostics?.BeginCaptureBatch();
         try
         {
@@ -174,17 +193,27 @@ public sealed class GameLoopOrchestrator : IDisposable
             batchDiagnostics?.CompleteCaptureBatch();
         }
 
-        var ocrText = string.Join(Environment.NewLine + Environment.NewLine, ocrSegments);
-        ObserveCharacterStats(ocrText, shardType, nowUtc);
+        return new FrameCapture(
+            string.Join(Environment.NewLine + Environment.NewLine, ocrSegments),
+            replayCaptures);
+    }
+
+    private ChatParseResult ParseFrame(FrameCapture frame, ShardType shardType, DateTimeOffset nowUtc)
+    {
         var parseStopwatch = Stopwatch.StartNew();
-        var parseResult = _chatEventParser.Parse(ocrText);
+        var parseResult = _chatEventParser.Parse(frame.OcrText);
         parseStopwatch.Stop();
         _diagnostics?.Log($"[Timing] parse: {parseStopwatch.ElapsedMilliseconds} ms");
 
         var replayStopwatch = Stopwatch.StartNew();
-        _ocrReplaySink?.Record(shardType, _activeCharacterName, nowUtc, replayCaptures, parseResult);
+        _ocrReplaySink?.Record(shardType, _activeCharacterName, nowUtc, frame.ReplayCaptures, parseResult);
         replayStopwatch.Stop();
         _diagnostics?.Log($"[Timing] replay write: {replayStopwatch.ElapsedMilliseconds} ms");
+        return parseResult;
+    }
+
+    private void TrackCastEvents(ChatParseResult parseResult, DateTimeOffset nowUtc)
+    {
         var visibleCastEvents = parseResult.VisibleCastEvents
             ?? (parseResult.CastEvent is null ? [] : [parseResult.CastEvent]);
         var newCastEvents = _castEventTracker.ObserveFrame(
@@ -192,8 +221,14 @@ public sealed class GameLoopOrchestrator : IDisposable
             BuildCastEventKey,
             static x => x.OccurrenceOrdinal);
         UpdateActiveCast(newCastEvents.LastOrDefault(), nowUtc);
-        ApplyCompletedTargetLookup(nowUtc);
+    }
 
+    private void TrackTargetEvents(
+        ChatParseResult parseResult,
+        ShardType shardType,
+        DateTimeOffset nowUtc,
+        CancellationToken cancellationToken)
+    {
         var visibleTargetEvents = parseResult.VisibleTargetEvents
             ?? (parseResult.TargetEvent is null ? [] : [parseResult.TargetEvent]);
         var newTargetEvents = _targetEventTracker.ObserveFrame(
@@ -214,7 +249,10 @@ public sealed class GameLoopOrchestrator : IDisposable
             HandleTargetEvent(targetEvent, shardType, nowUtc, cancellationToken);
             ApplyCompletedTargetLookup(nowUtc);
         }
+    }
 
+    private void TrackAbilityHits(ChatParseResult parseResult, int resistPercent, DateTimeOffset nowUtc)
+    {
         var newAbilityHits = _abilityEventTracker.ObserveFrame(
             parseResult.AbilityHits,
             BuildAbilityEventKey,
@@ -223,7 +261,10 @@ public sealed class GameLoopOrchestrator : IDisposable
         {
             _ccImmunityTracker.RegisterSuccessfulHit(hit, GetTargetClass(hit.TargetName), resistPercent, nowUtc);
         }
+    }
 
+    private async Task RenderFrameAsync(string ocrText, DateTimeOffset nowUtc, CancellationToken cancellationToken)
+    {
         var timers = _ccImmunityTracker.GetActiveTimers(nowUtc);
         if (_activeCast is not null && !_activeCast.IsActive(nowUtc))
         {
@@ -234,9 +275,6 @@ public sealed class GameLoopOrchestrator : IDisposable
         await _overlayRenderer.RenderAsync(new OverlaySnapshot(GetLastTarget(), timers, _activeCast, ocrText), cancellationToken);
         renderStopwatch.Stop();
         _diagnostics?.Log($"[Timing] render: {renderStopwatch.ElapsedMilliseconds} ms");
-
-        tickStopwatch.Stop();
-        _diagnostics?.Log($"[Timing] tick: {tickStopwatch.ElapsedMilliseconds} ms");
     }
 
     private void UpdateActiveCast(CastEvent? castEvent, DateTimeOffset nowUtc)
