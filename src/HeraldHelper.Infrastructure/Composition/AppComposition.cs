@@ -89,16 +89,13 @@ public static class AppComposition
 
     private static string? ResolveActiveClass(IReadOnlyDictionary<string, string> settings, ShardType shard)
     {
-        var shardKey = shard.ToString().ToLowerInvariant();
-        settings.TryGetValue($"daoc.character.{shardKey}", out var character);
-        var characterKey = NormalizeSettingSegment(character);
-        if (!string.IsNullOrWhiteSpace(characterKey) &&
-            settings.TryGetValue($"ability.profile.class.{shardKey}.{characterKey}", out var selectedClass) &&
+        settings.TryGetValue(CharacterSettingsKeys.SelectedCharacter(shard), out var character);
+        if (settings.TryGetValue(CharacterSettingsKeys.AbilityProfileClass(shard, character ?? string.Empty), out var selectedClass) &&
             !string.IsNullOrWhiteSpace(selectedClass))
         {
             return selectedClass.Trim();
         }
-        return settings.TryGetValue($"ability.profile.class.{shardKey}", out var legacyClass) &&
+        return settings.TryGetValue(CharacterSettingsKeys.LegacyAbilityProfileClass(shard), out var legacyClass) &&
                !string.IsNullOrWhiteSpace(legacyClass)
             ? legacyClass.Trim()
             : null;
@@ -106,26 +103,17 @@ public static class AppComposition
 
     private static string ResolveActiveCharacter(IReadOnlyDictionary<string, string> settings, ShardType shard)
     {
-        return settings.TryGetValue($"daoc.character.{shard.ToString().ToLowerInvariant()}", out var character)
+        return settings.TryGetValue(CharacterSettingsKeys.SelectedCharacter(shard), out var character)
             ? character.Trim()
             : string.Empty;
     }
 
     private static int? ResolveActiveLevel(IReadOnlyDictionary<string, string> settings, ShardType shard)
     {
-        var shardKey = shard.ToString().ToLowerInvariant();
-        settings.TryGetValue($"daoc.character.{shardKey}", out var character);
-        var characterKey = NormalizeSettingSegment(character);
-        return settings.TryGetValue($"character.level.{shardKey}.{characterKey}", out var raw) &&
+        settings.TryGetValue(CharacterSettingsKeys.SelectedCharacter(shard), out var character);
+        return settings.TryGetValue(CharacterSettingsKeys.CharacterLevel(shard, character ?? string.Empty), out var raw) &&
                int.TryParse(raw, out var level) && level > 0
             ? level
             : null;
-    }
-
-    private static string NormalizeSettingSegment(string? value)
-    {
-        return string.IsNullOrWhiteSpace(value)
-            ? string.Empty
-            : new string(value.Trim().ToLowerInvariant().Select(x => char.IsLetterOrDigit(x) ? x : '_').ToArray());
     }
 }

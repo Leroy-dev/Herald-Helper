@@ -41,7 +41,7 @@ public partial class MainWindow : Window
         }
 
         _settingsController.Save([
-            new ConfigEntry { Key = $"daoc.character.{shard.ToString().ToLowerInvariant()}", Value = profile.CharacterName }
+            new ConfigEntry { Key = CharacterSettingsKeys.SelectedCharacter(shard), Value = profile.CharacterName }
         ]);
 
         if (_abilityProfileController.Shard == shard)

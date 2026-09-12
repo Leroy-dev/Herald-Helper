@@ -130,15 +130,14 @@ public sealed record AppRuntimeSettings(
             return [];
         }
 
-        if (!map.TryGetValue($"daoc.character.{shard.ToString().ToLowerInvariant()}", out var characterName) ||
+        if (!map.TryGetValue(CharacterSettingsKeys.SelectedCharacter(shard), out var characterName) ||
             string.IsNullOrWhiteSpace(characterName))
         {
             return [];
         }
 
-        var characterKey = NormalizeSettingSegment(characterName);
-        var legacyKey = $"daoc.ocr.windows.{shard.ToString().ToLowerInvariant()}.{characterName.Trim().ToLowerInvariant()}";
-        var key = $"daoc.ocr.windows.{shard.ToString().ToLowerInvariant()}.{characterKey}";
+        var legacyKey = CharacterSettingsKeys.LegacyOcrWindows(shard, characterName);
+        var key = CharacterSettingsKeys.OcrWindows(shard, characterName);
         var result = new List<OcrWatchRegion>();
         if (!map.TryGetValue(key, out var raw))
         {
@@ -153,7 +152,7 @@ public sealed record AppRuntimeSettings(
         {
         }
 
-        if (map.TryGetValue($"daoc.ocr.stats.{shard.ToString().ToLowerInvariant()}.{characterKey}", out var statsRaw) &&
+        if (map.TryGetValue(CharacterSettingsKeys.OcrStats(shard, characterName), out var statsRaw) &&
             !string.IsNullOrWhiteSpace(statsRaw))
         {
             try
@@ -170,12 +169,5 @@ public sealed record AppRuntimeSettings(
             }
         }
         return result;
-    }
-
-    private static string NormalizeSettingSegment(string? value)
-    {
-        return string.IsNullOrWhiteSpace(value)
-            ? string.Empty
-            : new string(value.Trim().ToLowerInvariant().Select(x => char.IsLetterOrDigit(x) ? x : '_').ToArray());
     }
 }

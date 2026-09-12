@@ -288,13 +288,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private static string NormalizeSettingSegment(string? value)
-    {
-        return string.IsNullOrWhiteSpace(value)
-            ? string.Empty
-            : new string(value.Trim().ToLowerInvariant().Select(x => char.IsLetterOrDigit(x) ? x : '_').ToArray());
-    }
-
     private void LoadDaocCharacterProfiles()
     {
         _daocCharacterController.LoadProfiles();
@@ -308,9 +301,8 @@ public partial class MainWindow : Window
         {
             foreach (var profile in profiles)
             {
-                var prefix = $"daoc.ocr.windows.{shard.ToString().ToLowerInvariant()}.";
-                var normalizedKey = prefix + NormalizeSettingSegment(profile.CharacterName);
-                var legacyKey = prefix + profile.CharacterName.Trim().ToLowerInvariant();
+                var normalizedKey = CharacterSettingsKeys.OcrWindows(shard, profile.CharacterName);
+                var legacyKey = CharacterSettingsKeys.LegacyOcrWindows(shard, profile.CharacterName);
                 if (!settings.TryGetValue(normalizedKey, out var raw) &&
                     !settings.TryGetValue(legacyKey, out raw))
                 {
@@ -461,7 +453,7 @@ public partial class MainWindow : Window
 
                 var profiles = _daocCharacterController.GetProfiles(shard);
                 combo.ItemsSource = profiles;
-                var selectedName = ReadOrDefault(settings, $"daoc.character.{shard.ToString().ToLowerInvariant()}", string.Empty);
+                var selectedName = ReadOrDefault(settings, CharacterSettingsKeys.SelectedCharacter(shard), string.Empty);
                 var selectedProfile = profiles.FirstOrDefault(x => string.Equals(x.CharacterName, selectedName, StringComparison.OrdinalIgnoreCase));
                 combo.SelectedItem = selectedProfile;
                 if (_daocWindowButtons.TryGetValue(shard, out var windowButton))
@@ -617,7 +609,7 @@ public partial class MainWindow : Window
         var settings = _settingsController.LoadMap();
         var character = ReadOrDefault(
             settings,
-            $"daoc.character.{_shardType.ToString().ToLowerInvariant()}",
+            CharacterSettingsKeys.SelectedCharacter(_shardType),
             string.Empty);
         if (_shardType == ShardType.Default || string.IsNullOrWhiteSpace(character))
         {
@@ -634,7 +626,7 @@ public partial class MainWindow : Window
                 return;
             }
             var region = new OcrWatchRegion("character-stats", "Character Stats", selected);
-            var key = $"daoc.ocr.stats.{_shardType.ToString().ToLowerInvariant()}.{NormalizeSettingSegment(character)}";
+            var key = CharacterSettingsKeys.OcrStats(_shardType, character);
             _settingsController.Save([
                 new ConfigEntry { Key = key, Value = JsonSerializer.Serialize(region) }
             ]);
@@ -749,7 +741,7 @@ public partial class MainWindow : Window
         }
 
         var map = _settingsController.LoadMap();
-        var character = ReadOrDefault(map, $"daoc.character.{_shardType.ToString().ToLowerInvariant()}", string.Empty);
+        var character = ReadOrDefault(map, CharacterSettingsKeys.SelectedCharacter(_shardType), string.Empty);
         var stats = _store.LoadCharacterStats(_shardType, character);
         return stats?.Dexterity is null
             ? "Stats: awaiting OCR"
@@ -932,7 +924,7 @@ public partial class MainWindow : Window
         BindToggle(UseRealmColorsCheckbox, settings.UseRealmColors, OverlayVisibilityChanged);
 
         var map = _settingsController.LoadMap();
-        var character = ReadOrDefault(map, $"daoc.character.{_shardType.ToString().ToLowerInvariant()}", string.Empty);
+        var character = ReadOrDefault(map, CharacterSettingsKeys.SelectedCharacter(_shardType), string.Empty);
         var stats = _store.LoadCharacterStats(_shardType, character);
         CastingSpeedBonusText.Text = (stats?.CastingSpeedPercent ?? 0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
         SpellDamageBonusText.Text = (stats?.SpellDamagePercent ?? 0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
@@ -1010,7 +1002,7 @@ public partial class MainWindow : Window
     private void SaveCurrentCharacterStatBonuses()
     {
         var map = _settingsController.LoadMap();
-        var character = ReadOrDefault(map, $"daoc.character.{_shardType.ToString().ToLowerInvariant()}", string.Empty);
+        var character = ReadOrDefault(map, CharacterSettingsKeys.SelectedCharacter(_shardType), string.Empty);
         if (string.IsNullOrWhiteSpace(character))
         {
             return;

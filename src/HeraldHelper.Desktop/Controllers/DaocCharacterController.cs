@@ -2,6 +2,7 @@ using System.Text.Json;
 using HeraldHelper.Desktop.Repositories;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
+using HeraldHelper.Infrastructure.Configuration;
 
 namespace HeraldHelper.Desktop.Controllers;
 
@@ -31,9 +32,8 @@ internal sealed class DaocCharacterController
     public IReadOnlyList<OcrWatchRegion> LoadOcrWindows(ShardType shard, string characterName)
     {
         var settings = _settingsRepository.LoadSettingsMap();
-        var prefix = $"daoc.ocr.windows.{shard.ToString().ToLowerInvariant()}.";
-        var key = prefix + NormalizeSettingSegment(characterName);
-        var legacyKey = prefix + characterName.Trim().ToLowerInvariant();
+        var key = CharacterSettingsKeys.OcrWindows(shard, characterName);
+        var legacyKey = CharacterSettingsKeys.LegacyOcrWindows(shard, characterName);
         if (!settings.TryGetValue(key, out var raw))
         {
             settings.TryGetValue(legacyKey, out raw);
@@ -59,24 +59,16 @@ internal sealed class DaocCharacterController
         var windows = selected.Select(x => new OcrWatchRegion(x.Key, x.Label, x.Region)).ToList();
         var raw = JsonSerializer.Serialize(windows);
         var settings = _settingsRepository.LoadSettingsMap();
-        var prefix = $"daoc.ocr.windows.{shard.ToString().ToLowerInvariant()}.";
-        var key = prefix + NormalizeSettingSegment(characterName);
+        var key = CharacterSettingsKeys.OcrWindows(shard, characterName);
 
         settings[key] = raw;
 
-        var legacyKey = prefix + characterName.Trim().ToLowerInvariant();
+        var legacyKey = CharacterSettingsKeys.LegacyOcrWindows(shard, characterName);
         if (!string.Equals(key, legacyKey, StringComparison.OrdinalIgnoreCase) && settings.ContainsKey(legacyKey))
         {
             settings[legacyKey] = string.Empty;
         }
 
         _settingsRepository.SaveSettings(settings.Select(x => new ConfigEntry { Key = x.Key, Value = x.Value }));
-    }
-
-    private static string NormalizeSettingSegment(string? value)
-    {
-        return string.IsNullOrWhiteSpace(value)
-            ? string.Empty
-            : new string(value.Trim().ToLowerInvariant().Select(x => char.IsLetterOrDigit(x) ? x : '_').ToArray());
     }
 }

@@ -56,7 +56,7 @@ internal sealed class RuntimeController
         var selectedShard = AppRuntimeSettings.FromMap(settingsMap).ShardType;
         var selectedCharacter = ReadOrDefault(
             settingsMap,
-            $"daoc.character.{selectedShard.ToString().ToLowerInvariant()}",
+            CharacterSettingsKeys.SelectedCharacter(selectedShard),
             string.Empty);
         var abilities = LoadActiveAbilityDefinitions(settingsMap, selectedShard);
         var getSettings = () => _settingsRepository.LoadSettingsMap();
@@ -115,12 +115,12 @@ internal sealed class RuntimeController
         {
             var characterName = ReadOrDefault(
                 settingsMap,
-                $"daoc.character.{shard.ToString().ToLowerInvariant()}",
+                CharacterSettingsKeys.SelectedCharacter(shard),
                 string.Empty);
             var className = ReadOrDefault(
                 settingsMap,
-                AbilityProfileClassSettingKey(shard, characterName),
-                ReadOrDefault(settingsMap, LegacyAbilityProfileClassSettingKey(shard), string.Empty));
+                CharacterSettingsKeys.AbilityProfileClass(shard, characterName),
+                ReadOrDefault(settingsMap, CharacterSettingsKeys.LegacyAbilityProfileClass(shard), string.Empty));
             if (!string.IsNullOrWhiteSpace(className))
             {
                 return _abilityProfileRepository.LoadAbilityProfile(shard, characterName, className)
@@ -139,27 +139,6 @@ internal sealed class RuntimeController
     private static bool SupportsAbilityProfiles(ShardType shard)
     {
         return shard is ShardType.Eden or ShardType.Blackthorn;
-    }
-
-    private static string AbilityProfileClassSettingKey(ShardType shard, string characterName)
-    {
-        var characterKey = NormalizeSettingSegment(characterName);
-        if (string.IsNullOrWhiteSpace(characterKey))
-        {
-            characterKey = "default";
-        }
-
-        return $"ability.profile.class.{shard.ToString().ToLowerInvariant()}.{characterKey}";
-    }
-
-    private static string LegacyAbilityProfileClassSettingKey(ShardType shard)
-    {
-        return $"ability.profile.class.{shard.ToString().ToLowerInvariant()}";
-    }
-
-    private static string NormalizeSettingSegment(string? value)
-    {
-        return value?.Trim().ToLowerInvariant() ?? string.Empty;
     }
 
     private static AbilityDefinition ToAbilityDefinition(AbilityEditorRow row)

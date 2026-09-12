@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using HeraldHelper.Desktop.Repositories;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
+using HeraldHelper.Infrastructure.Configuration;
 using HeraldHelper.Infrastructure.Parsing;
 
 namespace HeraldHelper.Desktop.Controllers;
@@ -61,12 +62,12 @@ internal sealed class AbilityProfileController
         var settings = _settingsController.LoadMap();
         Character = ReadOrDefault(
             settings,
-            $"daoc.character.{Shard.ToString().ToLowerInvariant()}",
+            CharacterSettingsKeys.SelectedCharacter(Shard),
             string.Empty);
         var selectedClass = ReadOrDefault(
             settings,
-            AbilityProfileClassSettingKey(Shard, Character),
-            ReadOrDefault(settings, LegacyAbilityProfileClassSettingKey(Shard), string.Empty));
+            CharacterSettingsKeys.AbilityProfileClass(Shard, Character),
+            ReadOrDefault(settings, CharacterSettingsKeys.LegacyAbilityProfileClass(Shard), string.Empty));
         Class = classes.FirstOrDefault(x =>
             string.Equals(x, selectedClass, StringComparison.OrdinalIgnoreCase));
         IsClassEnabled = true;
@@ -79,7 +80,7 @@ internal sealed class AbilityProfileController
         _settingsController.Save([
             new ConfigEntry
             {
-                Key = AbilityProfileClassSettingKey(Shard, Character),
+                Key = CharacterSettingsKeys.AbilityProfileClass(Shard, Character),
                 Value = className
             }
         ]);
@@ -170,29 +171,6 @@ internal sealed class AbilityProfileController
     private static bool SupportsAbilityProfiles(ShardType shard)
     {
         return shard is ShardType.Eden or ShardType.Blackthorn;
-    }
-
-    private static string AbilityProfileClassSettingKey(ShardType shard, string characterName)
-    {
-        var characterKey = NormalizeSettingSegment(characterName);
-        if (string.IsNullOrWhiteSpace(characterKey))
-        {
-            characterKey = "default";
-        }
-
-        return $"ability.profile.class.{shard.ToString().ToLowerInvariant()}.{characterKey}";
-    }
-
-    private static string LegacyAbilityProfileClassSettingKey(ShardType shard)
-    {
-        return $"ability.profile.class.{shard.ToString().ToLowerInvariant()}";
-    }
-
-    private static string NormalizeSettingSegment(string? value)
-    {
-        return string.IsNullOrWhiteSpace(value)
-            ? string.Empty
-            : new string(value.Trim().ToLowerInvariant().Select(x => char.IsLetterOrDigit(x) ? x : '_').ToArray());
     }
 
     private static string DisplayProfileCharacter(string characterName)
