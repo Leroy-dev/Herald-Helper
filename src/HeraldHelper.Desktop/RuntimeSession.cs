@@ -8,7 +8,7 @@ using HeraldHelper.Infrastructure.Overlay;
 
 namespace HeraldHelper.Desktop;
 
-internal sealed class RuntimeSession : IDisposable
+internal sealed class RuntimeSession : IRuntimeSession
 {
     public GameLoopOrchestrator Orchestrator { get; }
     public DebugOverlayRenderer DebugOverlay { get; }
@@ -29,7 +29,7 @@ internal sealed class RuntimeSession : IDisposable
         Capture = capture;
     }
 
-    public async Task<(string Output, OverlaySnapshot? Snapshot, string DiagnosticsText)> TickAsync(
+    public async Task<LoopTickResult> TickAsync(
         ScreenRegion? chatRegion,
         ShardType shard,
         int resistPercent,
@@ -43,7 +43,7 @@ internal sealed class RuntimeSession : IDisposable
             cancellationToken);
         var output = DebugOverlay.LastRendered;
         var snapshot = DebugOverlay.LastSnapshot;
-        return (output, snapshot, BuildDiagnosticsText(snapshot));
+        return new LoopTickResult(output, snapshot, BuildDiagnosticsText(snapshot));
     }
 
     private string BuildDiagnosticsText(OverlaySnapshot? snapshot)

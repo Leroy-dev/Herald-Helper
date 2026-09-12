@@ -28,7 +28,8 @@ namespace HeraldHelper.Desktop;
 public partial class MainWindow : Window
 {
     private DesktopOverlayRenderer _liveOverlay = null!;
-    private RuntimeSession _runtimeSession = null!;
+    private RuntimeLoop? _loop;
+    private TimeSpan _loopInterval = TimeSpan.FromMilliseconds(350);
     private readonly IServiceProvider _services;
     private readonly IWritableSettings<HeraldHelperSettings> _writableSettings;
     private readonly AppDataStore _store;
@@ -38,8 +39,6 @@ public partial class MainWindow : Window
     private readonly AuthController _authController;
     private readonly ResponseDiagnosticsBuffer _responseDiagnostics;
     private readonly IShardAuthRefreshService _authRefreshService;
-    private readonly DispatcherTimer _loopTimer;
-    private bool _tickInProgress;
     private bool _isBindingControls;
     private ScreenRegion? _chatRegion;
     private ShardType _shardType;
@@ -151,9 +150,6 @@ public partial class MainWindow : Window
         LegacyTextImporter.ImportIfNeeded(_store, legacyCfgPath, legacyAbilitiesPath);
         _settingsController.EnsureDefaultAuthSettings();
 
-        _loopTimer = new DispatcherTimer();
-        _loopTimer.Interval = TimeSpan.FromMilliseconds(350);
-        _loopTimer.Tick += async (_, _) => await TickOnceAsync();
         _authController.ConfigureTimer();
 
         RebuildRuntimeFromFiles();
@@ -172,10 +168,9 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
-        _loopTimer?.Stop();
+        _loop?.Dispose();
         _authController?.AuthRefreshTimer?.Stop();
         _responseDiagnostics.LineAdded -= OnResponseDiagnosticLineAdded;
-        _runtimeSession?.Dispose();
         _liveOverlay?.Dispose();
         base.OnClosed(e);
     }
@@ -224,16 +219,29 @@ public partial class MainWindow : Window
 
     internal void RebuildRuntimeFromFiles()
     {
-        _runtimeSession?.Dispose();
-        _runtimeSession = _runtimeController.Rebuild(
+        _loop?.Dispose();
+        var session = _runtimeController.Rebuild(
             _settingsController.LoadMap(),
             () => Dispatcher.BeginInvoke(UpdateRegionText));
-        _chatRegion = _runtimeSession.RuntimeSettings.ChatRegion;
-        _shardType = _runtimeSession.RuntimeSettings.ShardType;
-        _resistPercent = _runtimeSession.RuntimeSettings.ResistPercent;
-        _ocrEngineMode = _runtimeSession.RuntimeSettings.OcrEngineMode;
+        _loop = new RuntimeLoop(
+            session,
+            () => new LoopTickInput(_chatRegion, _shardType, _resistPercent),
+            _loopInterval);
+        _loop.TickCompleted += OnLoopTickCompleted;
+        _loop.TickFailed += message => OutputBox.Text = message;
+        _chatRegion = _loop.RuntimeSettings.ChatRegion;
+        _shardType = _loop.RuntimeSettings.ShardType;
+        _resistPercent = _loop.RuntimeSettings.ResistPercent;
+        _ocrEngineMode = _loop.RuntimeSettings.OcrEngineMode;
         BindControlsFromSettings();
         UpdateRegionText();
+    }
+
+    private void OnLoopTickCompleted(LoopTickResult tick)
+    {
+        OutputBox.Text = tick.Output;
+        _lastOverlaySnapshot = tick.Snapshot;
+        DiagnosticsBox.Text = tick.DiagnosticsText;
     }
 
     private void BindControlsFromSettings()
@@ -485,56 +493,24 @@ public partial class MainWindow : Window
 
     private async void RunTick_Click(object sender, RoutedEventArgs e)
     {
-        await TickOnceAsync();
-    }
-
-    private async Task TickOnceAsync()
-    {
-        if (_tickInProgress)
+        if (_loop is not null)
         {
-            return;
-        }
-
-        if (_runtimeSession is null || (_chatRegion is null && _runtimeSession.RuntimeSettings.OcrWatchRegions.Count == 0))
-        {
-            OutputBox.Text = "Select chat area first (drag selection).";
-            return;
-        }
-
-        _tickInProgress = true;
-        try
-        {
-            var (output, snapshot, diagnostics) = await _runtimeSession.TickAsync(
-                _chatRegion,
-                _shardType,
-                _resistPercent,
-                CancellationToken.None);
-            OutputBox.Text = output;
-            _lastOverlaySnapshot = snapshot;
-            DiagnosticsBox.Text = diagnostics;
-        }
-        catch (Exception ex)
-        {
-            OutputBox.Text = ex.Message;
-        }
-        finally
-        {
-            _tickInProgress = false;
+            await _loop.TickOnceAsync();
         }
     }
 
     private void ToggleLoop_Click(object sender, RoutedEventArgs e)
     {
-        if (_loopTimer?.IsEnabled == true)
+        if (_loop?.IsRunning == true)
         {
-            _loopTimer.Stop();
+            _loop.Stop();
             ToggleLoopIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Run;
             ToggleLoopText.Text = "Start";
             return;
         }
 
-        _loopTimer?.Start();
-        if (_loopTimer is not null)
+        _loop?.Start();
+        if (_loop is not null)
         {
             ToggleLoopIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Stop;
             ToggleLoopText.Text = "Stop";
@@ -701,25 +677,24 @@ public partial class MainWindow : Window
 
     private void LoopMsText_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (_loopTimer is null)
-        {
-            return;
-        }
-
         if (!int.TryParse(LoopMsText.Text, out var ms))
         {
             return;
         }
 
         ms = Math.Clamp(ms, 100, 5000);
-        _loopTimer.Interval = TimeSpan.FromMilliseconds(ms);
+        _loopInterval = TimeSpan.FromMilliseconds(ms);
+        if (_loop is not null)
+        {
+            _loop.Interval = _loopInterval;
+        }
     }
 
     private void UpdateRegionText()
     {
         var modeLabel = _shardType == ShardType.Default ? "Default mode" : $"Shard: {_shardType}";
         var statsLabel = BuildCharacterStatsLabel();
-        var ocrWindowCount = _runtimeSession?.RuntimeSettings.OcrWatchRegions.Count ?? 0;
+        var ocrWindowCount = _loop?.RuntimeSettings.OcrWatchRegions.Count ?? 0;
         if (_chatRegion is null)
         {
             RegionText.Text = _shardType == ShardType.Default
@@ -1114,7 +1089,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var snapshot = _runtimeSession?.LastSnapshot ?? _lastOverlaySnapshot;
+        var snapshot = _loop?.LastSnapshot ?? _lastOverlaySnapshot;
         if (snapshot is null)
         {
             return;
