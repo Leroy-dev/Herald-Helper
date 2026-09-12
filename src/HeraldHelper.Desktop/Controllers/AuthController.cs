@@ -13,21 +13,18 @@ internal sealed class AuthController
     private readonly IWritableSettings<HeraldHelperSettings> _writableSettings;
     private readonly IShardAuthRefreshService _authRefreshService;
     private readonly DispatcherTimer _authRefreshTimer;
-    private readonly Action<string> _setOutput;
-    private readonly Action _onAuthRefreshed;
+    private readonly IAuthNotifications _notifications;
 
     public AuthController(
         SettingsController settingsController,
         IWritableSettings<HeraldHelperSettings> writableSettings,
         IShardAuthRefreshService authRefreshService,
-        Action<string> setOutput,
-        Action onAuthRefreshed)
+        IAuthNotifications notifications)
     {
         _settingsController = settingsController;
         _writableSettings = writableSettings;
         _authRefreshService = authRefreshService;
-        _setOutput = setOutput;
-        _onAuthRefreshed = onAuthRefreshed;
+        _notifications = notifications;
         _authRefreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(writableSettings.Value.Auth.AutoRefreshMinutes) };
         _authRefreshTimer.Tick += async (_, _) =>
         {
@@ -64,20 +61,20 @@ internal sealed class AuthController
     {
         try
         {
-            _setOutput($"Refreshing auth for {shard}...");
+            _notifications.Log($"Refreshing auth for {shard}...");
             var bundle = await _authRefreshService.RefreshAsync(shard, CancellationToken.None);
             if (bundle is null)
             {
-                _setOutput($"No valid auth captured for {shard}. Sign in inside the Playwright browser and retry.");
+                _notifications.Log($"No valid auth captured for {shard}. Sign in inside the Playwright browser and retry.");
                 return;
             }
 
-            _onAuthRefreshed();
-            _setOutput($"Auth refreshed for {shard}.");
+            _notifications.OnRefreshed();
+            _notifications.Log($"Auth refreshed for {shard}.");
         }
         catch (Exception ex)
         {
-            _setOutput($"Auth refresh failed for {shard}: {ex.Message}");
+            _notifications.Log($"Auth refresh failed for {shard}: {ex.Message}");
         }
     }
 
@@ -87,14 +84,14 @@ internal sealed class AuthController
         {
             var refreshed = await RefreshEnabledShardAuthAsync();
 
-            _onAuthRefreshed();
-            _setOutput(refreshed.Count == 0
+            _notifications.OnRefreshed();
+            _notifications.Log(refreshed.Count == 0
                 ? "No enabled shard auth profiles."
                 : $"Auth refreshed: {string.Join(", ", refreshed)}");
         }
         catch (Exception ex)
         {
-            _setOutput($"Auth refresh failed: {ex.Message}");
+            _notifications.Log($"Auth refresh failed: {ex.Message}");
         }
     }
 

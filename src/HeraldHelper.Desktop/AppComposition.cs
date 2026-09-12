@@ -74,28 +74,8 @@ internal static class AppServiceProvider
 
         services.AddSingleton<RuntimeController>();
 
-        services.AddSingleton<AuthController>(sp =>
-        {
-            var settings = sp.GetRequiredService<SettingsController>();
-            var refresh = sp.GetRequiredService<IShardAuthRefreshService>();
-            var liveSettings = sp.GetRequiredService<IWritableSettings<HeraldHelperSettings>>();
-            return new AuthController(
-                settings,
-                liveSettings,
-                refresh,
-                text =>
-                {
-                    var window = sp.GetRequiredService<MainWindow>();
-                    window.OutputBox.Text = text;
-                },
-                () =>
-                {
-                    var window = sp.GetRequiredService<MainWindow>();
-                    window.ReloadEditorData();
-                    window.RebuildRuntimeFromFiles();
-                    window.ReloadOverlaySettingsFromStore();
-                });
-        });
+        services.AddSingleton<IAuthNotifications, WpfAuthNotifications>();
+        services.AddSingleton<AuthController>();
 
         services.AddSingleton<MainWindow>();
 
