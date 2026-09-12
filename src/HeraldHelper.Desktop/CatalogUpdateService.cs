@@ -15,74 +15,64 @@ internal sealed class CatalogUpdateService
     private readonly string[] _catalogs;
 
     public CatalogUpdateService(
-        string? root = null,
-        ICatalogCrawler? crawler = null,
-        ICatalogValidator? validator = null,
-        ICatalogBackup? backup = null)
+        ICatalogCrawler crawler,
+        ICatalogValidator validator,
+        ICatalogBackup backup,
+        string? root = null)
     {
         _root = root;
-        _crawler = crawler ?? new NodeCatalogCrawler();
-        _validator = validator ?? new FileCatalogValidator();
-        _backup = backup ?? new FileCatalogBackup();
+        _crawler = crawler;
+        _validator = validator;
+        _backup = backup;
         _catalogs = ["eden-charplan", "blackthorn-charplan"];
     }
 
     public async Task<string> UpdateAsync(CancellationToken cancellationToken)
     {
-        var root = _root ?? FindProjectRoot() ?? throw new InvalidOperationException("Could not locate the HeraldHelper scripts directory.");
+        var root = ResolveRoot();
         var before = ReadSummary(root);
-        var output = new StringBuilder();
-        var backupRoot = Path.Combine(root, "tmp", $"catalog-update-backup-{Guid.NewGuid():N}");
-        var deleteBackup = true;
-
-        try
-        {
-            foreach (var catalog in _catalogs)
-            {
-                _backup.Backup(root, catalog, backupRoot);
-            }
-
-            await RunCrawlersAsync(root, output, cancellationToken);
-
-            foreach (var catalog in _catalogs)
-            {
-                _validator.Validate(root, catalog);
-            }
-
-            var after = ReadSummary(root);
-            return $"Catalog update completed.\nBefore: {before}\nAfter: {after}\n\n{output}";
-        }
-        catch (Exception updateError)
-        {
-            try
-            {
-                TryRestore(root, backupRoot);
-            }
-            catch (Exception restoreError)
-            {
-                deleteBackup = false;
-                throw new AggregateException(
-                    $"Catalog update failed and rollback also failed. Recovery files remain in {backupRoot}.",
-                    updateError,
-                    restoreError);
-            }
-            throw;
-        }
-        finally
-        {
-            if (deleteBackup)
-            {
-                _backup.Delete(backupRoot);
-            }
-        }
+        return await ExecuteInTransactionAsync(
+            root,
+            "update",
+            restoreOnSuccess: false,
+            ctx => Task.FromResult(
+                $"Catalog update completed.\nBefore: {before}\nAfter: {ReadSummary(ctx.Root)}\n\n{ctx.Output}"),
+            cancellationToken);
     }
 
     public async Task<IReadOnlyList<CatalogUpdatePreview>> PreviewAsync(CancellationToken cancellationToken)
     {
-        var root = _root ?? FindProjectRoot() ?? throw new InvalidOperationException("Could not locate the HeraldHelper scripts directory.");
-        var previews = new List<CatalogUpdatePreview>();
+        var root = ResolveRoot();
+        return await ExecuteInTransactionAsync(
+            root,
+            "preview",
+            restoreOnSuccess: true,
+            ctx => Task.FromResult<IReadOnlyList<CatalogUpdatePreview>>(
+                _catalogs
+                    .Select(catalog => CatalogUpdatePreviewBuilder.Build(
+                        catalog,
+                        Path.Combine(ctx.BackupRoot, catalog),
+                        Path.Combine(ctx.Root, "data", catalog)))
+                    .ToList()),
+            cancellationToken);
+    }
+
+    private string ResolveRoot()
+    {
+        return _root ?? FindProjectRoot() ?? throw new InvalidOperationException("Could not locate the HeraldHelper scripts directory.");
+    }
+
+    private sealed record TransactionContext(string Root, string BackupRoot, StringBuilder Output);
+
+    private async Task<T> ExecuteInTransactionAsync<T>(
+        string root,
+        string operation,
+        bool restoreOnSuccess,
+        Func<TransactionContext, Task<T>> complete,
+        CancellationToken cancellationToken)
+    {
         var output = new StringBuilder();
-        var backupRoot = Path.Combine(root, "tmp", $"catalog-preview-backup-{Guid.NewGuid():N}");
+        var backupRoot = Path.Combine(root, "tmp", $"catalog-{operation}-backup-{Guid.NewGuid():N}");
         var deleteBackup = true;
 
         try
@@ -92,28 +82,24 @@ internal sealed class CatalogUpdateService
                 _backup.Backup(root, catalog, backupRoot);
             }
 
-            var beforeRoots = _catalogs.ToDictionary(
-                x => x,
-                x => Path.Combine(backupRoot, x));
-
-            await RunCrawlersAsync(root, output, cancellationToken);
+            foreach (var catalog in _catalogs)
+            {
+                await _crawler.RunAsync(catalog, output, cancellationToken);
+            }
 
             foreach (var catalog in _catalogs)
             {
                 _validator.Validate(root, catalog);
             }
 
-            foreach (var catalog in _catalogs)
+            var result = await complete(new TransactionContext(root, backupRoot, output));
+
+            if (restoreOnSuccess)
             {
-                var preview = CatalogUpdatePreviewBuilder.Build(
-                    catalog,
-                    Path.Combine(backupRoot, catalog),
-                    Path.Combine(root, "data", catalog));
-                previews.Add(preview);
+                TryRestore(root, backupRoot);
             }
 
-            TryRestore(root, backupRoot);
-            return previews;
+            return result;
         }
         catch (Exception updateError)
         {
@@ -125,7 +111,7 @@ internal sealed class CatalogUpdateService
             {
                 deleteBackup = false;
                 throw new AggregateException(
-                    $"Catalog preview failed and rollback also failed. Recovery files remain in {backupRoot}.",
+                    $"Catalog {operation} failed and rollback also failed. Recovery files remain in {backupRoot}.",
                     updateError,
                     restoreError);
             }
@@ -137,14 +123,6 @@ internal sealed class CatalogUpdateService
             {
                 _backup.Delete(backupRoot);
             }
-        }
-    }
-
-    private async Task RunCrawlersAsync(string root, StringBuilder output, CancellationToken cancellationToken)
-    {
-        foreach (var catalog in _catalogs)
-        {
-            await _crawler.RunAsync(catalog, output, cancellationToken);
         }
     }
 

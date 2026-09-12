@@ -77,6 +77,11 @@ internal static class AppServiceProvider
         services.AddSingleton<IAuthNotifications, WpfAuthNotifications>();
         services.AddSingleton<AuthController>();
 
+        services.AddSingleton<ICatalogCrawler, NodeCatalogCrawler>();
+        services.AddSingleton<ICatalogValidator, FileCatalogValidator>();
+        services.AddSingleton<ICatalogBackup, FileCatalogBackup>();
+        services.AddSingleton<CatalogUpdateService>();
+
         services.AddSingleton<MainWindow>();
 
         return services.BuildServiceProvider();

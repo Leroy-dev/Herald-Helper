@@ -12,7 +12,7 @@ public sealed class CatalogUpdateServiceTests
     {
         var root = CreateTempProject();
         var crawler = new ModifyCatalogCrawler(root);
-        var service = new CatalogUpdateService(root, crawler, new FileCatalogValidator(), new FileCatalogBackup());
+        var service = new CatalogUpdateService(crawler, new FileCatalogValidator(), new FileCatalogBackup(), root);
 
         var result = await service.UpdateAsync(CancellationToken.None);
 
@@ -26,7 +26,7 @@ public sealed class CatalogUpdateServiceTests
     {
         var root = CreateTempProject();
         var crawler = new ModifyCatalogCrawler(root);
-        var service = new CatalogUpdateService(root, crawler, new FileCatalogValidator(), new FileCatalogBackup());
+        var service = new CatalogUpdateService(crawler, new FileCatalogValidator(), new FileCatalogBackup(), root);
 
         var previews = await service.PreviewAsync(CancellationToken.None);
 
@@ -42,7 +42,7 @@ public sealed class CatalogUpdateServiceTests
     {
         var root = CreateTempProject();
         var crawler = new ThrowingCrawler("eden-charplan");
-        var service = new CatalogUpdateService(root, crawler, new FileCatalogValidator(), new FileCatalogBackup());
+        var service = new CatalogUpdateService(crawler, new FileCatalogValidator(), new FileCatalogBackup(), root);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.UpdateAsync(CancellationToken.None));
 
@@ -55,7 +55,7 @@ public sealed class CatalogUpdateServiceTests
         var root = CreateTempProject();
         var crawler = new ModifyCatalogCrawler(root);
         var validator = new ThrowingValidator("eden-charplan");
-        var service = new CatalogUpdateService(root, crawler, validator, new FileCatalogBackup());
+        var service = new CatalogUpdateService(crawler, validator, new FileCatalogBackup(), root);
 
         await Assert.ThrowsAsync<InvalidDataException>(() => service.UpdateAsync(CancellationToken.None));
 
@@ -68,7 +68,7 @@ public sealed class CatalogUpdateServiceTests
         var root = CreateTempProject();
         var crawler = new ThrowingCrawler("eden-charplan");
         var backup = new ThrowingBackup();
-        var service = new CatalogUpdateService(root, crawler, new FileCatalogValidator(), backup);
+        var service = new CatalogUpdateService(crawler, new FileCatalogValidator(), backup, root);
 
         var ex = await Assert.ThrowsAsync<AggregateException>(() => service.UpdateAsync(CancellationToken.None));
 

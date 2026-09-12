@@ -20,6 +20,7 @@ using HeraldHelper.Infrastructure.Configuration;
 using HeraldHelper.Infrastructure.Overlay;
 using HeraldHelper.Infrastructure.Parsing;
 using MaterialDesignThemes.Wpf;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using MediaColor = System.Windows.Media.Color;
 using WpfComboBox = System.Windows.Controls.ComboBox;
@@ -63,7 +64,7 @@ public partial class MainWindow : Window
         try
         {
             OutputBox.Text = "Updating catalogs...";
-            var result = await new CatalogUpdateService().UpdateAsync(CancellationToken.None);
+            var result = await _services.GetRequiredService<CatalogUpdateService>().UpdateAsync(CancellationToken.None);
             _edenBrowserWindow?.Close();
             AbilityProfileCatalog.Refresh();
             RebuildRuntimeFromFiles();
