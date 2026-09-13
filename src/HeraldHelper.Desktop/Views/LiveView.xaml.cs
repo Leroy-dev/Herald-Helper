@@ -16,6 +16,11 @@ public partial class LiveView : System.Windows.Controls.UserControl
         InitializeComponent();
     }
 
+    private void OpenReplay_Click(object sender, RoutedEventArgs e)
+    {
+        new OcrReplayWindow { Owner = Main }.Show();
+    }
+
     private void ClearResponseDiagnostics_Click(object sender, RoutedEventArgs e)
     {
         Main?.ClearResponseDiagnostics_Click(sender, e);

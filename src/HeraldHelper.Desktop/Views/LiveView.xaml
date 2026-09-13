@@ -11,7 +11,23 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <GroupBox Grid.Row="0" Header="Live overlay">
+        <GroupBox Grid.Row="0">
+            <GroupBox.Header>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Live overlay" VerticalAlignment="Center" />
+                    <Button Margin="10,-2,0,0"
+                            Padding="6,1"
+                            FontSize="11"
+                            Style="{StaticResource ToolbarButtonStyle}"
+                            Click="OpenReplay_Click"
+                            ToolTip="Browse recorded OCR replay frames (enable 'Record OCR Replay' in Overlay settings)">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Replay" Width="13" Height="13" Margin="0,0,4,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Text="Replay" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </GroupBox.Header>
             <Border x:Name="MirrorPanel"
                     MinHeight="110"
                     Margin="0,6,0,0"
