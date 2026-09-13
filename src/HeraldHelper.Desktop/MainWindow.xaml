@@ -207,6 +207,12 @@
                             <TextBlock Text="Overlay" VerticalAlignment="Center" />
                         </StackPanel>
                     </ListBoxItem>
+                    <ListBoxItem Tag="Herald" ToolTip="Search cached player profiles (Alt+5)">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="AccountSearch" Width="20" Height="20" Margin="0,0,10,0" Foreground="{DynamicResource VsTextBrush}" />
+                            <TextBlock Text="Herald" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListBoxItem>
                 </ListBox>
             </Border>
 
@@ -215,6 +221,7 @@
                 <views:ConfigView x:Name="ConfigView" Visibility="Collapsed" />
                 <views:AbilitiesView x:Name="AbilitiesView" Visibility="Collapsed" />
                 <views:OverlayView x:Name="OverlayView" Visibility="Collapsed" />
+                <views:HeraldView x:Name="HeraldView" Visibility="Collapsed" />
             </Grid>
         </Grid>
     </DockPanel>

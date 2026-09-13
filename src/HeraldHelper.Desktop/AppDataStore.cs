@@ -137,6 +137,11 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
         _targetProfileCache.Save(shardType, profile);
     }
 
+    public IReadOnlyList<TargetProfileRow> SearchTargetProfiles(string? server, string? nameFragment, int limit = 200)
+    {
+        return _targetProfileCache.Search(server, nameFragment, limit);
+    }
+
     public List<CharacterStatsSnapshot> LoadAllCharacterStats()
     {
         return _characterStatsRepository.LoadAllCharacterStats();

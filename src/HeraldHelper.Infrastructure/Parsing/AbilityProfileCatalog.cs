@@ -64,7 +64,10 @@ public static partial class AbilityProfileCatalog
         {
             return shard switch
             {
-                ShardType.Eden => _edenEntries ??= LoadShard(ShardType.Eden, "eden-charplan", CollectEdenEntries),
+                ShardType.Eden => _edenEntries ??= LoadShard(
+                    ShardType.Eden,
+                    "eden-charplan",
+                    (element, cls, shard, result) => CollectEdenEntries(element, cls, shard, result)),
                 ShardType.Blackthorn => _blackthornEntries ??= LoadShard(ShardType.Blackthorn, "blackthorn-charplan", CollectBlackthornEntries),
                 _ => []
             };
@@ -157,22 +160,30 @@ public static partial class AbilityProfileCatalog
         JsonElement element,
         string className,
         ShardType shard,
-        List<AbilityProfileDefinition> result)
+        List<AbilityProfileDefinition> result,
+        string? parentNameOverride = null)
     {
         switch (element.ValueKind)
         {
             case JsonValueKind.Object:
-                TryAddEdenSkill(element, className, shard, result);
+                TryAddEdenSkill(element, className, shard, result, parentNameOverride);
                 TryAddEdenRealmAbility(element, className, shard, result);
                 foreach (var property in element.EnumerateObject())
                 {
-                    CollectEdenEntries(property.Value, className, shard, result);
+                    // Melee style data keeps the style name on the skill and the
+                    // applied-effect descriptor ("Stun, 7sec") on its subSkills —
+                    // the ability should carry the style name, not the effect text.
+                    var childOverride = property.NameEquals("subSkills") &&
+                                        TryReadString(element, "name", out var parentName)
+                        ? parentName
+                        : null;
+                    CollectEdenEntries(property.Value, className, shard, result, childOverride);
                 }
                 break;
             case JsonValueKind.Array:
                 foreach (var item in element.EnumerateArray())
                 {
-                    CollectEdenEntries(item, className, shard, result);
+                    CollectEdenEntries(item, className, shard, result, parentNameOverride);
                 }
                 break;
         }
@@ -182,7 +193,8 @@ public static partial class AbilityProfileCatalog
         JsonElement element,
         string className,
         ShardType shard,
-        List<AbilityProfileDefinition> result)
+        List<AbilityProfileDefinition> result,
+        string? nameOverride = null)
     {
         if (!TryReadString(element, "name", out var name) ||
             !element.TryGetProperty("attributes", out var attributes) ||
@@ -197,6 +209,11 @@ public static partial class AbilityProfileCatalog
             !TryParseDuration(durationRaw, out var durationSeconds))
         {
             return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(nameOverride))
+        {
+            name = nameOverride;
         }
 
         result.Add(CreateDefinition(

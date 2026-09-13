@@ -103,6 +103,10 @@ public partial class MainWindow : Window
         "Overlay", "SelectOverlayView", typeof(MainWindow),
         new System.Windows.Input.InputGestureCollection { new System.Windows.Input.KeyGesture(System.Windows.Input.Key.D4, System.Windows.Input.ModifierKeys.Alt) });
 
+    public static readonly System.Windows.Input.RoutedUICommand SelectHeraldViewCommand = new(
+        "Herald", "SelectHeraldView", typeof(MainWindow),
+        new System.Windows.Input.InputGestureCollection { new System.Windows.Input.KeyGesture(System.Windows.Input.Key.D5, System.Windows.Input.ModifierKeys.Alt) });
+
     public static readonly System.Windows.Input.RoutedUICommand ToggleLoopCommand = new(
         "Toggle Loop", "ToggleLoop", typeof(MainWindow),
         new System.Windows.Input.InputGestureCollection { new System.Windows.Input.KeyGesture(System.Windows.Input.Key.F6) });
@@ -182,6 +186,7 @@ public partial class MainWindow : Window
         CommandBindings.Add(new System.Windows.Input.CommandBinding(SelectConfigViewCommand, (_, _) => SelectView(1)));
         CommandBindings.Add(new System.Windows.Input.CommandBinding(SelectAbilitiesViewCommand, (_, _) => SelectView(2)));
         CommandBindings.Add(new System.Windows.Input.CommandBinding(SelectOverlayViewCommand, (_, _) => SelectView(3)));
+        CommandBindings.Add(new System.Windows.Input.CommandBinding(SelectHeraldViewCommand, (_, _) => SelectView(4)));
         CommandBindings.Add(new System.Windows.Input.CommandBinding(ToggleLoopCommand, (_, _) => ToggleLoop_Click(this, new System.Windows.RoutedEventArgs())));
         CommandBindings.Add(new System.Windows.Input.CommandBinding(RunTickCommand, (_, _) => RunTick_Click(this, new System.Windows.RoutedEventArgs())));
         CommandBindings.Add(new System.Windows.Input.CommandBinding(SaveCommand, (_, _) => SaveCurrentView()));
@@ -757,6 +762,7 @@ public partial class MainWindow : Window
             ConfigView is null ||
             AbilitiesView is null ||
             OverlayView is null ||
+            HeraldView is null ||
             SidebarList?.SelectedItem is not System.Windows.Controls.ListBoxItem item)
         {
             return;
@@ -766,6 +772,11 @@ public partial class MainWindow : Window
         ConfigView.Visibility = item.Tag is "Config" ? Visibility.Visible : Visibility.Collapsed;
         AbilitiesView.Visibility = item.Tag is "Abilities" ? Visibility.Visible : Visibility.Collapsed;
         OverlayView.Visibility = item.Tag is "Overlay" ? Visibility.Visible : Visibility.Collapsed;
+        HeraldView.Visibility = item.Tag is "Herald" ? Visibility.Visible : Visibility.Collapsed;
+        if (HeraldView.Visibility == Visibility.Visible)
+        {
+            RefreshHeraldResults();
+        }
     }
 
     private void ToggleTheme_Click(object sender, RoutedEventArgs e)

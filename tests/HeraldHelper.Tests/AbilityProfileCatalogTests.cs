@@ -28,6 +28,18 @@ public sealed class AbilityProfileCatalogTests
     }
 
     [Fact]
+    public void EdenArmsmanProfile_StylesCarryStyleNamesNotEffectDescriptors()
+    {
+        var profile = AbilityProfileCatalog.GetProfile(ShardType.Eden, "Armsman");
+
+        // Eden charplan keeps the style name on the skill and the applied-effect
+        // text on subSkills — the ability list must show the style name.
+        var brutalize = Assert.Single(profile, x => x.Name == "Brutalize");
+        Assert.Equal(ControlEffectType.Stun, brutalize.EffectType);
+        Assert.DoesNotContain(profile, x => x.Name.StartsWith("Stun,", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void Profiles_AreScopedToClassesAvailableOnEachShard()
     {
         var edenClasses = AbilityProfileCatalog.GetClasses(ShardType.Eden);
