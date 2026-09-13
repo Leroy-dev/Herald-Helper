@@ -11,7 +11,7 @@ using HeraldHelper.Infrastructure.Parsing;
 
 namespace HeraldHelper.Desktop.Controllers;
 
-internal sealed class RuntimeController
+internal sealed class RuntimeController : IDisposable
 {
     private readonly ISettingsRepository _settingsRepository;
     private readonly ICatalogOverrideRepository _catalogOverrideRepository;
@@ -24,6 +24,12 @@ internal sealed class RuntimeController
     private readonly IOnlineSyncService? _onlineSync;
     private readonly IResponseDiagnostics? _responseDiagnostics;
     private readonly DesktopOverlayRenderer _liveOverlay;
+
+    // The controller owns the live loop; the window supplies per-tick input and
+    // subscribes to tick events once — rebuilds swap the session underneath.
+    private RuntimeLoop? _loop;
+    private Func<LoopTickInput>? _loopInput;
+    private TimeSpan _loopInterval = TimeSpan.FromMilliseconds(350);
 
     public RuntimeController(
         ISettingsRepository settingsRepository,
@@ -51,7 +57,62 @@ internal sealed class RuntimeController
         _responseDiagnostics = responseDiagnostics;
     }
 
-    public RuntimeSession Rebuild(IReadOnlyDictionary<string, string> settingsMap, Action onCharacterStatsSaved)
+    public event Action<LoopTickResult>? TickCompleted;
+
+    public event Action<string>? TickFailed;
+
+    public bool IsRunning => _loop?.IsRunning ?? false;
+
+    public AppRuntimeSettings? RuntimeSettings => _loop?.RuntimeSettings;
+
+    public OverlaySnapshot? LastSnapshot => _loop?.LastSnapshot;
+
+    public TimeSpan Interval
+    {
+        get => _loopInterval;
+        set
+        {
+            _loopInterval = value;
+            if (_loop is not null)
+            {
+                _loop.Interval = value;
+            }
+        }
+    }
+
+    /// <summary>The window owns tick inputs (chat region, shard, resist) — set once.</summary>
+    public void ConfigureLoopInput(Func<LoopTickInput> input, TimeSpan interval)
+    {
+        _loopInput = input;
+        Interval = interval;
+    }
+
+    public void Start() => _loop?.Start();
+
+    public void Stop() => _loop?.Stop();
+
+    public Task TickOnceAsync() => _loop?.TickOnceAsync() ?? Task.CompletedTask;
+
+    public void Dispose() => _loop?.Dispose();
+
+    public void Rebuild(IReadOnlyDictionary<string, string> settingsMap, Action onCharacterStatsSaved)
+    {
+        _loop?.Dispose();
+        var session = BuildSession(settingsMap, onCharacterStatsSaved);
+        if (_loopInput is not null)
+        {
+            _loop = new RuntimeLoop(session, _loopInput, _loopInterval);
+            _loop.TickCompleted += result => TickCompleted?.Invoke(result);
+            _loop.TickFailed += message => TickFailed?.Invoke(message);
+        }
+        else
+        {
+            session.Dispose();
+            _loop = null;
+        }
+    }
+
+    private RuntimeSession BuildSession(IReadOnlyDictionary<string, string> settingsMap, Action onCharacterStatsSaved)
     {
         var selectedShard = AppRuntimeSettings.FromMap(settingsMap).ShardType;
         var selectedCharacter = ReadOrDefault(

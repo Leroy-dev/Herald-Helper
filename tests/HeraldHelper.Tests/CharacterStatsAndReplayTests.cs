@@ -120,6 +120,7 @@ public sealed class CharacterStatsAndReplayTests
 
             sink.Record(ShardType.Eden, "Rooy", DateTimeOffset.UtcNow, [capture], parsed);
             sink.Record(ShardType.Eden, "Rooy", DateTimeOffset.UtcNow, [capture], parsed);
+            sink.Dispose();   // flush the background drain before asserting
 
             var recordDirectory = Assert.Single(Directory.GetDirectories(directory));
             Assert.True(File.Exists(Path.Combine(recordDirectory, "capture-1.png")));

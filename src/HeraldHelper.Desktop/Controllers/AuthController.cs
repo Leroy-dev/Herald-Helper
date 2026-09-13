@@ -32,9 +32,10 @@ internal sealed class AuthController
             {
                 await RefreshEnabledShardAuthAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                // Keep UI alive even if auth refresh fails.
+                // Keep UI alive even if auth refresh fails — but surface it.
+                _notifications.Log($"Scheduled auth refresh failed: {ex.Message}");
             }
         };
     }

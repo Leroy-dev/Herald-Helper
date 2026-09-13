@@ -72,7 +72,7 @@ internal sealed class RuntimeLoop : IDisposable
         }
         catch (Exception ex)
         {
-            TickFailed?.Invoke(ex.Message);
+            TickFailed?.Invoke($"{ex.GetType().Name}: {ex.Message}");
         }
         finally
         {

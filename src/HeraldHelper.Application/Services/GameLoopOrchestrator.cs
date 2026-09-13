@@ -806,6 +806,7 @@ public sealed class GameLoopOrchestrator : IDisposable
 
         lookupCts?.Cancel();
         lookupCts?.Dispose();
+        (_ocrReplaySink as IDisposable)?.Dispose();
     }
 
     private sealed record TargetLookupResult(

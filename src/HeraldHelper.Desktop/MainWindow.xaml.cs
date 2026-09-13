@@ -30,7 +30,6 @@ public partial class MainWindow : Window
     private DesktopOverlayRenderer _liveOverlay = null!;
     private System.Windows.Data.ListCollectionView? _abilitiesView;
     private System.Windows.Data.ListCollectionView? _configView;
-    private RuntimeLoop? _loop;
     private TimeSpan _loopInterval = TimeSpan.FromMilliseconds(350);
     private readonly IServiceProvider _services;
     private readonly IWritableSettings<HeraldHelperSettings> _writableSettings;
@@ -150,6 +149,11 @@ public partial class MainWindow : Window
         _liveOverlay.Rendered += (_, state) => LiveView?.UpdateMirror(state);
         _authRefreshService = services.GetRequiredService<IShardAuthRefreshService>();
         _runtimeController = services.GetRequiredService<RuntimeController>();
+        _runtimeController.ConfigureLoopInput(
+            () => new LoopTickInput(_chatRegion, _shardType, _resistPercent),
+            _loopInterval);
+        _runtimeController.TickCompleted += OnLoopTickCompleted;
+        _runtimeController.TickFailed += message => OutputBox.Text = message;
         _authController = services.GetRequiredService<AuthController>();
 
         var legacyCfgPath = FindFilePath("cfg.ini");
@@ -183,7 +187,7 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
-        _loop?.Dispose();
+        _runtimeController.Dispose();
         _authController?.AuthRefreshTimer?.Stop();
         _responseDiagnostics.LineAdded -= OnResponseDiagnosticLineAdded;
         _liveOverlay?.Dispose();
@@ -235,20 +239,13 @@ public partial class MainWindow : Window
 
     internal void RebuildRuntimeFromFiles()
     {
-        _loop?.Dispose();
-        var session = _runtimeController.Rebuild(
+        _runtimeController.Rebuild(
             _settingsController.LoadMap(),
             () => Dispatcher.BeginInvoke(UpdateRegionText));
-        _loop = new RuntimeLoop(
-            session,
-            () => new LoopTickInput(_chatRegion, _shardType, _resistPercent),
-            _loopInterval);
-        _loop.TickCompleted += OnLoopTickCompleted;
-        _loop.TickFailed += message => OutputBox.Text = message;
-        _chatRegion = _loop.RuntimeSettings.ChatRegion;
-        _shardType = _loop.RuntimeSettings.ShardType;
-        _resistPercent = _loop.RuntimeSettings.ResistPercent;
-        _ocrEngineMode = _loop.RuntimeSettings.OcrEngineMode;
+        _chatRegion = _runtimeController.RuntimeSettings?.ChatRegion;
+        _shardType = _runtimeController.RuntimeSettings?.ShardType ?? ShardType.Default;
+        _resistPercent = _runtimeController.RuntimeSettings?.ResistPercent ?? 0;
+        _ocrEngineMode = _runtimeController.RuntimeSettings?.OcrEngineMode ?? OcrEngineMode.Adaptive;
         BindControlsFromSettings();
         UpdateRegionText();
     }
@@ -373,8 +370,10 @@ public partial class MainWindow : Window
                         });
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _responseDiagnostics?.Log(
+                        $"[OCR] skipped unreadable saved window config for {shard}/{profile.CharacterName}: {ex.Message}");
                 }
             }
         }
@@ -384,7 +383,7 @@ public partial class MainWindow : Window
         }
         _settingsController.Save(updates);
         RebuildRuntimeFromFiles();
-        _responseDiagnostics.Log($"[OCR] repaired {updates.Count} saved custom-window configuration(s) from active UI XML.");
+        _responseDiagnostics?.Log($"[OCR] repaired {updates.Count} saved custom-window configuration(s) from active UI XML.");
     }
 
     private void BuildDaocCharacterSelectorUi()
@@ -510,30 +509,24 @@ public partial class MainWindow : Window
 
     private async void RunTick_Click(object sender, RoutedEventArgs e)
     {
-        if (_loop is not null)
-        {
-            await _loop.TickOnceAsync();
-        }
+        await _runtimeController.TickOnceAsync();
     }
 
     private void ToggleLoop_Click(object sender, RoutedEventArgs e)
     {
-        if (_loop?.IsRunning == true)
+        if (_runtimeController.IsRunning)
         {
-            _loop.Stop();
+            _runtimeController.Stop();
             ToggleLoopIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Run;
             ToggleLoopText.Text = "Start";
             LoopStatusText.Text = "Loop stopped";
             return;
         }
 
-        _loop?.Start();
-        if (_loop is not null)
-        {
-            ToggleLoopIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Stop;
-            ToggleLoopText.Text = "Stop";
-            LoopStatusText.Text = $"Loop running · {_loopInterval}ms";
-        }
+        _runtimeController.Start();
+        ToggleLoopIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Stop;
+        ToggleLoopText.Text = "Stop";
+        LoopStatusText.Text = $"Loop running · {_loopInterval}ms";
     }
 
     private void OpenSpellBrowser_Click(object sender, RoutedEventArgs e)
@@ -703,17 +696,14 @@ public partial class MainWindow : Window
 
         ms = Math.Clamp(ms, 100, 5000);
         _loopInterval = TimeSpan.FromMilliseconds(ms);
-        if (_loop is not null)
-        {
-            _loop.Interval = _loopInterval;
-        }
+        _runtimeController.Interval = _loopInterval;
     }
 
     private void UpdateRegionText()
     {
         var modeLabel = _shardType == ShardType.Default ? "Default mode" : $"Shard: {_shardType}";
         var statsLabel = BuildCharacterStatsLabel();
-        var ocrWindowCount = _loop?.RuntimeSettings.OcrWatchRegions.Count ?? 0;
+        var ocrWindowCount = _runtimeController.RuntimeSettings?.OcrWatchRegions.Count ?? 0;
         if (_chatRegion is null)
         {
             RegionText.Text = _shardType == ShardType.Default
@@ -1114,7 +1104,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var snapshot = _loop?.LastSnapshot ?? _lastOverlaySnapshot;
+        var snapshot = _runtimeController.LastSnapshot ?? _lastOverlaySnapshot;
         if (snapshot is null)
         {
             return;
