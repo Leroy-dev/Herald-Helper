@@ -28,6 +28,8 @@ namespace HeraldHelper.Desktop;
 public partial class MainWindow : Window
 {
     private DesktopOverlayRenderer _liveOverlay = null!;
+    private System.Windows.Data.ListCollectionView? _abilitiesView;
+    private System.Windows.Data.ListCollectionView? _configView;
     private RuntimeLoop? _loop;
     private TimeSpan _loopInterval = TimeSpan.FromMilliseconds(350);
     private readonly IServiceProvider _services;
@@ -158,8 +160,16 @@ public partial class MainWindow : Window
         _authController.ConfigureTimer();
 
         RebuildRuntimeFromFiles();
-        ConfigGrid.ItemsSource = _cfgEntries;
-        AbilitiesGrid.ItemsSource = _abilityProfileController.AbilityEntries;
+        _configView = new System.Windows.Data.ListCollectionView(_cfgEntries)
+        {
+            Filter = MatchesConfigFilter
+        };
+        ConfigGrid.ItemsSource = _configView;
+        _abilitiesView = new System.Windows.Data.ListCollectionView(_abilityProfileController.AbilityEntries)
+        {
+            Filter = MatchesAbilityFilter
+        };
+        AbilitiesGrid.ItemsSource = _abilitiesView;
         InitializeAbilityProfileControls();
         ReloadEditorData();
         LoadDaocCharacterProfiles();

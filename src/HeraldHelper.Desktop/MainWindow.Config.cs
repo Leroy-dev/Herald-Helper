@@ -119,6 +119,24 @@ public partial class MainWindow : Window
         OutputBox.Text = "Config saved to database and runtime refreshed.";
     }
 
+    internal void ConfigFilter_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        _configView?.Refresh();
+    }
+
+    private bool MatchesConfigFilter(object item)
+    {
+        if (item is not ConfigEntry entry)
+        {
+            return false;
+        }
+
+        var fragment = ConfigView?.ConfigFilterText?.Text;
+        return string.IsNullOrWhiteSpace(fragment) ||
+               entry.Key.Contains(fragment, StringComparison.OrdinalIgnoreCase) ||
+               (entry.Value?.Contains(fragment, StringComparison.OrdinalIgnoreCase) ?? false);
+    }
+
     internal void ExportJson_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new Microsoft.Win32.SaveFileDialog

@@ -14,6 +14,10 @@ public partial class AbilitiesView : System.Windows.Controls.UserControl
         InitializeComponent();
     }
 
+    private void AbilityFilter_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        Main?.AbilityFilter_TextChanged(sender, e);
+    }
     private void AbilityProfileClassCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         Main?.AbilityProfileClassCombo_SelectionChanged(sender, e);

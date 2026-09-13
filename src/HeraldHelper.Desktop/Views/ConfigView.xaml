@@ -44,6 +44,15 @@
                                   Foreground="{DynamicResource VsTextBrush}"
                                   Background="{DynamicResource VsPanelBrush}"
                                   BorderBrush="{DynamicResource VsBorderBrush}">
+                            <StackPanel>
+                            <TextBox Margin="0,8,0,0"
+                                     Width="240"
+                                     HorizontalAlignment="Left"
+                                     x:Name="ConfigFilterText" x:FieldModifier="public"
+                                     Style="{StaticResource CompactInputTextBoxStyle}"
+                                     materialDesign:HintAssist.Hint="Filter settings"
+                                     ToolTip="Filter raw settings by key or value"
+                                     TextChanged="ConfigFilter_TextChanged" />
                             <DataGrid x:Name="ConfigGrid" x:FieldModifier="public"
                                       Margin="0,8,0,0"
                                       AutoGenerateColumns="False"
@@ -58,6 +67,7 @@
                                     <DataGridTextColumn Header="Value" Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Width="*" />
                                 </DataGrid.Columns>
                             </DataGrid>
+                            </StackPanel>
                         </Expander>
                     </Grid>
 

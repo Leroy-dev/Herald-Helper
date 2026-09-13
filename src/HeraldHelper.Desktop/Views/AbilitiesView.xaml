@@ -21,6 +21,13 @@
                                       Style="{StaticResource CompactInputComboBoxStyle}"
                                       materialDesign:HintAssist.Hint="Active Class"
                                       SelectionChanged="AbilityProfileClassCombo_SelectionChanged" />
+                            <TextBox Margin="8,0,0,0"
+                                     Width="200"
+                                     x:Name="AbilityFilterText" x:FieldModifier="public"
+                                     Style="{StaticResource CompactInputTextBoxStyle}"
+                                     materialDesign:HintAssist.Hint="Filter abilities"
+                                     ToolTip="Filter by name, category, aliases, effect or skill code"
+                                     TextChanged="AbilityFilter_TextChanged" />
                             <TextBlock Margin="12,0,0,0"
                                        x:Name="AbilityProfileSummaryText" x:FieldModifier="public"
                                        VerticalAlignment="Center"

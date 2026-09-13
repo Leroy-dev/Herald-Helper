@@ -119,6 +119,32 @@ public partial class MainWindow : Window
         _abilityProfileController.ReloadRows();
     }
 
+    internal void AbilityFilter_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        _abilitiesView?.Refresh();
+    }
+
+    private bool MatchesAbilityFilter(object item)
+    {
+        if (item is not AbilityEditorRow row)
+        {
+            return false;
+        }
+
+        var fragment = AbilitiesView?.AbilityFilterText?.Text;
+        if (string.IsNullOrWhiteSpace(fragment))
+        {
+            return true;
+        }
+
+        return row.AbilityName.Contains(fragment, StringComparison.OrdinalIgnoreCase) ||
+               row.Category.Contains(fragment, StringComparison.OrdinalIgnoreCase) ||
+               row.Aliases.Contains(fragment, StringComparison.OrdinalIgnoreCase) ||
+               row.EffectType.Contains(fragment, StringComparison.OrdinalIgnoreCase) ||
+               row.SkillCode.Contains(fragment, StringComparison.OrdinalIgnoreCase) ||
+               (row.Level?.ToString().Contains(fragment, StringComparison.OrdinalIgnoreCase) ?? false);
+    }
+
     internal void AbilityProfileClassCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_isBindingControls || _abilityProfileController.Shard == ShardType.Default ||

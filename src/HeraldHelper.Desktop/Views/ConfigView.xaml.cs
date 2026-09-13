@@ -14,6 +14,10 @@ public partial class ConfigView : System.Windows.Controls.UserControl
         InitializeComponent();
     }
 
+    private void ConfigFilter_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        Main?.ConfigFilter_TextChanged(sender, e);
+    }
     private void ExportJson_Click(object sender, RoutedEventArgs e)
     {
         Main?.ExportJson_Click(sender, e);
