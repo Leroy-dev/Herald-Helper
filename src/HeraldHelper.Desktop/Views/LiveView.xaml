@@ -3,44 +3,102 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              Background="{DynamicResource VsWindowBackgroundBrush}">
-                    <Grid Margin="16">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <GroupBox Grid.Row="0" Header="Status">
-                            <TextBox x:Name="OutputBox" x:FieldModifier="public" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
-                                     Background="{DynamicResource VsPanelAltBrush}" Foreground="{DynamicResource VsTextBrush}" BorderBrush="{DynamicResource VsBorderBrush}" />
-                        </GroupBox>
-                        <GroupBox Grid.Row="1" Header="OCR Diagnostics">
-                            <TextBox x:Name="DiagnosticsBox" x:FieldModifier="public" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
-                                     Background="{DynamicResource VsPanelAltBrush}" Foreground="{DynamicResource VsTextBrush}" BorderBrush="{DynamicResource VsBorderBrush}" />
-                        </GroupBox>
-                        <GroupBox Grid.Row="2" Header="Response Diagnostics">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-                                <WrapPanel Margin="0,0,0,6">
-                                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="ClearResponseDiagnostics_Click" ToolTip="Clear the response diagnostics log">
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="Delete" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
-                                            <TextBlock Text="Clear Log" VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </Button>
-                                </WrapPanel>
-                                <TextBox Grid.Row="1"
-                                         x:Name="ResponseDiagnosticsBox" x:FieldModifier="public"
-                                         IsReadOnly="True"
-                                         TextWrapping="Wrap"
-                                         VerticalScrollBarVisibility="Auto"
-                                         Background="{DynamicResource VsPanelAltBrush}"
-                                         Foreground="{DynamicResource VsTextBrush}"
-                                         BorderBrush="{DynamicResource VsBorderBrush}" />
-                            </Grid>
-                        </GroupBox>
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <GroupBox Grid.Row="0" Header="Live overlay">
+            <Border x:Name="MirrorPanel"
+                    MinHeight="110"
+                    Margin="0,6,0,0"
+                    Padding="12,8"
+                    Background="#0C0E11"
+                    BorderBrush="{DynamicResource VsBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="MirrorTargetText"
+                               VerticalAlignment="Top"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock x:Name="MirrorTimerText"
+                               Grid.Column="1"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Top"
+                               TextWrapping="Wrap" />
+
+                    <Grid x:Name="MirrorCastPanel"
+                          Height="26"
+                          VerticalAlignment="Bottom"
+                          Visibility="Collapsed">
+                        <Border Background="#1A1D22"
+                                BorderBrush="{DynamicResource VsBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="3">
+                            <Border x:Name="MirrorCastFill"
+                                    HorizontalAlignment="Left"
+                                    Width="0"
+                                    CornerRadius="2" />
+                        </Border>
+                        <TextBlock x:Name="MirrorCastText"
+                                   Margin="8,0"
+                                   VerticalAlignment="Center"
+                                   FontWeight="SemiBold"
+                                   TextTrimming="CharacterEllipsis" />
                     </Grid>
 
+                    <TextBlock x:Name="MirrorEmptyText"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="12"
+                               Foreground="{DynamicResource VsMutedTextBrush}"
+                               Text="Run a tick or start the loop — the overlay mirror appears here." />
+                </Grid>
+            </Border>
+        </GroupBox>
+
+        <GroupBox Grid.Row="1" Margin="0,10,0,0" Header="Status">
+            <TextBox x:Name="OutputBox" x:FieldModifier="public" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                     Background="{DynamicResource VsPanelAltBrush}" Foreground="{DynamicResource VsTextBrush}" BorderBrush="{DynamicResource VsBorderBrush}" />
+        </GroupBox>
+        <GroupBox Grid.Row="2" Header="OCR Diagnostics">
+            <TextBox x:Name="DiagnosticsBox" x:FieldModifier="public" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="12"
+                     Background="{DynamicResource VsPanelAltBrush}" Foreground="{DynamicResource VsTextBrush}" BorderBrush="{DynamicResource VsBorderBrush}" />
+        </GroupBox>
+        <GroupBox Grid.Row="3" Header="Response Diagnostics">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <WrapPanel Margin="0,0,0,6">
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="ClearResponseDiagnostics_Click" ToolTip="Clear the response diagnostics log">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Delete" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Text="Clear Log" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </WrapPanel>
+                <TextBox Grid.Row="1"
+                         x:Name="ResponseDiagnosticsBox" x:FieldModifier="public"
+                         IsReadOnly="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         FontFamily="Consolas" FontSize="12"
+                         Background="{DynamicResource VsPanelAltBrush}"
+                         Foreground="{DynamicResource VsTextBrush}"
+                         BorderBrush="{DynamicResource VsBorderBrush}" />
+            </Grid>
+        </GroupBox>
+    </Grid>
 </UserControl>

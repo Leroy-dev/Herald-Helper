@@ -141,6 +141,7 @@ public partial class MainWindow : Window
         _responseDiagnostics = services.GetRequiredService<ResponseDiagnosticsBuffer>();
         _responseDiagnostics.LineAdded += OnResponseDiagnosticLineAdded;
         _liveOverlay = services.GetRequiredService<DesktopOverlayRenderer>();
+        _liveOverlay.Rendered += (_, state) => LiveView?.UpdateMirror(state);
         _authRefreshService = services.GetRequiredService<IShardAuthRefreshService>();
         _runtimeController = services.GetRequiredService<RuntimeController>();
         _authController = services.GetRequiredService<AuthController>();
@@ -242,6 +243,7 @@ public partial class MainWindow : Window
         OutputBox.Text = tick.Output;
         _lastOverlaySnapshot = tick.Snapshot;
         DiagnosticsBox.Text = tick.DiagnosticsText;
+        LoopStatusText.Text = $"Last tick {DateTime.Now:HH:mm:ss}";
     }
 
     private void BindControlsFromSettings()
@@ -506,6 +508,7 @@ public partial class MainWindow : Window
             _loop.Stop();
             ToggleLoopIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Run;
             ToggleLoopText.Text = "Start";
+            LoopStatusText.Text = "Loop stopped";
             return;
         }
 
@@ -514,6 +517,7 @@ public partial class MainWindow : Window
         {
             ToggleLoopIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Stop;
             ToggleLoopText.Text = "Stop";
+            LoopStatusText.Text = $"Loop running · {_loopInterval}ms";
         }
     }
 

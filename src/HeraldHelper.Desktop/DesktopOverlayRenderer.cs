@@ -139,8 +139,22 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             _timerWindow.Update(timerText, tx, ty, f2, overlay.TimerFontFamily, timerColor, outlineColor);
             var cast = overlay.ShowCastBar ? snapshot.ActiveCast : null;
             _castBarWindow.Update(cast, cx, cy, castbarColor, timerColor, outlineColor, overlay.CastbarFontFamily);
+            Rendered?.Invoke(this, new OverlayViewState(
+                targetText,
+                timerText,
+                cast,
+                targetColor,
+                timerColor,
+                outlineColor,
+                overlay.TargetFontFamily,
+                overlay.TimerFontFamily,
+                f1,
+                f2,
+                DateTimeOffset.UtcNow));
         }).Task;
     }
+
+    public event EventHandler<OverlayViewState>? Rendered;
 
     public void SetPreviewPosition(bool timerOverlay, int x, int y)
     {
