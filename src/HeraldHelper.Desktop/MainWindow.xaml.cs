@@ -187,9 +187,12 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
-        _runtimeController.Dispose();
+        _runtimeController?.Dispose();
         _authController?.AuthRefreshTimer?.Stop();
-        _responseDiagnostics.LineAdded -= OnResponseDiagnosticLineAdded;
+        if (_responseDiagnostics is not null)
+        {
+            _responseDiagnostics.LineAdded -= OnResponseDiagnosticLineAdded;
+        }
         _liveOverlay?.Dispose();
         base.OnClosed(e);
     }
@@ -696,7 +699,10 @@ public partial class MainWindow : Window
 
         ms = Math.Clamp(ms, 100, 5000);
         _loopInterval = TimeSpan.FromMilliseconds(ms);
-        _runtimeController.Interval = _loopInterval;
+        if (_runtimeController is not null)
+        {
+            _runtimeController.Interval = _loopInterval;
+        }
     }
 
     private void UpdateRegionText()
