@@ -335,49 +335,79 @@ internal static class DaocUiBitmapFontProfileResolver
         // XML is a candidate source.
         foreach (var packageDir in packageDirs)
         {
-            var fontSources = new List<string>
+            var found = ScanFontSources(packageDir, uiRoot, fontName, packageDir);
+            if (found is not null)
             {
-                Path.Combine(packageDir, "runtime", "catalogs", "fonts.xml"),
-                Path.Combine(packageDir, "fonts.xml")
-            };
+                return found;
+            }
+        }
+
+        // Stock skins declare the game's built-in font names (arial9 etc.) —
+        // packs may reference them without declaring their own <Font>.
+        if (uiRoot is not null)
+        {
+            foreach (var stockDir in new[] { "atlantis", "isles" }
+                .Select(name => Path.Combine(uiRoot, name))
+                .Where(Directory.Exists))
+            {
+                var found = ScanFontSources(stockDir, uiRoot, fontName, stockDir);
+                if (found is not null)
+                {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static string? ScanFontSources(
+        string scanDir,
+        string? uiRoot,
+        string fontName,
+        string packageDir)
+    {
+        var fontSources = new List<string>
+        {
+            Path.Combine(scanDir, "runtime", "catalogs", "fonts.xml"),
+            Path.Combine(scanDir, "fonts.xml")
+        };
+        try
+        {
+            fontSources.AddRange(
+                Directory.EnumerateFiles(scanDir, "*.xml", SearchOption.AllDirectories)
+                    .Where(path => !fontSources.Contains(path, StringComparer.OrdinalIgnoreCase)));
+        }
+        catch
+        {
+        }
+
+        foreach (var fontSource in fontSources.Where(File.Exists))
+        {
             try
             {
-                fontSources.AddRange(
-                    Directory.EnumerateFiles(packageDir, "*.xml", SearchOption.AllDirectories)
-                        .Where(path => !fontSources.Contains(path, StringComparer.OrdinalIgnoreCase)));
+                var document = XDocument.Load(fontSource, LoadOptions.None);
+                var file = document.Descendants("Font")
+                    .FirstOrDefault(element => string.Equals(
+                        element.Element("Name")?.Value.Trim(),
+                        fontName,
+                        StringComparison.OrdinalIgnoreCase))
+                    ?.Element("File")?.Value.Trim();
+                if (string.IsNullOrWhiteSpace(file) || !file.EndsWith(".tga", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var normalized = file.Replace('/', Path.DirectorySeparatorChar);
+                foreach (var candidate in FontFileBases(normalized, packageDir, uiRoot, fontSource))
+                {
+                    if (File.Exists(candidate))
+                    {
+                        return candidate;
+                    }
+                }
             }
             catch
             {
-            }
-
-            foreach (var fontSource in fontSources.Where(File.Exists))
-            {
-                try
-                {
-                    var document = XDocument.Load(fontSource, LoadOptions.None);
-                    var file = document.Descendants("Font")
-                        .FirstOrDefault(element => string.Equals(
-                            element.Element("Name")?.Value.Trim(),
-                            fontName,
-                            StringComparison.OrdinalIgnoreCase))
-                        ?.Element("File")?.Value.Trim();
-                    if (string.IsNullOrWhiteSpace(file) || !file.EndsWith(".tga", StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-
-                    var normalized = file.Replace('/', Path.DirectorySeparatorChar);
-                    foreach (var candidate in FontFileBases(normalized, packageDir, uiRoot, fontSource))
-                    {
-                        if (File.Exists(candidate))
-                        {
-                            return candidate;
-                        }
-                    }
-                }
-                catch
-                {
-                }
             }
         }
         return null;

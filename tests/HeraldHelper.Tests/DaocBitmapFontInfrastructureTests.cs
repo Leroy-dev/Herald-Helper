@@ -530,6 +530,44 @@ public sealed class DaocBitmapFontInfrastructureTests
         }
     }
 
+    [Fact]
+    public void ProfileResolver_FallsBackToStockSkinFonts()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"heraldhelper-ui-{Guid.NewGuid():N}");
+        var packageDir = Path.Combine(root, "ui", "custom");
+        var stockDir = Path.Combine(root, "ui", "atlantis");
+        var stockFontDir = Path.Combine(root, "ui", "fonts");
+        Directory.CreateDirectory(packageDir);
+        Directory.CreateDirectory(stockDir);
+        Directory.CreateDirectory(stockFontDir);
+        try
+        {
+            // The pack window references arial9 but never declares it — the
+            // client resolves the name through the stock atlantis skin.
+            File.WriteAllText(Path.Combine(packageDir, "custom3_window.xml"), """
+                <Root_Element><WindowTemplate><Name>custom3_window</Name>
+                  <ScalarLabelDef><ControlId>a</ControlId><Position><X>5</X><Y>0</Y></Position><FontName>arial9</FontName><Width>40</Width><Height>15</Height><Adapter>stats_strength</Adapter></ScalarLabelDef>
+                  <ScalarLabelDef><ControlId>b</ControlId><Position><X>5</X><Y>15</Y></Position><FontName>arial9</FontName><Width>40</Width><Height>15</Height><Adapter>stats_constitution</Adapter></ScalarLabelDef>
+                </WindowTemplate></Root_Element>
+                """);
+            File.WriteAllText(Path.Combine(stockDir, "assets.xml"), """
+                <Root_Element><Font><Name>arial9</Name><File>fonts/arial09.tga</File></Font></Root_Element>
+                """);
+            File.WriteAllBytes(Path.Combine(stockFontDir, "arial09.tga"), [0]);
+
+            var watch = new OcrWatchRegion("custom3", "custom3", new ScreenRegion(0, 0, 100, 30));
+            var profile = DaocUiBitmapFontProfileResolver.ResolveFromGameRoot(watch, root);
+
+            Assert.NotNull(profile);
+            Assert.Equal("arial9", profile.FontName);
+            Assert.Equal(Path.Combine(stockFontDir, "arial09.tga"), profile.FontPath);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     private static void WriteTga(string path, int width, int height, byte[] pixels, bool topOrigin)
     {
         var bytes = CreateTgaHeader(width, height, imageType: 2, topOrigin);
