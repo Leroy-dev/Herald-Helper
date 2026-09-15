@@ -77,7 +77,7 @@ internal static class AppServiceProvider
         services.AddSingleton<IAuthNotifications, WpfAuthNotifications>();
         services.AddSingleton<AuthController>();
 
-        services.AddSingleton<ICatalogCrawler, NodeCatalogCrawler>();
+        services.AddSingleton<ICatalogCrawler, HttpCatalogCrawler>();
         services.AddSingleton<ICatalogValidator, FileCatalogValidator>();
         services.AddSingleton<ICatalogBackup, FileCatalogBackup>();
         services.AddSingleton<CatalogUpdateService>();

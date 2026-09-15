@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text;
 using HeraldHelper.Domain.Enums;
 using Microsoft.Playwright;
@@ -6,6 +7,20 @@ namespace HeraldHelper.Infrastructure.Auth;
 
 public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
 {
+    static PlaywrightShardAuthRefreshService()
+    {
+        // Release builds ship Chromium under <app>\.playwright\package\.local-browsers
+        // (PLAYWRIGHT_BROWSERS_PATH=0). Dev builds keep using the per-user
+        // %LOCALAPPDATA%\ms-playwright cache.
+        var bundled = Path.Combine(AppContext.BaseDirectory, ".playwright", "package", ".local-browsers");
+        if (Directory.Exists(bundled) &&
+            Directory.EnumerateDirectories(bundled).Any(d =>
+                Path.GetFileName(d).StartsWith("chromium", StringComparison.OrdinalIgnoreCase)))
+        {
+            Environment.SetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH", "0");
+        }
+    }
+
     private readonly Func<ShardType, ShardAuthProfile?> _resolveProfile;
     private readonly Action<ShardType, ShardAuthBundle> _onRefreshed;
     private readonly string _profilesRoot;

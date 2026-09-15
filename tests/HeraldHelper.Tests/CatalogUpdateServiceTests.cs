@@ -180,7 +180,7 @@ public sealed class CatalogUpdateServiceTests
             _root = root;
         }
 
-        public Task RunAsync(string catalog, StringBuilder output, CancellationToken cancellationToken)
+        public Task RunAsync(string catalog, string projectRoot, StringBuilder output, IProgress<string>? progress, CancellationToken cancellationToken)
         {
             if (catalog != "eden-charplan")
             {
@@ -248,7 +248,7 @@ public sealed class CatalogUpdateServiceTests
             _catalog = catalog;
         }
 
-        public Task RunAsync(string catalog, StringBuilder output, CancellationToken cancellationToken)
+        public Task RunAsync(string catalog, string projectRoot, StringBuilder output, IProgress<string>? progress, CancellationToken cancellationToken)
         {
             if (catalog == _catalog)
             {

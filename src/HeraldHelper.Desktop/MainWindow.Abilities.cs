@@ -64,9 +64,20 @@ public partial class MainWindow : Window
         try
         {
             OutputBox.Text = "Updating catalogs...";
-            var result = await _services.GetRequiredService<CatalogUpdateService>().UpdateAsync(CancellationToken.None);
+            var progress = new Progress<string>(message => OutputBox.Text = message);
+            var result = await _services.GetRequiredService<CatalogUpdateService>().UpdateAsync(CancellationToken.None, progress);
             _edenBrowserWindow?.Close();
-            AbilityProfileCatalog.Refresh();
+            // The catalog caches parse ~30MB of class JSON on first access —
+            // warm them off-thread so the runtime loop and UI never stall.
+            var selectedClass = _abilityProfileController.Class;
+            await Task.Run(() =>
+            {
+                AbilityProfileCatalog.Refresh();
+                AbilityProfileCatalog.GetClasses(ShardType.Eden);
+                AbilityProfileCatalog.GetClasses(ShardType.Blackthorn);
+                AbilityProfileCatalog.GetProfile(ShardType.Eden, selectedClass);
+                AbilityProfileCatalog.GetProfile(ShardType.Blackthorn, selectedClass);
+            });
             RebuildRuntimeFromFiles();
             _abilityProfileController.ReloadRows();
             AbilityProfileSummaryText.Text = _abilityProfileController.Summary;

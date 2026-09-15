@@ -27,7 +27,7 @@ internal sealed class CatalogUpdateService
         _catalogs = ["eden-charplan", "blackthorn-charplan"];
     }
 
-    public async Task<string> UpdateAsync(CancellationToken cancellationToken)
+    public async Task<string> UpdateAsync(CancellationToken cancellationToken, IProgress<string>? progress = null)
     {
         var root = ResolveRoot();
         var before = ReadSummary(root);
@@ -37,10 +37,11 @@ internal sealed class CatalogUpdateService
             restoreOnSuccess: false,
             ctx => Task.FromResult(
                 $"Catalog update completed.\nBefore: {before}\nAfter: {ReadSummary(ctx.Root)}\n\n{ctx.Output}"),
+            progress,
             cancellationToken);
     }
 
-    public async Task<IReadOnlyList<CatalogUpdatePreview>> PreviewAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<CatalogUpdatePreview>> PreviewAsync(CancellationToken cancellationToken, IProgress<string>? progress = null)
     {
         var root = ResolveRoot();
         return await ExecuteInTransactionAsync(
@@ -54,12 +55,13 @@ internal sealed class CatalogUpdateService
                         Path.Combine(ctx.BackupRoot, catalog),
                         Path.Combine(ctx.Root, "data", catalog)))
                     .ToList()),
+            progress,
             cancellationToken);
     }
 
     private string ResolveRoot()
     {
-        return _root ?? FindProjectRoot() ?? throw new InvalidOperationException("Could not locate the HeraldHelper scripts directory.");
+        return _root ?? FindProjectRoot() ?? throw new InvalidOperationException("Could not locate the HeraldHelper data directory.");
     }
 
     private sealed record TransactionContext(string Root, string BackupRoot, StringBuilder Output);
@@ -69,6 +71,7 @@ internal sealed class CatalogUpdateService
         string operation,
         bool restoreOnSuccess,
         Func<TransactionContext, Task<T>> complete,
+        IProgress<string>? progress,
         CancellationToken cancellationToken)
     {
         var output = new StringBuilder();
@@ -84,7 +87,7 @@ internal sealed class CatalogUpdateService
 
             foreach (var catalog in _catalogs)
             {
-                await _crawler.RunAsync(catalog, output, cancellationToken);
+                await _crawler.RunAsync(catalog, root, output, progress, cancellationToken);
             }
 
             foreach (var catalog in _catalogs)
@@ -139,8 +142,7 @@ internal sealed class CatalogUpdateService
         var current = new DirectoryInfo(AppContext.BaseDirectory);
         while (current is not null)
         {
-            if (Directory.Exists(Path.Combine(current.FullName, "scripts")) &&
-                Directory.Exists(Path.Combine(current.FullName, "data")))
+            if (Directory.Exists(Path.Combine(current.FullName, "data")))
             {
                 return current.FullName;
             }
