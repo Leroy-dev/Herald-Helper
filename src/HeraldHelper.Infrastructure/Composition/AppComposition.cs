@@ -38,9 +38,11 @@ public static class AppComposition
         {
             OcrEngineMode.Windows => new WindowsBuiltInOcrEngine(),
             OcrEngineMode.Tesseract => new TesseractCliOcrEngine(),
-            _ => new AdaptiveOcrEngine(
-                new WindowsBuiltInOcrEngine(),
-                new TesseractCliOcrEngine())
+            // Tesseract is optional: bundled tools\tesseract, an install, or a
+            // PATH entry. Skip it when absent so evaluation never pays a throw.
+            _ => TesseractCliOcrEngine.IsAvailable()
+                ? new AdaptiveOcrEngine(new WindowsBuiltInOcrEngine(), new TesseractCliOcrEngine())
+                : new AdaptiveOcrEngine(new WindowsBuiltInOcrEngine())
         };
         var capture = new ScreenCaptureOcrService(ocrEngine, settings.CustomUiFolder);
         IOcrReplaySink? replaySink = settings.OcrReplayEnabled ? new FileOcrReplaySink() : null;

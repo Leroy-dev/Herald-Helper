@@ -20,5 +20,21 @@
     <PackageReference Include="MaterialDesignColors" Version="5.2.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
   </ItemGroup>
-  
+
+  <!-- Single-file releases must keep the Playwright driver as real files:
+       node.exe is spawned as a subprocess, which bundling/self-extract
+       would hide from Playwright's AppContext.BaseDirectory probe. -->
+  <!-- Single-file releases must keep the Playwright driver as real files:
+       node.exe is spawned as a subprocess, which bundling/self-extract
+       would hide from Playwright's AppContext.BaseDirectory probe. -->
+  <Target Name="KeepPlaywrightDriverUnpacked"
+          BeforeTargets="_ComputeFilesToBundle"
+          Condition="'$(PublishSingleFile)' == 'true'">
+    <ItemGroup>
+      <ResolvedFileToPublish Update="@(ResolvedFileToPublish)"
+          Condition="$([System.String]::Copy('%(ResolvedFileToPublish.FullPath)').Contains('.playwright'))"
+          ExcludeFromSingleFile="true" />
+    </ItemGroup>
+  </Target>
+
 </Project>
