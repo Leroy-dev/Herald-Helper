@@ -372,6 +372,45 @@ public sealed class DaocBitmapFontInfrastructureTests
     }
 
     [Fact]
+    public void ProfileResolver_ResolvesAdapterOnlyControlsWithDataLabels()
+    {
+        // Mirrors custom/currency/currency.xml: LabelDef controls bind an
+        // Adapter and carry the rendered sample in Data ("M:99") with no
+        // ControlId. The label is the Data prefix minus value characters.
+        var root = Path.Combine(Path.GetTempPath(), $"heraldhelper-ui-{Guid.NewGuid():N}");
+        var packageDir = Path.Combine(root, "ui", "custom");
+        var featureDir = Path.Combine(packageDir, "currency");
+        var fontDir = Path.Combine(featureDir, "fonts");
+        Directory.CreateDirectory(fontDir);
+        try
+        {
+            File.WriteAllText(Path.Combine(featureDir, "currency.xml"), """
+                <Root_Element><WindowTemplate><Name>custom13_window</Name>
+                  <LabelDef><Position><X>0</X><Y>0</Y></Position><FontName>currency_font_title</FontName><Width>60</Width><Height>12</Height><Adapter>money_mithril</Adapter><Data>M:99</Data></LabelDef>
+                  <LabelDef><Position><X>0</X><Y>12</Y></Position><FontName>currency_font_title</FontName><Width>60</Width><Height>12</Height><Adapter>money_platinum</Adapter><Data>P:199</Data></LabelDef>
+                  <LabelDef><Position><X>0</X><Y>24</Y></Position><FontName>currency_font_title</FontName><Width>60</Width><Height>12</Height><Adapter>money_gold</Adapter><Data>G:123</Data></LabelDef>
+                </WindowTemplate></Root_Element>
+                """);
+            File.WriteAllText(Path.Combine(featureDir, "fonts", "fonts.xml"), """
+                <Root_Element><Font><Name>currency_font_title</Name><File>custom/currency/fonts/font-title.tga</File></Font></Root_Element>
+                """);
+            File.WriteAllBytes(Path.Combine(fontDir, "font-title.tga"), [0]);
+
+            var watch = new OcrWatchRegion("Custom13", "Custom13", new ScreenRegion(0, 0, 100, 40));
+            var profile = DaocUiBitmapFontProfileResolver.ResolveFromGameRoot(watch, root);
+
+            Assert.NotNull(profile);
+            Assert.Equal("currency_font_title", profile.FontName);
+            Assert.Equal(Path.Combine(fontDir, "font-title.tga"), profile.FontPath);
+            Assert.Equal(new[] { "M:", "P:", "G:" }, profile.Fields.Select(field => field.Label).ToArray());
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public void RuntimeSettings_ReadCustomUiFolder()
     {
         var settings = HeraldHelper.Infrastructure.Configuration.AppRuntimeSettings.FromMap(
