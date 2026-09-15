@@ -237,6 +237,152 @@ public sealed class DaocBitmapFontInfrastructureTests
         }
     }
 
+    [Fact]
+    public void ProfileResolver_FindsWindowInsideFeatureFolder()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"heraldhelper-ui-{Guid.NewGuid():N}");
+        var packageDir = Path.Combine(root, "ui", "custom");
+        var featureDir = Path.Combine(packageDir, "stats-pack");
+        var fontDir = Path.Combine(packageDir, "stats-pack", "fonts");
+        Directory.CreateDirectory(featureDir);
+        Directory.CreateDirectory(fontDir);
+        try
+        {
+            // Root stub forwards into the feature folder; the real template and
+            // the font catalog are feature-owned.
+            File.WriteAllText(Path.Combine(packageDir, "uimain.xml"), """
+                <Root_Element><Include>stats-pack/custom4_window.xml</Include></Root_Element>
+                """);
+            File.WriteAllText(Path.Combine(featureDir, "custom4_window.xml"), """
+                <Root_Element><WindowTemplate><Name>custom4_window</Name>
+                  <ScalarLabelDef><ControlId>dex_data</ControlId><Position><X>55</X><Y>0</Y></Position><FontName>feature_font</FontName><Width>40</Width><Height>15</Height><Adapter>stats_dexterity</Adapter></ScalarLabelDef>
+                  <ScalarLabelDef><ControlId>qui_data</ControlId><Position><X>55</X><Y>15</Y></Position><FontName>feature_font</FontName><Width>40</Width><Height>15</Height><Adapter>stats_quickness</Adapter></ScalarLabelDef>
+                </WindowTemplate></Root_Element>
+                """);
+            File.WriteAllText(Path.Combine(featureDir, "fonts", "fonts.xml"), """
+                <Root_Element><Font><Name>feature_font</Name><File>custom/stats-pack/fonts/test.tga</File></Font></Root_Element>
+                """);
+            File.WriteAllBytes(Path.Combine(fontDir, "test.tga"), [0]);
+
+            var watch = new OcrWatchRegion("Custom4", "Custom4", new ScreenRegion(0, 0, 100, 30));
+            var profile = DaocUiBitmapFontProfileResolver.ResolveFromGameRoot(watch, root);
+
+            Assert.NotNull(profile);
+            Assert.Equal("feature_font", profile.FontName);
+            Assert.Equal(Path.Combine(featureDir, "custom4_window.xml"), profile.WindowPath);
+            Assert.Equal(Path.Combine(fontDir, "test.tga"), profile.FontPath);
+            Assert.Equal(2, profile.Fields.Count);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ProfileResolver_CustomPathAcceptsGameUiAndPackageRoots()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"heraldhelper-ui-{Guid.NewGuid():N}");
+        var packageDir = Path.Combine(root, "ui", "custom");
+        var featureDir = Path.Combine(packageDir, "feature");
+        var fontDir = Path.Combine(featureDir, "fonts");
+        Directory.CreateDirectory(fontDir);
+        try
+        {
+            File.WriteAllText(Path.Combine(featureDir, "window.xml"), """
+                <Root_Element><WindowTemplate><Name>custom5_window</Name>
+                  <ScalarLabelDef><ControlId>a</ControlId><Position><X>5</X><Y>0</Y></Position><FontName>feature_font</FontName><Width>40</Width><Height>15</Height><Adapter>stats_strength</Adapter></ScalarLabelDef>
+                  <ScalarLabelDef><ControlId>b</ControlId><Position><X>5</X><Y>15</Y></Position><FontName>feature_font</FontName><Width>40</Width><Height>15</Height><Adapter>stats_constitution</Adapter></ScalarLabelDef>
+                </WindowTemplate></Root_Element>
+                """);
+            File.WriteAllText(Path.Combine(featureDir, "fonts", "fonts.xml"), """
+                <Root_Element><Font><Name>feature_font</Name><File>custom/feature/fonts/test.tga</File></Font></Root_Element>
+                """);
+            File.WriteAllBytes(Path.Combine(fontDir, "test.tga"), [0]);
+
+            var watch = new OcrWatchRegion("Custom5", "Custom5", new ScreenRegion(0, 0, 100, 30));
+
+            Assert.NotNull(DaocUiBitmapFontProfileResolver.ResolveFromCustomPath(watch, root));
+            Assert.NotNull(DaocUiBitmapFontProfileResolver.ResolveFromCustomPath(watch, Path.Combine(root, "ui")));
+            Assert.NotNull(DaocUiBitmapFontProfileResolver.ResolveFromCustomPath(watch, packageDir));
+            var mainManifest = Path.Combine(packageDir, "uimain.xml");
+            File.WriteAllText(mainManifest, "<Root_Element />");
+            Assert.NotNull(DaocUiBitmapFontProfileResolver.ResolveFromCustomPath(watch, mainManifest));
+            Assert.Null(DaocUiBitmapFontProfileResolver.ResolveFromCustomPath(watch, Path.Combine(root, "missing")));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ProfileResolver_SkipsMalformedFilesDuringScan()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"heraldhelper-ui-{Guid.NewGuid():N}");
+        var packageDir = Path.Combine(root, "ui", "custom");
+        var catalogDir = Path.Combine(packageDir, "runtime", "catalogs");
+        var fontDir = Path.Combine(packageDir, "fonts");
+        var realDir = Path.Combine(packageDir, "real");
+        Directory.CreateDirectory(catalogDir);
+        Directory.CreateDirectory(fontDir);
+        Directory.CreateDirectory(realDir);
+        try
+        {
+            // A broken flat file mentions the window name but must not abort the scan.
+            File.WriteAllText(Path.Combine(packageDir, "custom6_window.xml"),
+                "<WindowTemplate><Name>custom6_window</Name>");
+            File.WriteAllText(Path.Combine(realDir, "windows.xml"), """
+                <Root_Element><WindowTemplate><Name>custom6_window</Name>
+                  <ScalarLabelDef><ControlId>a</ControlId><Position><X>5</X><Y>0</Y></Position><FontName>f</FontName><Width>40</Width><Height>15</Height><Adapter>stats_strength</Adapter></ScalarLabelDef>
+                  <ScalarLabelDef><ControlId>b</ControlId><Position><X>5</X><Y>15</Y></Position><FontName>f</FontName><Width>40</Width><Height>15</Height><Adapter>stats_constitution</Adapter></ScalarLabelDef>
+                </WindowTemplate></Root_Element>
+                """);
+            File.WriteAllText(Path.Combine(catalogDir, "fonts.xml"), """
+                <Root_Element><Font><Name>f</Name><File>custom/fonts/test.tga</File></Font></Root_Element>
+                """);
+            File.WriteAllBytes(Path.Combine(fontDir, "test.tga"), [0]);
+
+            var watch = new OcrWatchRegion("Custom6", "Custom6", new ScreenRegion(0, 0, 100, 30));
+            var profile = DaocUiBitmapFontProfileResolver.ResolveFromGameRoot(watch, root);
+
+            Assert.NotNull(profile);
+            Assert.EndsWith(Path.Combine("real", "windows.xml"), profile.WindowPath);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ProfileResolver_ReturnsNullWhenWindowMissing()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"heraldhelper-ui-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.Combine(root, "ui", "custom"));
+        try
+        {
+            var watch = new OcrWatchRegion("Custom9", "Custom9", new ScreenRegion(0, 0, 100, 30));
+            Assert.Null(DaocUiBitmapFontProfileResolver.ResolveFromGameRoot(watch, root));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void RuntimeSettings_ReadCustomUiFolder()
+    {
+        var settings = HeraldHelper.Infrastructure.Configuration.AppRuntimeSettings.FromMap(
+            new Dictionary<string, string> { ["customUiFolder"] = "D:\\uis\\custom" });
+        Assert.Equal("D:\\uis\\custom", settings.CustomUiFolder);
+
+        var empty = HeraldHelper.Infrastructure.Configuration.AppRuntimeSettings.FromMap(
+            new Dictionary<string, string>());
+        Assert.Null(empty.CustomUiFolder);
+    }
+
     private static void WriteTga(string path, int width, int height, byte[] pixels, bool topOrigin)
     {
         var bytes = CreateTgaHeader(width, height, imageType: 2, topOrigin);

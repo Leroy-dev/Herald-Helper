@@ -42,7 +42,7 @@ public static class AppComposition
                 new WindowsBuiltInOcrEngine(),
                 new TesseractCliOcrEngine())
         };
-        var capture = new ScreenCaptureOcrService(ocrEngine);
+        var capture = new ScreenCaptureOcrService(ocrEngine, settings.CustomUiFolder);
         IOcrReplaySink? replaySink = settings.OcrReplayEnabled ? new FileOcrReplaySink() : null;
         IChatCaptureService captureService = capture;
         IChatEventParser parser = new AbilitiesChatEventParser(abilities);

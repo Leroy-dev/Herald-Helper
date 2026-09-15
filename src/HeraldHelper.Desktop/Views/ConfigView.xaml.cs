@@ -34,4 +34,16 @@ public partial class ConfigView : System.Windows.Controls.UserControl
     {
         Main?.SaveConfig_Click(sender, e);
     }
+    private void CustomUiFolderBrowse_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.CustomUiFolderBrowse_Click(sender, e);
+    }
+    private void CustomUiFolderClear_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.CustomUiFolderClear_Click(sender, e);
+    }
+    private void CustomUiFolder_LostFocus(object sender, RoutedEventArgs e)
+    {
+        Main?.CustomUiFolder_LostFocus(sender, e);
+    }
 }

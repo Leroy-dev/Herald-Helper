@@ -289,6 +289,11 @@ public partial class MainWindow : Window
         _abilityProfileController.ReloadRows();
         AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
 
+        if (ConfigView?.CustomUiFolderText is not null)
+        {
+            ConfigView.CustomUiFolderText.Text = ReadCustomUiFolder() ?? string.Empty;
+        }
+
         RefreshDaocCharacterSelectors();
     }
 

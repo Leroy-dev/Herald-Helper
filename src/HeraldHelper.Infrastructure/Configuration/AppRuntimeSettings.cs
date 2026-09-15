@@ -15,7 +15,8 @@ public sealed record AppRuntimeSettings(
     bool ShowTimers = true,
     bool DynamicCastSpeed = false,
     bool EstimatedSpellDamage = false,
-    bool OcrReplayEnabled = false)
+    bool OcrReplayEnabled = false,
+    string? CustomUiFolder = null)
 {
     public static AppRuntimeSettings LoadFromCfg(string cfgPath)
     {
@@ -51,11 +52,15 @@ public sealed record AppRuntimeSettings(
         resis = Math.Clamp(resis, 0, 60);
         var ocr = map.TryGetValue("ocrEngine", out var ocrRaw) ? ParseOcr(ocrRaw) : OcrEngineMode.Adaptive;
         var watchRegions = ParseOcrWatchRegions(map, shard);
+        var customUiFolder = map.TryGetValue("customUiFolder", out var folder) &&
+                             !string.IsNullOrWhiteSpace(folder)
+            ? folder.Trim()
+            : null;
 
         return new AppRuntimeSettings(
             region, shard, resis, ocr, watchRegions,
             showCastBar, showTarget, showTimers,
-            dynamicCastSpeed, estimatedSpellDamage, ocrReplayEnabled);
+            dynamicCastSpeed, estimatedSpellDamage, ocrReplayEnabled, customUiFolder);
     }
 
     private static bool ReadBool(IReadOnlyDictionary<string, string> map, string key, bool fallback)

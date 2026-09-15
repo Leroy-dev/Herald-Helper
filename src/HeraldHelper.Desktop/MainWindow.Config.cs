@@ -119,6 +119,64 @@ public partial class MainWindow : Window
         OutputBox.Text = "Config saved to database and runtime refreshed.";
     }
 
+    internal void CustomUiFolderBrowse_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFolderDialog
+        {
+            Title = "Select a UI package folder (game folder, ui\\custom, or a package folder)"
+        };
+        if (dialog.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        if (ConfigView?.CustomUiFolderText is not null)
+        {
+            ConfigView.CustomUiFolderText.Text = dialog.FolderName;
+        }
+        SaveCustomUiFolder(dialog.FolderName);
+    }
+
+    internal void CustomUiFolderClear_Click(object sender, RoutedEventArgs e)
+    {
+        if (ConfigView?.CustomUiFolderText is not null)
+        {
+            ConfigView.CustomUiFolderText.Text = string.Empty;
+        }
+        SaveCustomUiFolder(string.Empty);
+    }
+
+    internal void CustomUiFolder_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (_isBindingControls)
+        {
+            return;
+        }
+
+        var text = ConfigView?.CustomUiFolderText?.Text.Trim() ?? string.Empty;
+        if (!string.Equals(ReadCustomUiFolder() ?? string.Empty, text, StringComparison.OrdinalIgnoreCase))
+        {
+            SaveCustomUiFolder(text);
+        }
+    }
+
+    private string? ReadCustomUiFolder() =>
+        _cfgEntries
+            .FirstOrDefault(entry => entry.Key.Equals("customUiFolder", StringComparison.OrdinalIgnoreCase))
+            ?.Value;
+
+    private void SaveCustomUiFolder(string folder)
+    {
+        _settingsController.Save([
+            new ConfigEntry { Key = "customUiFolder", Value = folder }
+        ]);
+        ReloadEditorData();
+        RebuildRuntimeFromFiles();
+        OutputBox.Text = string.IsNullOrWhiteSpace(folder)
+            ? "Custom UI folder cleared — OCR auto-detects from the launcher."
+            : $"Custom UI folder set: {folder}";
+    }
+
     internal void ConfigFilter_TextChanged(object sender, TextChangedEventArgs e)
     {
         _configView?.Refresh();

@@ -7,6 +7,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <GroupBox Grid.Row="0" Header="DAoC Characters">
@@ -38,7 +39,38 @@
                                 </StackPanel>
                             </Button>
                         </WrapPanel>
-                        <Expander Grid.Row="2"
+                        <GroupBox Grid.Row="2" Header="Custom UI package (bitmap font OCR)">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox x:Name="CustomUiFolderText" x:FieldModifier="public"
+                                         Width="380"
+                                         VerticalAlignment="Center"
+                                         Style="{StaticResource CompactInputTextBoxStyle}"
+                                         materialDesign:HintAssist.Hint="Auto-detect from launcher (or pick a game folder, ui\custom package, or uimain.xml)"
+                                         ToolTip="Folder HeraldHelper reads window fonts from for bitmap OCR. Empty = auto-detect from the Eden/Blackthorn launcher. Accepts a game folder, a ui\custom package folder, or a uimain.xml file."
+                                         LostFocus="CustomUiFolder_LostFocus" />
+                                <Button Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource ToolbarButtonStyle}"
+                                        Click="CustomUiFolderBrowse_Click"
+                                        ToolTip="Browse for the UI package folder">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="FolderOpen" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                        <TextBlock Text="Browse" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource ToolbarButtonStyle}"
+                                        Click="CustomUiFolderClear_Click"
+                                        ToolTip="Clear the override and auto-detect again">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Close" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                        <TextBlock Text="Clear" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </GroupBox>
+                        <Expander Grid.Row="3"
                                   Header="Advanced raw configuration"
                                   IsExpanded="False"
                                   Foreground="{DynamicResource VsTextBrush}"

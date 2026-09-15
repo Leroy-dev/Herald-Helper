@@ -12,7 +12,7 @@ namespace HeraldHelper.Infrastructure.Capture;
 public sealed class ScreenCaptureOcrService : IChatCaptureService, IWindowAwareChatCaptureService, IOcrCaptureSnapshotSource, IOcrCaptureBatchDiagnostics
 {
     private readonly IOcrEngine _ocrEngine;
-    private readonly DaocBitmapFontGlyphReader _glyphReader = new();
+    private readonly DaocBitmapFontGlyphReader _glyphReader;
     private readonly List<CaptureMetric> _batchMetrics = [];
     private bool _batchActive;
     private string _lastCaptureEngineName = string.Empty;
@@ -22,9 +22,10 @@ public sealed class ScreenCaptureOcrService : IChatCaptureService, IWindowAwareC
     public byte[]? LastCapturePng { get; private set; }
     public string LastCaptureEngineName => _lastCaptureEngineName;
 
-    public ScreenCaptureOcrService(IOcrEngine ocrEngine)
+    public ScreenCaptureOcrService(IOcrEngine ocrEngine, string? customUiPath = null)
     {
         _ocrEngine = ocrEngine;
+        _glyphReader = new DaocBitmapFontGlyphReader(customUiPath);
     }
 
     public void BeginCaptureBatch()

@@ -20,6 +20,12 @@ internal sealed class DaocBitmapFontGlyphReader
         RegexOptions.CultureInvariant);
 
     private readonly Dictionary<string, CachedProfile> _cache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly string? _uiPathOverride;
+
+    public DaocBitmapFontGlyphReader(string? uiPathOverride = null)
+    {
+        _uiPathOverride = string.IsNullOrWhiteSpace(uiPathOverride) ? null : uiPathOverride.Trim();
+    }
 
     public bool TryRead(
         Bitmap source,
@@ -109,13 +115,13 @@ internal sealed class DaocBitmapFontGlyphReader
 
     private CachedProfile? GetProfile(OcrWatchRegion watchRegion, ShardType shardType)
     {
-        var key = $"{shardType}:{watchRegion.Key}";
+        var key = $"{_uiPathOverride}|{shardType}:{watchRegion.Key}";
         if (_cache.TryGetValue(key, out var cached) && cached.IsCurrent())
         {
             return cached;
         }
 
-        var profile = DaocUiBitmapFontProfileResolver.Resolve(watchRegion, shardType);
+        var profile = DaocUiBitmapFontProfileResolver.Resolve(watchRegion, shardType, _uiPathOverride);
         if (profile is null || !DaocBitmapFont.TryLoad(profile.FontPath, out var font))
         {
             _cache.Remove(key);
