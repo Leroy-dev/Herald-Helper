@@ -422,6 +422,114 @@ public sealed class DaocBitmapFontInfrastructureTests
         Assert.Null(empty.CustomUiFolder);
     }
 
+    [Fact]
+    public void ProfileResolver_KeepsDeclaredHeightForSameRowFields()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"heraldhelper-ui-{Guid.NewGuid():N}");
+        var packageDir = Path.Combine(root, "ui", "custom");
+        var fontDir = Path.Combine(packageDir, "fonts");
+        Directory.CreateDirectory(fontDir);
+        try
+        {
+            // Currency-style window: every field sits on the same row (Y=0).
+            File.WriteAllText(Path.Combine(packageDir, "custom13_window.xml"), """
+                <Root_Element><WindowTemplate><Name>custom13_window</Name>
+                  <LabelDef><Position><X>0</X><Y>0</Y></Position><FontName>f</FontName><Width>32</Width><Height>12</Height><Adapter>currency_mithril</Adapter><Data>M:99</Data></LabelDef>
+                  <LabelDef><Position><X>33</X><Y>0</Y></Position><FontName>f</FontName><Width>38</Width><Height>12</Height><Adapter>currency_platinum</Adapter><Data>P:99</Data></LabelDef>
+                  <LabelDef><Position><X>72</X><Y>0</Y></Position><FontName>f</FontName><Width>38</Width><Height>12</Height><Adapter>currency_gold</Adapter><Data>G:99</Data></LabelDef>
+                </WindowTemplate></Root_Element>
+                """);
+            File.WriteAllText(Path.Combine(packageDir, "fonts.xml"), """
+                <Root_Element><Font><Name>f</Name><File>custom/fonts/test.tga</File></Font></Root_Element>
+                """);
+            File.WriteAllBytes(Path.Combine(fontDir, "test.tga"), [0]);
+
+            var watch = new OcrWatchRegion("custom13", "custom13", new ScreenRegion(0, 0, 176, 12));
+            var profile = DaocUiBitmapFontProfileResolver.ResolveFromGameRoot(watch, root);
+
+            Assert.NotNull(profile);
+            // Same-Y siblings must not collapse the row to a 1px scan height.
+            Assert.All(profile.Fields, field => Assert.Equal(12, field.Height));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ProfileResolver_ClampsFieldWidthAtNextSameRowField()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"heraldhelper-ui-{Guid.NewGuid():N}");
+        var packageDir = Path.Combine(root, "ui", "custom");
+        var fontDir = Path.Combine(packageDir, "fonts");
+        Directory.CreateDirectory(fontDir);
+        try
+        {
+            // Multi-column sheet: declared Width=100 runs under the next
+            // column's X (86/140) — the scan window must stop there.
+            File.WriteAllText(Path.Combine(packageDir, "custom8_window.xml"), """
+                <Root_Element><WindowTemplate><Name>custom8_window</Name>
+                  <ScalarLabelDef><Position><X>28</X><Y>1</Y></Position><FontName>f</FontName><Width>100</Width><Height>25</Height><Adapter>stats_strength</Adapter></ScalarLabelDef>
+                  <ScalarLabelDef><Position><X>86</X><Y>1</Y></Position><FontName>f</FontName><Width>100</Width><Height>25</Height><Adapter>stats_dexterity</Adapter></ScalarLabelDef>
+                  <ScalarLabelDef><Position><X>140</X><Y>1</Y></Position><FontName>f</FontName><Width>100</Width><Height>25</Height><Adapter>stats_intelligence</Adapter></ScalarLabelDef>
+                </WindowTemplate></Root_Element>
+                """);
+            File.WriteAllText(Path.Combine(packageDir, "fonts.xml"), """
+                <Root_Element><Font><Name>f</Name><File>custom/fonts/test.tga</File></Font></Root_Element>
+                """);
+            File.WriteAllBytes(Path.Combine(fontDir, "test.tga"), [0]);
+
+            var watch = new OcrWatchRegion("custom8", "custom8", new ScreenRegion(0, 0, 240, 30));
+            var profile = DaocUiBitmapFontProfileResolver.ResolveFromGameRoot(watch, root);
+
+            Assert.NotNull(profile);
+            Assert.Equal(3, profile.Fields.Count);
+            Assert.Equal(58, profile.Fields[0].Width);   // 86 - 28
+            Assert.Equal(54, profile.Fields[1].Width);   // 140 - 86
+            Assert.Equal(100, profile.Fields[2].Width);  // last column unclamped
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ProfileResolver_FindsFontDeclaredOutsideCatalog()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"heraldhelper-ui-{Guid.NewGuid():N}");
+        var packageDir = Path.Combine(root, "ui", "custom");
+        var fontDir = Path.Combine(packageDir, "fonts");
+        Directory.CreateDirectory(fontDir);
+        try
+        {
+            File.WriteAllText(Path.Combine(packageDir, "custom11_window.xml"), """
+                <Root_Element><WindowTemplate><Name>custom11_window</Name>
+                  <ScalarLabelDef><ControlId>a</ControlId><Position><X>5</X><Y>0</Y></Position><FontName>assets_font</FontName><Width>40</Width><Height>15</Height><Adapter>stats_strength</Adapter></ScalarLabelDef>
+                  <ScalarLabelDef><ControlId>b</ControlId><Position><X>5</X><Y>15</Y></Position><FontName>assets_font</FontName><Width>40</Width><Height>15</Height><Adapter>stats_constitution</Adapter></ScalarLabelDef>
+                </WindowTemplate></Root_Element>
+                """);
+            // Foreign packs declare <Font> entries inside arbitrary files
+            // (assets.xml, styles.xml) instead of a fonts.xml catalog.
+            File.WriteAllText(Path.Combine(packageDir, "assets.xml"), """
+                <Root_Element><Font><Name>assets_font</Name><File>custom/fonts/test.tga</File></Font></Root_Element>
+                """);
+            File.WriteAllBytes(Path.Combine(fontDir, "test.tga"), [0]);
+
+            var watch = new OcrWatchRegion("custom11", "custom11", new ScreenRegion(0, 0, 100, 30));
+            var profile = DaocUiBitmapFontProfileResolver.ResolveFromGameRoot(watch, root);
+
+            Assert.NotNull(profile);
+            Assert.Equal("assets_font", profile.FontName);
+            Assert.Equal(Path.Combine(fontDir, "test.tga"), profile.FontPath);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     private static void WriteTga(string path, int width, int height, byte[] pixels, bool topOrigin)
     {
         var bytes = CreateTgaHeader(width, height, imageType: 2, topOrigin);

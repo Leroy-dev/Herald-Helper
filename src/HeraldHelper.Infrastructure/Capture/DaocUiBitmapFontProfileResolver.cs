@@ -225,7 +225,12 @@ internal static class DaocUiBitmapFontProfileResolver
             var selectedFields = orderedFields
                 .Select((field, index) => field with
                 {
-                    Height = Math.Min(field.Height, ResolveRowHeight(orderedFields, index))
+                    Height = Math.Min(field.Height, ResolveRowHeight(orderedFields, index)),
+                    // Declared widths routinely run under the next column
+                    // (three-column stat sheets, name/class pairs). Clamping
+                    // at the next same-row field's X keeps its glyphs out of
+                    // this field's scan window.
+                    Width = Math.Min(field.Width, SameRowGapToRight(orderedFields, field))
                 })
                 .ToArray();
             var fontPath = FindFontPath(packageDirs, uiRoot, selectedFont);
@@ -324,29 +329,32 @@ internal static class DaocUiBitmapFontProfileResolver
     {
         // Catalogs can live in any package dir — a window found in customs/ can
         // still be backed by custom/runtime/catalogs/fonts.xml — and feature
-        // folders may own their own fonts.xml below the package root.
+        // folders may own their own fonts.xml below the package root. Foreign
+        // packs additionally declare <Font> entries inside arbitrary files
+        // (assets.xml, styles.xml, the window file itself), so every package
+        // XML is a candidate source.
         foreach (var packageDir in packageDirs)
         {
-            var catalogPaths = new List<string>
+            var fontSources = new List<string>
             {
                 Path.Combine(packageDir, "runtime", "catalogs", "fonts.xml"),
                 Path.Combine(packageDir, "fonts.xml")
             };
             try
             {
-                catalogPaths.AddRange(
-                    Directory.EnumerateFiles(packageDir, "fonts.xml", SearchOption.AllDirectories)
-                        .Where(path => !catalogPaths.Contains(path, StringComparer.OrdinalIgnoreCase)));
+                fontSources.AddRange(
+                    Directory.EnumerateFiles(packageDir, "*.xml", SearchOption.AllDirectories)
+                        .Where(path => !fontSources.Contains(path, StringComparer.OrdinalIgnoreCase)));
             }
             catch
             {
             }
 
-            foreach (var catalogPath in catalogPaths.Where(File.Exists))
+            foreach (var fontSource in fontSources.Where(File.Exists))
             {
                 try
                 {
-                    var document = XDocument.Load(catalogPath, LoadOptions.None);
+                    var document = XDocument.Load(fontSource, LoadOptions.None);
                     var file = document.Descendants("Font")
                         .FirstOrDefault(element => string.Equals(
                             element.Element("Name")?.Value.Trim(),
@@ -359,7 +367,7 @@ internal static class DaocUiBitmapFontProfileResolver
                     }
 
                     var normalized = file.Replace('/', Path.DirectorySeparatorChar);
-                    foreach (var candidate in FontFileBases(normalized, packageDir, uiRoot, catalogPath))
+                    foreach (var candidate in FontFileBases(normalized, packageDir, uiRoot, fontSource))
                     {
                         if (File.Exists(candidate))
                         {
@@ -481,16 +489,36 @@ internal static class DaocUiBitmapFontProfileResolver
 
     private static int ResolveRowHeight(IReadOnlyList<DaocUiValueField> fields, int index)
     {
-        if (index + 1 < fields.Count)
+        // Row pitch is the distance to the next field BELOW this one. Fields
+        // sharing a row (currency M:/P:/G:, group name/class pairs) have
+        // same-Y siblings — using their distance would clamp the scan to a
+        // single pixel row and never recognize anything.
+        var y = fields[index].Y;
+        var below = fields
+            .Skip(index + 1)
+            .Where(field => field.Y > y)
+            .Select(field => field.Y - y)
+            .DefaultIfEmpty(0)
+            .Min();
+        if (below > 0)
         {
-            return Math.Max(1, fields[index + 1].Y - fields[index].Y);
+            return below;
         }
-        if (index > 0)
-        {
-            return Math.Max(1, fields[index].Y - fields[index - 1].Y);
-        }
-        return fields[index].Height;
+        var above = fields
+            .Take(index)
+            .Where(field => field.Y < y)
+            .Select(field => y - field.Y)
+            .DefaultIfEmpty(0)
+            .Min();
+        return above > 0 ? above : fields[index].Height;
     }
+
+    private static int SameRowGapToRight(IReadOnlyList<DaocUiValueField> fields, DaocUiValueField field) =>
+        fields
+            .Where(other => other.Y == field.Y && other.X > field.X)
+            .Select(other => other.X - field.X)
+            .DefaultIfEmpty(int.MaxValue)
+            .Min();
 
     private static bool TryReadPositiveOrZero(XElement? element, out int value) =>
         int.TryParse(element?.Value, out value) && value >= 0;
