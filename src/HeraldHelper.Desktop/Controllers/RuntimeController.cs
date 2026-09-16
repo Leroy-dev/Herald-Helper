@@ -122,7 +122,7 @@ internal sealed class RuntimeController : IDisposable
         var abilities = LoadActiveAbilityDefinitions(settingsMap, selectedShard);
         var getSettings = () => _settingsRepository.LoadSettingsMap();
 
-        var (orchestrator, debugOverlay, runtimeSettings, capture) = AppComposition.Build(
+        var (orchestrator, debugOverlay, runtimeSettings, capture, captureChain) = AppComposition.Build(
             settingsMap,
             abilities,
             _httpClient,
@@ -140,7 +140,7 @@ internal sealed class RuntimeController : IDisposable
             _targetProfileCache,
             _onlineSync);
 
-        return new RuntimeSession(orchestrator, debugOverlay, runtimeSettings, capture);
+        return new RuntimeSession(orchestrator, debugOverlay, runtimeSettings, capture, captureChain);
     }
 
     private IReadOnlyCollection<CastSpellOverride> LoadCastSpellOverrides(ShardType shard)

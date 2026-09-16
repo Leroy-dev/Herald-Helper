@@ -9,7 +9,7 @@ using HeraldHelper.Infrastructure.Ocr;
 
 namespace HeraldHelper.Infrastructure.Capture;
 
-public sealed class ScreenCaptureOcrService : IChatCaptureService, IWindowAwareChatCaptureService, IOcrCaptureSnapshotSource, IOcrCaptureBatchDiagnostics
+public sealed class ScreenCaptureOcrService : IChatCaptureService, IWindowAwareChatCaptureService, IOcrCaptureSnapshotSource, IOcrCaptureBatchDiagnostics, IChatCaptureSourceTelemetry
 {
     private readonly IOcrEngine _ocrEngine;
     private readonly DaocBitmapFontGlyphReader _glyphReader;
@@ -21,6 +21,7 @@ public sealed class ScreenCaptureOcrService : IChatCaptureService, IWindowAwareC
     public int LastOcrTextLength { get; private set; }
     public byte[]? LastCapturePng { get; private set; }
     public string LastCaptureEngineName => _lastCaptureEngineName;
+    public string LastChatSource => "OCR";
 
     public ScreenCaptureOcrService(IOcrEngine ocrEngine, string? customUiPath = null)
     {

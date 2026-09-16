@@ -15,7 +15,7 @@ namespace HeraldHelper.Infrastructure.Composition;
 
 public static class AppComposition
 {
-    public static (GameLoopOrchestrator Orchestrator, DebugOverlayRenderer Overlay, AppRuntimeSettings Settings, ScreenCaptureOcrService Capture) Build(
+    public static (GameLoopOrchestrator Orchestrator, DebugOverlayRenderer Overlay, AppRuntimeSettings Settings, ScreenCaptureOcrService Capture, IWindowAwareChatCaptureService CaptureChain) Build(
         IReadOnlyDictionary<string, string> settingsMap,
         IReadOnlyCollection<AbilityDefinition> abilities,
         HttpClient? httpClient = null,
@@ -46,7 +46,52 @@ public static class AppComposition
         };
         var capture = new ScreenCaptureOcrService(ocrEngine, settings.CustomUiFolder);
         IOcrReplaySink? replaySink = settings.OcrReplayEnabled ? new FileOcrReplaySink() : null;
-        IChatCaptureService captureService = capture;
+        IWindowAwareChatCaptureService windowAwareCapture = capture;
+        if (settings.ChatLogCaptureEnabled)
+        {
+            var pump = settings.ChatLogPumpEnabled
+                ? new DaocChatLogPump(DaocChatLogPump.ParseVirtualKeyList(settings.ChatLogPumpKey), pressesPerPoll: 2, diagnostics: diagnostics)
+                : null;
+            windowAwareCapture = new ChatLogTailCaptureService(capture, settings.ChatLogPath, settings.ChatLogRegions, diagnostics, pump);
+        }
+
+        // Blackthorn-only realtime path: the launcher's BTUI relay pushes chat
+        // (and other state) over a localhost WebSocket. Wraps whatever capture
+        // chain exists for non-chat regions; lazily re-discovers until the
+        // session appears on disk.
+        if (settings.BlackthornRelayEnabled)
+        {
+            windowAwareCapture = new BlackthornRelayChatSource(
+                windowAwareCapture,
+                () => BlackthornRelayDiscovery.TryDiscover(),
+                regionKeys: settings.ChatLogRegions,
+                diagnostics: diagnostics);
+        }
+
+        // Highest-precedence source when enabled: read the client's chat.log
+        // CRT buffer straight out of process memory. Requires elevation; the
+        // FILE* RVA is auto-derived from the module image (chatMemRva overrides).
+        if (settings.ChatMemReadEnabled)
+        {
+            windowAwareCapture = new DaocMemoryChatSource(
+                windowAwareCapture,
+                settings.ChatMemProcess,
+                settings.ChatMemRva,
+                settings.ChatLogRegions,
+                diagnostics);
+        }
+
+        // Live stats/adapters from process memory: walks the client's adapter
+        // registry map (name -> value record) — resists, stats, HP, group info.
+        // Passthrough for chat; merges its IAdapterValueSource over the chain.
+        if (settings.StatsMemReadEnabled)
+        {
+            windowAwareCapture = new DaocMemoryStatsSource(
+                windowAwareCapture,
+                settings.ChatMemProcess,
+                diagnostics);
+        }
+        IChatCaptureService captureService = (IChatCaptureService)windowAwareCapture;
         IChatEventParser parser = new AbilitiesChatEventParser(abilities);
         ICastSpellCatalog castSpellCatalog = settings.ShardType switch
         {
@@ -86,7 +131,7 @@ public static class AppComposition
             targetProfileCache,
             onlineSync);
 
-        return (orchestrator, overlay, settings, capture);
+        return (orchestrator, overlay, settings, capture, windowAwareCapture);
     }
 
     private static string? ResolveActiveClass(IReadOnlyDictionary<string, string> settings, ShardType shard)

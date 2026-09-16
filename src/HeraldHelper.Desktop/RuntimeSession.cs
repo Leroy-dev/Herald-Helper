@@ -1,4 +1,5 @@
 using System.Text;
+using HeraldHelper.Application.Contracts;
 using HeraldHelper.Application.Services;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
@@ -14,6 +15,7 @@ internal sealed class RuntimeSession : IRuntimeSession
     public DebugOverlayRenderer DebugOverlay { get; }
     public AppRuntimeSettings RuntimeSettings { get; }
     public ScreenCaptureOcrService Capture { get; }
+    public IWindowAwareChatCaptureService CaptureChain { get; }
 
     public OverlaySnapshot? LastSnapshot => DebugOverlay.LastSnapshot;
 
@@ -21,12 +23,14 @@ internal sealed class RuntimeSession : IRuntimeSession
         GameLoopOrchestrator orchestrator,
         DebugOverlayRenderer debugOverlay,
         AppRuntimeSettings runtimeSettings,
-        ScreenCaptureOcrService capture)
+        ScreenCaptureOcrService capture,
+        IWindowAwareChatCaptureService captureChain)
     {
         Orchestrator = orchestrator;
         DebugOverlay = debugOverlay;
         RuntimeSettings = runtimeSettings;
         Capture = capture;
+        CaptureChain = captureChain;
     }
 
     public async Task<LoopTickResult> TickAsync(
@@ -55,6 +59,9 @@ internal sealed class RuntimeSession : IRuntimeSession
         }
 
         var sb = new StringBuilder();
+        var chatSource = (CaptureChain as IChatCaptureSourceTelemetry)?.LastChatSource
+            ?? (RuntimeSettings.ChatLogCaptureEnabled ? "chat.log" : "OCR");
+        sb.AppendLine($"Chat source: {chatSource}");
         sb.AppendLine($"Engine: {Capture.LastOcrEngineName}");
         sb.AppendLine($"OCR time: {Capture.LastOcrDurationMs} ms");
         sb.AppendLine($"OCR chars: {Capture.LastOcrTextLength}");

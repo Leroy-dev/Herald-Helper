@@ -16,7 +16,17 @@ public sealed record AppRuntimeSettings(
     bool DynamicCastSpeed = false,
     bool EstimatedSpellDamage = false,
     bool OcrReplayEnabled = false,
-    string? CustomUiFolder = null)
+    string? CustomUiFolder = null,
+    bool ChatLogCaptureEnabled = false,
+    string? ChatLogPath = null,
+    IReadOnlyList<string>? ChatLogRegions = null,
+    bool ChatLogPumpEnabled = false,
+    string? ChatLogPumpKey = null,
+    bool BlackthornRelayEnabled = false,
+    bool ChatMemReadEnabled = false,
+    string? ChatMemProcess = null,
+    int? ChatMemRva = null,
+    bool StatsMemReadEnabled = false)
 {
     public static AppRuntimeSettings LoadFromCfg(string cfgPath)
     {
@@ -56,11 +66,42 @@ public sealed record AppRuntimeSettings(
                              !string.IsNullOrWhiteSpace(folder)
             ? folder.Trim()
             : null;
+        var chatLogCaptureEnabled = ReadBool(map, "chatLogCaptureEnabled", false);
+        var chatLogPath = map.TryGetValue("chatLogPath", out var logPath) &&
+                          !string.IsNullOrWhiteSpace(logPath)
+            ? logPath.Trim()
+            : null;
+        var chatLogRegions = map.TryGetValue("chatLogRegions", out var regionsRaw) &&
+                             !string.IsNullOrWhiteSpace(regionsRaw)
+            ? regionsRaw.Split(',', ';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            : [];
+        var chatLogPumpEnabled = ReadBool(map, "chatLogPumpEnabled", false);
+        var chatLogPumpKey = map.TryGetValue("chatLogPumpKey", out var pumpKey) &&
+                             !string.IsNullOrWhiteSpace(pumpKey)
+            ? pumpKey.Trim()
+            : null;
+        var btRelayEnabled = ReadBool(map, "btRelayEnabled", false);
+        var chatMemReadEnabled = ReadBool(map, "chatMemReadEnabled", false);
+        var chatMemProcess = map.TryGetValue("chatMemProcess", out var memProc) &&
+                             !string.IsNullOrWhiteSpace(memProc)
+            ? memProc.Trim()
+            : null;
+        int? chatMemRva = map.TryGetValue("chatMemRva", out var rvaRaw) &&
+                          !string.IsNullOrWhiteSpace(rvaRaw)
+            ? (rvaRaw.Trim().StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                ? Convert.ToInt32(rvaRaw.Trim()[2..], 16)
+                : int.Parse(rvaRaw.Trim()))
+            : null;
 
         return new AppRuntimeSettings(
             region, shard, resis, ocr, watchRegions,
             showCastBar, showTarget, showTimers,
-            dynamicCastSpeed, estimatedSpellDamage, ocrReplayEnabled, customUiFolder);
+            dynamicCastSpeed, estimatedSpellDamage, ocrReplayEnabled, customUiFolder,
+            chatLogCaptureEnabled, chatLogPath, chatLogRegions, chatLogPumpEnabled, chatLogPumpKey,
+            btRelayEnabled, chatMemReadEnabled, chatMemProcess, chatMemRva,
+            // Stats memory read piggybacks on chatMemReadEnabled by default —
+            // same process access, same elevation requirement.
+            ReadBool(map, "statsMemReadEnabled", chatMemReadEnabled));
     }
 
     private static bool ReadBool(IReadOnlyDictionary<string, string> map, string key, bool fallback)

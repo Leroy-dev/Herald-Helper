@@ -104,6 +104,25 @@ public sealed class AbilitiesChatEventParserTests
         Assert.Equal(TargetMembership.NonMember, result.TargetEvent.Membership);
     }
 
+    [Theory]
+    [InlineData("He is friendly towards you.")]
+    [InlineData("It is neutral towards you.")]
+    public void Parse_ClassifiesFriendlyOrNeutralNpcAsNonMember(string examine)
+    {
+        var parser = new AbilitiesChatEventParser(NoAbilities);
+
+        var result = parser.Parse($"""
+            You target [Alice].
+            You examine Alice. She is a member of your realm.
+            You target [Master Vaughn].
+            You examine Master Vaughn. {examine}
+            """);
+
+        Assert.NotNull(result.TargetEvent);
+        Assert.Equal("Master Vaughn", result.TargetEvent!.Name);
+        Assert.Equal(TargetMembership.NonMember, result.TargetEvent.Membership);
+    }
+
     [Fact]
     public void Parse_DoesNotAssociateOlderMemberLineWithNewestTarget()
     {

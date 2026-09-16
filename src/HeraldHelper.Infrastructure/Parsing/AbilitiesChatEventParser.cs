@@ -27,7 +27,7 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         @"you\s+exam\w*.*?\bis\s+a\s+member\b",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
     private static readonly Regex NonMemberExamineRegex = new(
-        @"you\s+exam\w*.*?(?:\bis\s+not\s+a\s+member\b|\baggressive\s+towards\s+you\b)",
+        @"you\s+exam\w*.*?(?:\bis\s+not\s+a\s+member\b|\b(?:aggressive|friendly|neutral)\s+towards\s+you\b)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
     private static readonly string[] CastInterruptedMarkers =
     [
