@@ -258,6 +258,7 @@ public partial class MainWindow : Window
         OutputBox.Text = tick.Output;
         _lastOverlaySnapshot = tick.Snapshot;
         DiagnosticsBox.Text = tick.DiagnosticsText;
+        LiveView?.UpdateClientState(tick.AdapterValues);
         LoopStatusText.Text = $"Last tick {DateTime.Now:HH:mm:ss}";
     }
 

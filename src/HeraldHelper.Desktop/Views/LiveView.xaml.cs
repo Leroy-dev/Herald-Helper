@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -65,4 +67,51 @@ public partial class LiveView : System.Windows.Controls.UserControl
             MirrorCastPanel.Visibility = Visibility.Collapsed;
         }
     }
+
+    /// <summary>
+    /// Renders the client's own live adapter values (read from process memory)
+    /// below the mirror — the player's vitals/resists, not the target's.
+    /// </summary>
+    public void UpdateClientState(IReadOnlyDictionary<string, string>? values)
+    {
+        if (values is null || values.Count == 0)
+        {
+            PlayerStatePanel.Visibility = Visibility.Collapsed;
+            return;
+        }
+        PlayerStatePanel.Visibility = Visibility.Visible;
+        PlayerBindText.Text = $"{values.Count} adapters";
+
+        var name = V(values, "stats_name");
+        var cls = V(values, "stats_profession") ?? V(values, "stats_base_class");
+        var race = V(values, "stats_race");
+        var level = V(values, "stats_level");
+        var rp = V(values, "stats_realm_points");
+        PlayerIdentityText.Text = string.Join("  ·  ", new[]
+            {
+                name,
+                string.Join(" ", new[] { race, cls }.Where(x => x is not null)),
+                level is null ? null : $"Level {level}",
+                rp is null ? null : $"RP {rp}",
+            }.Where(x => !string.IsNullOrWhiteSpace(x)));
+
+        PlayerVitalsText.Text = $"HP {V(values, "stats_hitpoints") ?? "—"}    End {V(values, "summary_player_end") ?? "—"}    Pow {V(values, "summary_player_power") ?? "—"}    Conc {V(values, "concentration") ?? "—"}";
+
+        PlayerWeaponText.Text = $"Dmg {V(values, "stats_weapon_damage") ?? "—"}    Skill {V(values, "stats_weapon_skill") ?? "—"}    AF {V(values, "stats_armor_factor") ?? "—"}    BP {V(values, "bounty_points") ?? "—"}";
+
+        var resists = new[]
+        {
+            ("Thrust", V(values, "stats_thrust")), ("Crush", V(values, "stats_crush")),
+            ("Slash", V(values, "stats_slash")), ("Heat", V(values, "stats_heat")),
+            ("Cold", V(values, "stats_cold")), ("Matter", V(values, "stats_matter")),
+            ("Energy", V(values, "stats_energy")), ("Spirit", V(values, "stats_spirit")),
+            ("Body", V(values, "stats_body")),
+        };
+        PlayerResistsText.Text = resists.Any(r => r.Item2 is not null)
+            ? string.Join("   ", resists.Select(r => $"{r.Item1} {r.Item2 ?? "—"}"))
+            : "Resists: —";
+    }
+
+    private static string? V(IReadOnlyDictionary<string, string> values, string key) =>
+        values.TryGetValue(key, out var v) && !string.IsNullOrWhiteSpace(v) ? v : null;
 }

@@ -47,10 +47,11 @@ internal sealed class RuntimeSession : IRuntimeSession
             cancellationToken);
         var output = DebugOverlay.LastRendered;
         var snapshot = DebugOverlay.LastSnapshot;
-        return new LoopTickResult(output, snapshot, BuildDiagnosticsText(snapshot));
+        var adapterValues = (CaptureChain as IAdapterValueSource)?.LatestAdapterValues;
+        return new LoopTickResult(output, snapshot, BuildDiagnosticsText(snapshot, adapterValues), adapterValues);
     }
 
-    private string BuildDiagnosticsText(OverlaySnapshot? snapshot)
+    private string BuildDiagnosticsText(OverlaySnapshot? snapshot, IReadOnlyDictionary<string, string>? adapterValues)
     {
         var raw = snapshot?.RawOcrText ?? string.Empty;
         if (raw.Length > 700)
@@ -62,6 +63,14 @@ internal sealed class RuntimeSession : IRuntimeSession
         var chatSource = (CaptureChain as IChatCaptureSourceTelemetry)?.LastChatSource
             ?? (RuntimeSettings.ChatLogCaptureEnabled ? "chat.log" : "OCR");
         sb.AppendLine($"Chat source: {chatSource}");
+        if (adapterValues is { Count: > 0 })
+        {
+            sb.AppendLine($"Adapters: {adapterValues.Count} (memory)");
+        }
+        else if (CaptureChain is DaocMemoryStatsSource { MapBound: false } mem)
+        {
+            sb.AppendLine($"Adapters: not bound — {mem.BindError ?? "probing"}");
+        }
         sb.AppendLine($"Engine: {Capture.LastOcrEngineName}");
         sb.AppendLine($"OCR time: {Capture.LastOcrDurationMs} ms");
         sb.AppendLine($"OCR chars: {Capture.LastOcrTextLength}");

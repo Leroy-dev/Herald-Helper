@@ -89,4 +89,8 @@ internal sealed class RuntimeLoop : IDisposable
 
 internal sealed record LoopTickInput(ScreenRegion? ChatRegion, ShardType Shard, int ResistPercent);
 
-internal sealed record LoopTickResult(string Output, OverlaySnapshot? Snapshot, string DiagnosticsText);
+internal sealed record LoopTickResult(
+    string Output,
+    OverlaySnapshot? Snapshot,
+    string DiagnosticsText,
+    IReadOnlyDictionary<string, string>? AdapterValues = null);
