@@ -44,8 +44,6 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
 
     // Arena state: candidate regions + their last-seen string sets.
     private readonly List<Arena> _arenas = [];
-    private int _wrapWidth;
-    private readonly StringBuilder _pendingLine = new();
     private readonly Queue<(string Text, DateTime At)> _recentEmitted = new();
     private string? _bindError;
 
@@ -59,6 +57,12 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
         /// changed string at a reused one — identical chat lines re-arrive as
         /// fresh allocations, so text-identity dedupe would drop repeats.</summary>
         public readonly Dictionary<long, string> Seen = new();
+
+        /// <summary>Held tail of a truncated (wrapped) line awaiting its
+        /// continuation segment — per-arena so fragments never join across
+        /// regions.</summary>
+        public readonly StringBuilder PendingLine = new();
+        public DateTime PendingAt;
     }
 
     private readonly List<Arena> _candidates = [];
@@ -135,7 +139,7 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
                 }
             }
 
-            var fresh = new List<string>();
+            var sb = new StringBuilder();
             var dead = new List<Arena>();
             foreach (var arena in _arenas)
             {
@@ -152,6 +156,7 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
                     dead.Add(arena);
                     continue;
                 }
+                var fresh = new List<string>();
                 foreach (var (offset, s) in ExtractStrings(buf))
                 {
                     var addr = arena.Base + offset;
@@ -161,25 +166,32 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
                     }
                     arena.Seen[addr] = s;
                     fresh.Add(s);
-                    _wrapWidth = Math.Max(_wrapWidth, s.Length);
                 }
+                EmitLines(arena, fresh, sb);
             }
             foreach (var d in dead)
             {
                 _arenas.Remove(d);
             }
-
-            if (fresh.Count == 0)
+            var result = sb.ToString();
+            if (result.Length > 0)
             {
-                return string.Empty;
+                var first = result.Split('\n', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
+                _diagnostics?.Log($"[Scrollback] +{result.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length} ln, first: {(first.Length > 60 ? first[..60] + "…" : first)}");
             }
-            return EmitLines(fresh);
+            return result;
         }
     }
 
-    private string EmitLines(List<string> segments)
+    private void EmitLines(Arena arena, List<string> segments, StringBuilder sb)
     {
-        var sb = new StringBuilder();
+        if (arena.PendingLine.Length > 0 &&
+            DateTime.UtcNow - arena.PendingAt > TimeSpan.FromSeconds(1.5))
+        {
+            TryEmit(sb, arena.PendingLine.ToString()); // stale fragment — flush it alone
+            arena.PendingLine.Clear();
+        }
+
         foreach (var rawSeg in segments)
         {
             // segment metadata can leak printable bytes at the boundary —
@@ -190,35 +202,37 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
                 continue;
             }
             // rejoin at word boundary: a stripped segment may need its space back
-            if (_pendingLine.Length > 0 && _pendingLine[^1] != ' ' && !rawSeg.StartsWith(' '))
+            if (arena.PendingLine.Length > 0 && arena.PendingLine[^1] != ' ' && !rawSeg.StartsWith(' '))
             {
-                _pendingLine.Append(' ');
+                arena.PendingLine.Append(' ');
             }
-            _pendingLine.Append(seg);
-            if (_wrapWidth > 0 && seg.Length >= _wrapWidth)
+            arena.PendingLine.Append(seg);
+            // Hold only segments that look truncated — a channel-prefixed or
+            // sentence-ending line is complete even when it's the longest seen.
+            var truncated = seg.Length >= 25 && !seg.StartsWith('[') && !IsCompleteLine(seg);
+            if (truncated)
             {
-                continue; // wrapped — continuation follows
-            }
-            var line = _pendingLine.ToString();
-            _pendingLine.Clear();
-            if (line.Length < 3 || !LooksLikeChat(line) || IsDuplicate(line))
-            {
+                arena.PendingAt = DateTime.UtcNow;
                 continue;
             }
-            sb.Append(line).Append('\n');
-            _recentEmitted.Enqueue((line, DateTime.UtcNow));
-            while (_recentEmitted.Count > 16)
-            {
-                _recentEmitted.Dequeue();
-            }
+            var line = arena.PendingLine.ToString();
+            arena.PendingLine.Clear();
+            TryEmit(sb, line);
         }
-        var result = sb.ToString();
-        if (result.Length > 0)
+    }
+
+    private void TryEmit(StringBuilder sb, string line)
+    {
+        if (line.Length < 3 || !LooksLikeChat(line) || IsDuplicate(line))
         {
-            var first = result.Split('\n', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
-            _diagnostics?.Log($"[Scrollback] +{segments.Count} seg, first: {(first.Length > 60 ? first[..60] + "…" : first)}");
+            return;
         }
-        return result;
+        sb.Append(line).Append('\n');
+        _recentEmitted.Enqueue((line, DateTime.UtcNow));
+        while (_recentEmitted.Count > 16)
+        {
+            _recentEmitted.Dequeue();
+        }
     }
 
     /// <summary>A full chat line: reasonable start + a sentence ending.</summary>
@@ -446,7 +460,6 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
         _process = IntPtr.Zero;
         _bound = false;
         _arenas.Clear();
-        _pendingLine.Clear();
     }
 
     public void Dispose() => Unbind();
