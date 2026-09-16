@@ -4,6 +4,7 @@ using HeraldHelper.Application.Services;
 using HeraldHelper.Desktop;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
+using HeraldHelper.Infrastructure.Parsing;
 
 namespace HeraldHelper.Tests;
 
@@ -63,6 +64,41 @@ public sealed class GameLoopOrchestratorTests
         Assert.Equal(0, heraldClient.CallCount);
         Assert.NotNull(overlay.LastSnapshot);
         Assert.Null(overlay.LastSnapshot!.Target);
+    }
+
+    [Fact]
+    public async Task TickAsync_AbilityLineWithoutTargetMention_ResolvesToCurrentTarget()
+    {
+        // Incremental sources (scrollback/chatlog) emit only new lines — the
+        // "you target" line is long gone by the time the style fires. The hit
+        // must resolve against the tracked current target.
+        var now = DateTimeOffset.UtcNow;
+        var capture = new SequenceChatCaptureService(
+        [
+            "You target [Alice].",
+            "You perform the Slam perfectly!"
+        ]);
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "m", 9, ControlEffectType.Stun)
+        ]);
+        var tracker = new RecordingCcImmunityTracker();
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            capture,
+            parser,
+            new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            tracker,
+            overlay);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now.AddMilliseconds(400), CancellationToken.None);
+
+        var hit = Assert.Single(tracker.RegisteredHits);
+        Assert.Equal("Alice", hit.TargetName);
+        Assert.Equal("Slam", hit.AbilityName);
+        Assert.Equal(ControlEffectType.Stun, hit.EffectType);
     }
 
     [Fact]
@@ -941,6 +977,21 @@ public sealed class GameLoopOrchestratorTests
         public Task<string> CaptureChatTextAsync(ScreenRegion region, CancellationToken cancellationToken)
         {
             return Task.FromResult(_text);
+        }
+    }
+
+    private sealed class SequenceChatCaptureService : IChatCaptureService
+    {
+        private readonly Queue<string> _frames;
+
+        public SequenceChatCaptureService(IEnumerable<string> frames)
+        {
+            _frames = new Queue<string>(frames);
+        }
+
+        public Task<string> CaptureChatTextAsync(ScreenRegion region, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(_frames.Count > 0 ? _frames.Dequeue() : string.Empty);
         }
     }
 

@@ -276,6 +276,34 @@ public sealed class AbilitiesChatEventParserTests
     }
 
     [Fact]
+    public void Parse_PriorCooldownMessageDoesNotSuppressLandedHit()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "m", 9, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse("You target [Alice]. You must wait 4 seconds to use it again. Slam hits Alice.");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.True(hit.LandedSuccessfully);
+    }
+
+    [Fact]
+    public void Parse_MentionInsideResistLineIsNotLanded()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "m", 9, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse("You target [Alice]. Alice resists your Slam!");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.False(hit.LandedSuccessfully);
+    }
+
+    [Fact]
     public void Parse_DoesNotMatchAbilityInsideAnotherWord()
     {
         var parser = new AbilitiesChatEventParser(

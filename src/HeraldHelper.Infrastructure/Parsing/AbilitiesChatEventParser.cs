@@ -101,7 +101,10 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
                 continue;
             }
 
-            var landed = !ContainsFailureKeyword(WindowAround(normalizedOcrText, mention.Index, mention.Ability.Name.Length));
+            // Failure text lives in the mention's own sentence or the ones
+            // after it ("Foo resists your Slam!") — a "must wait … again"
+            // line from an earlier attempt must not suppress a landed hit.
+            var landed = !ContainsFailureKeyword(WindowFromLineStart(normalizedOcrText, mention.Index, mention.Ability.Name.Length));
             var hitKey = $"{targetName}|{mention.Ability.Name}|{mention.Ability.SkillCode}|{mention.Ability.EffectType}|{landed}";
             hitOrdinals.TryGetValue(hitKey, out var previousOrdinal);
             var occurrenceOrdinal = previousOrdinal + 1;
@@ -409,9 +412,20 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
             || line.Contains("again", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string WindowAround(string text, int index, int tokenLength)
+    /// <summary>From the start of the mention's sentence (bounded 64 chars
+    /// back for the merge case) to 96 chars past the ability token.</summary>
+    private static string WindowFromLineStart(string text, int index, int tokenLength)
     {
-        var start = Math.Max(0, index - 64);
+        var start = index;
+        for (var i = index - 1; i >= Math.Max(0, index - 64); i--)
+        {
+            if (text[i] is '.' or '!' or '?')
+            {
+                start = i + 1;
+                break;
+            }
+        }
+
         var end = Math.Min(text.Length, index + tokenLength + 96);
         return text[start..end];
     }
