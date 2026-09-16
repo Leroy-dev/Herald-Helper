@@ -48,6 +48,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     private readonly IOcrReplaySink? _ocrReplaySink;
     private readonly ITargetProfileCache? _targetProfileCache;
     private readonly IOnlineSyncService? _onlineSync;
+    private readonly IAdapterValueSource? _adapterValueSource;
     private CastBarState? _activeCast;
 
     public GameLoopOrchestrator(
@@ -68,7 +69,8 @@ public sealed class GameLoopOrchestrator : IDisposable
         bool estimatedSpellDamage = false,
         IOcrReplaySink? ocrReplaySink = null,
         ITargetProfileCache? targetProfileCache = null,
-        IOnlineSyncService? onlineSync = null)
+        IOnlineSyncService? onlineSync = null,
+        IAdapterValueSource? adapterValueSource = null)
     {
         _chatCaptureService = chatCaptureService;
         _chatEventParser = chatEventParser;
@@ -88,6 +90,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         _ocrReplaySink = ocrReplaySink;
         _targetProfileCache = targetProfileCache;
         _onlineSync = onlineSync;
+        _adapterValueSource = adapterValueSource;
 
         foreach (var shard in Enum.GetValues<ShardType>())
         {
@@ -206,6 +209,9 @@ public sealed class GameLoopOrchestrator : IDisposable
         {
             fallbackTarget = _currentTargetName;
         }
+        // The live adapter registry knows the real target even when no
+        // "you target" line has been seen (loop started mid-fight).
+        fallbackTarget ??= ReadAdapterTargetName();
         var parseResult = _chatEventParser.Parse(frame.OcrText, fallbackTarget);
         parseStopwatch.Stop();
         _diagnostics?.Log($"[Timing] parse: {parseStopwatch.ElapsedMilliseconds} ms");
@@ -215,6 +221,21 @@ public sealed class GameLoopOrchestrator : IDisposable
         replayStopwatch.Stop();
         _diagnostics?.Log($"[Timing] replay write: {replayStopwatch.ElapsedMilliseconds} ms");
         return parseResult;
+    }
+
+    private string? ReadAdapterTargetName()
+    {
+        var values = _adapterValueSource?.LatestAdapterValues;
+        if (values is null ||
+            !values.TryGetValue("summary_target", out var raw) ||
+            string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        // summary_target renders as a small block — the name is the first line.
+        var name = raw.Split('\n', '\r')[0].Trim().Trim('"', '\'', '.', ',');
+        return name.Length is >= 2 and <= 40 && !name.Contains('=') ? name : null;
     }
 
     private void TrackCastEvents(ChatParseResult parseResult, DateTimeOffset nowUtc)
@@ -265,6 +286,11 @@ public sealed class GameLoopOrchestrator : IDisposable
         foreach (var hit in newAbilityHits)
         {
             _ccImmunityTracker.RegisterSuccessfulHit(hit, GetTargetClass(hit.TargetName), resistPercent, nowUtc);
+            if (hit.LandedSuccessfully)
+            {
+                _diagnostics?.Log(
+                    $"[CC] {hit.AbilityName} → {hit.TargetName} ({hit.EffectType}, {hit.BaseDurationSeconds}s)");
+            }
         }
     }
 

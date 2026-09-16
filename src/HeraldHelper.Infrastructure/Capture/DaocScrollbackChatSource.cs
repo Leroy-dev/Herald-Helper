@@ -261,7 +261,9 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
         {
             return false;
         }
-        if (!(char.IsLetterOrDigit(s[0]) || s[0] is '[' or '(' or '*' or '<'))
+        // Chat lines start with a name/channel marker — a lowercase first char
+        // means a wrapped continuation fragment, not a line start.
+        if (!(char.IsUpper(s[0]) || char.IsDigit(s[0]) || s[0] is '[' or '(' or '*' or '<'))
         {
             return false;
         }

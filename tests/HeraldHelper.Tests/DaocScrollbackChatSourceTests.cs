@@ -41,6 +41,8 @@ public class DaocScrollbackChatSourceTests
     [InlineData("G 7B", false)]
     [InlineData("xq", false)]
     [InlineData("C:\\path\\to\\file", false)]
+    [InlineData("ust killed by Sylenca in Hvedrungr", false)] // wrapped fragment — lowercase start
+    [InlineData("e was just killed by", false)]
     public void LooksLikeChat_FiltersAssetsAndNoise(string input, bool expected) =>
         Assert.Equal(expected, DaocScrollbackChatSource.LooksLikeChat(input));
 

@@ -139,7 +139,8 @@ public static class AppComposition
             settings.EstimatedSpellDamage,
             replaySink,
             targetProfileCache,
-            onlineSync);
+            onlineSync,
+            windowAwareCapture as IAdapterValueSource);
 
         return (orchestrator, overlay, settings, capture, windowAwareCapture);
     }

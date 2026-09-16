@@ -146,8 +146,13 @@ public sealed class CastBarWindow : Window
     public void Update(CastBarState? state, double x, double y, MediaColor targetColor, MediaColor timerColor, MediaColor outlineColor, string fontFamily)
     {
         _state = state;
-        Left = x;
-        Top = y;
+        // Clamp into the virtual screen so a saved position can't hide the bar.
+        Left = Math.Clamp(x,
+            SystemParameters.VirtualScreenLeft,
+            SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth - 80);
+        Top = Math.Clamp(y,
+            SystemParameters.VirtualScreenTop,
+            SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight - 40);
 
         var family = new FontFamily(fontFamily);
         _spellNameText.FontFamily = family;

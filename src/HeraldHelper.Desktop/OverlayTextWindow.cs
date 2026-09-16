@@ -110,8 +110,15 @@ public sealed class OverlayTextWindow : Window
             outline.Foreground = new SolidColorBrush(outlineColor);
         }
 
-        Left = x;
-        Top = y;
+        // Saved/preview positions can sit past the visible screen (smaller
+        // game resolution, VM, monitor rearranged) — keep a slice on-screen
+        // so the overlay can't render invisibly.
+        Left = Math.Clamp(x,
+            SystemParameters.VirtualScreenLeft,
+            SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth - 40);
+        Top = Math.Clamp(y,
+            SystemParameters.VirtualScreenTop,
+            SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight - 20);
         if (!IsVisible)
         {
             Show();
