@@ -152,17 +152,21 @@ public partial class MainWindow : Window
         _runtimeController.ConfigureLoopInput(
             () => new LoopTickInput(_chatRegion, _shardType, _resistPercent),
             _loopInterval);
-        _runtimeController.TickCompleted += OnLoopTickCompleted;
+        // Ticks run on a pool thread — marshal UI updates to the dispatcher.
+        _runtimeController.TickCompleted += tick =>
+            Dispatcher.BeginInvoke(() => OnLoopTickCompleted(tick));
         _runtimeController.TickFailed += message =>
-        {
-            OutputBox.Text = message;
-            LoopStatusText.Text = $"Tick failed {DateTime.Now:HH:mm:ss}";
-        };
+            Dispatcher.BeginInvoke(() =>
+            {
+                OutputBox.Text = message;
+                LoopStatusText.Text = $"Tick failed {DateTime.Now:HH:mm:ss}";
+            });
         _runtimeController.Stopped += () =>
-        {
-            UpdateLoopButton();
-            LoopStatusText.Text = "Loop stopped — repeated failures";
-        };
+            Dispatcher.BeginInvoke(() =>
+            {
+                UpdateLoopButton();
+                LoopStatusText.Text = "Loop stopped — repeated failures";
+            });
         _authController = services.GetRequiredService<AuthController>();
 
         var legacyCfgPath = FindFilePath("cfg.ini");

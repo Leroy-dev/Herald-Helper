@@ -73,11 +73,14 @@ internal sealed class RuntimeLoop : IDisposable
         _tickInProgress = true;
         try
         {
-            var result = await _session.TickAsync(
+            // Capture (RPM/OCR) is blocking work — run it off the UI thread so
+            // the window stays responsive at 350ms cadence. Subscribers must
+            // marshal to the dispatcher for UI updates.
+            var result = await Task.Run(() => _session.TickAsync(
                 input.ChatRegion,
                 input.Shard,
                 input.ResistPercent,
-                CancellationToken.None);
+                CancellationToken.None));
             _lastFailure = null;
             _sameFailureCount = 0;
             TickCompleted?.Invoke(result);

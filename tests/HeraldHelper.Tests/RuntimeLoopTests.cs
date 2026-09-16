@@ -52,6 +52,7 @@ public sealed class RuntimeLoopTests
             TimeSpan.FromMinutes(1));
 
         var first = loop.TickOnceAsync();
+        await session.TickEntered; // tick work now runs on a pool thread
         var second = loop.TickOnceAsync();
 
         Assert.Equal(1, session.TickCount);
@@ -78,10 +79,14 @@ public sealed class RuntimeLoopTests
     private sealed class FakeRuntimeSession : IRuntimeSession
     {
         private readonly TaskCompletionSource<LoopTickResult> _blocked = new();
+        private readonly TaskCompletionSource _entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public bool BlockTick { get; set; }
 
-        public int TickCount { get; private set; }
+        public Task TickEntered => _entered.Task;
+
+        private int _tickCount;
+        public int TickCount => _tickCount;
 
         public AppRuntimeSettings RuntimeSettings { get; } = new(
             null,
@@ -98,7 +103,8 @@ public sealed class RuntimeLoopTests
             int resistPercent,
             CancellationToken cancellationToken)
         {
-            TickCount++;
+            Interlocked.Increment(ref _tickCount);
+            _entered.TrySetResult();
             return BlockTick
                 ? _blocked.Task
                 : Task.FromResult(new LoopTickResult("out", null, "diag"));
