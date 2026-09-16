@@ -95,6 +95,22 @@ public partial class LiveView : System.Windows.Controls.UserControl
                 rp is null ? null : $"RP {rp}",
             }.Where(x => !string.IsNullOrWhiteSpace(x)));
 
+        var target = V(values, "summary_target");
+        if (target is null)
+        {
+            PlayerTargetText.Text = "Target: —";
+            PlayerTargetText.ClearValue(TextBlock.ForegroundProperty);
+        }
+        else
+        {
+            var hits = V(values, "summary_target_hits");
+            PlayerTargetText.Text = $"Target: {target}{(hits is null ? string.Empty : $"  ·  {hits}%")}";
+            var conColor = V(values, "summary_target_color") is { } raw ? ParseHexColor(raw) : null;
+            PlayerTargetText.Foreground = conColor is { } c
+                ? new SolidColorBrush(c)
+                : new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE8, 0x8A, 0x8A));
+        }
+
         PlayerVitalsText.Text = $"HP {V(values, "stats_hitpoints") ?? "—"}    End {V(values, "summary_player_end") ?? "—"}    Pow {V(values, "summary_player_power") ?? "—"}    Conc {V(values, "concentration") ?? "—"}";
 
         PlayerWeaponText.Text = $"Dmg {V(values, "stats_weapon_damage") ?? "—"}    Skill {V(values, "stats_weapon_skill") ?? "—"}    AF {V(values, "stats_armor_factor") ?? "—"}    BP {V(values, "bounty_points") ?? "—"}";
@@ -114,4 +130,13 @@ public partial class LiveView : System.Windows.Controls.UserControl
 
     private static string? V(IReadOnlyDictionary<string, string> values, string key) =>
         values.TryGetValue(key, out var v) && !string.IsNullOrWhiteSpace(v) ? v : null;
+
+    /// <summary>Client con colors arrive as RRGGBB (no '#').</summary>
+    private static System.Windows.Media.Color? ParseHexColor(string raw)
+    {
+        var t = raw.Trim().TrimStart('#');
+        return t.Length == 6 && int.TryParse(t, System.Globalization.NumberStyles.HexNumber, null, out var rgb)
+            ? System.Windows.Media.Color.FromRgb((byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb)
+            : null;
+    }
 }

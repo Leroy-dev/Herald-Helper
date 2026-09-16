@@ -108,6 +108,11 @@
                                FontSize="12"
                                FontWeight="SemiBold"
                                TextTrimming="CharacterEllipsis" />
+                    <TextBlock x:Name="PlayerTargetText"
+                               Margin="0,2,0,0"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis" />
                     <TextBlock x:Name="PlayerVitalsText"
                                Margin="0,2,0,0"
                                FontSize="12"

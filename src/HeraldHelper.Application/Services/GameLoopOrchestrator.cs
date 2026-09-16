@@ -270,6 +270,14 @@ public sealed class GameLoopOrchestrator : IDisposable
             targetEvent = parseResult.TargetEvent;
         }
 
+        // The adapter registry reports the live selection — a loop started
+        // mid-fight (or chat that never showed the "you target" line) still
+        // resolves the target. HandleTargetEvent dedupes repeats.
+        if (targetEvent is null && ReadAdapterTargetName() is { } adapterTarget)
+        {
+            targetEvent = new TargetEvent(adapterTarget, TargetMembership.Unknown);
+        }
+
         if (targetEvent is not null)
         {
             HandleTargetEvent(targetEvent, shardType, nowUtc, cancellationToken);

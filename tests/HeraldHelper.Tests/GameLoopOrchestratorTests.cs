@@ -142,6 +142,43 @@ public sealed class GameLoopOrchestratorTests
     }
 
     [Fact]
+    public async Task TickAsync_AdapterTargetWithoutChatLineStillResolves()
+    {
+        // Loop started mid-fight: no "you target" line ever arrives, but the
+        // live adapter registry knows the selection — herald still resolves.
+        var adapters = new FakeAdapterValueSource
+        {
+            LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["summary_target"] = "AdapterTarget"
+            }
+        };
+        var capture = new FakeChatCaptureService("just some ambient text");
+        var parser = new FakeChatEventParser(new ChatParseResult(null, []));
+        var heraldClient = new FakeHeraldClient(
+            new TargetProfile("AdapterTarget", "Guild", "Hero", 50, "RR5L0", 3));
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            capture,
+            parser,
+            new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(heraldClient),
+            new RecordingCcImmunityTracker(),
+            overlay,
+            adapterValueSource: adapters);
+
+        await orchestrator.TickAsync(
+            new ScreenRegion(0, 0, 100, 30),
+            ShardType.Eden,
+            10,
+            DateTimeOffset.UtcNow,
+            CancellationToken.None);
+
+        Assert.Equal(1, heraldClient.CallCount);
+        Assert.Equal("AdapterTarget", overlay.LastSnapshot!.Target?.Name);
+    }
+
+    [Fact]
     public async Task TickAsync_UnknownMembershipStillUsesHeraldForVerification()
     {
         var capture = new FakeChatCaptureService("ignored");
@@ -993,6 +1030,12 @@ public sealed class GameLoopOrchestratorTests
         {
             return Task.FromResult(_frames.Count > 0 ? _frames.Dequeue() : string.Empty);
         }
+    }
+
+    private sealed class FakeAdapterValueSource : IAdapterValueSource
+    {
+        public IReadOnlyDictionary<string, string> LatestAdapterValues { get; set; } =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
 
     private sealed class RegionAwareCaptureService : IChatCaptureService, IOcrCaptureBatchDiagnostics
