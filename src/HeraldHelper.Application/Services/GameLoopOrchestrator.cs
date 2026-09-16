@@ -201,7 +201,12 @@ public sealed class GameLoopOrchestrator : IDisposable
     private ChatParseResult ParseFrame(FrameCapture frame, ShardType shardType, DateTimeOffset nowUtc)
     {
         var parseStopwatch = Stopwatch.StartNew();
-        var parseResult = _chatEventParser.Parse(frame.OcrText);
+        string? fallbackTarget;
+        lock (_targetLock)
+        {
+            fallbackTarget = _currentTargetName;
+        }
+        var parseResult = _chatEventParser.Parse(frame.OcrText, fallbackTarget);
         parseStopwatch.Stop();
         _diagnostics?.Log($"[Timing] parse: {parseStopwatch.ElapsedMilliseconds} ms");
 

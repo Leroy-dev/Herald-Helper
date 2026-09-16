@@ -318,7 +318,7 @@ public sealed class ReplayRunner : IOverlayRenderer, ICcImmunityTracker
             _nextResult = result;
         }
 
-        public ChatParseResult Parse(string ocrText)
+        public ChatParseResult Parse(string ocrText, string? fallbackTargetName = null)
         {
             return _nextResult;
         }

@@ -73,7 +73,7 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         }
     }
 
-    public ChatParseResult Parse(string ocrText)
+    public ChatParseResult Parse(string ocrText, string? fallbackTargetName = null)
     {
         var normalizedOcrText = NormalizeOcrText(ocrText);
         var targetMentions = ParseTargetMentions(normalizedOcrText);
@@ -92,6 +92,10 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         foreach (var mention in hitMentions)
         {
             var targetName = ResolveTargetForIndex(targetMentions, mention.Index);
+            if (string.IsNullOrWhiteSpace(targetName))
+            {
+                targetName = fallbackTargetName?.Trim() ?? string.Empty;
+            }
             if (string.IsNullOrWhiteSpace(targetName))
             {
                 continue;

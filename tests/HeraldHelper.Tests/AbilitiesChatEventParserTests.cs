@@ -236,6 +236,46 @@ public sealed class AbilitiesChatEventParserTests
     }
 
     [Fact]
+    public void Parse_UsesFallbackTargetWhenFrameHasNoTargetMention()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "s", 5, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse("Slam hits Alice.", fallbackTargetName: "Alice");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.Equal("Alice", hit.TargetName);
+    }
+
+    [Fact]
+    public void Parse_InFrameTargetMentionBeatsFallback()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "s", 5, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse("You target [Bob]. Slam hits Bob.", fallbackTargetName: "Alice");
+
+        Assert.Equal("Bob", Assert.Single(result.AbilityHits).TargetName);
+    }
+
+    [Fact]
+    public void Parse_WithoutFallbackStillDropsUntargetedMention()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "s", 5, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse("Slam hits Alice.");
+
+        Assert.Empty(result.AbilityHits);
+    }
+
+    [Fact]
     public void Parse_DoesNotMatchAbilityInsideAnotherWord()
     {
         var parser = new AbilitiesChatEventParser(

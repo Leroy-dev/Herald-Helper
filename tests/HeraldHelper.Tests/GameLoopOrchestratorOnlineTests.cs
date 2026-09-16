@@ -112,7 +112,7 @@ public sealed class GameLoopOrchestratorOnlineTests
             _result = result;
         }
 
-        public ChatParseResult Parse(string text) => _result;
+        public ChatParseResult Parse(string text, string? fallbackTargetName = null) => _result;
     }
 
     private sealed class FakeCastSpellCatalog : ICastSpellCatalog

@@ -983,7 +983,7 @@ public sealed class GameLoopOrchestratorTests
             _result = result;
         }
 
-        public ChatParseResult Parse(string ocrText)
+        public ChatParseResult Parse(string ocrText, string? fallbackTargetName = null)
         {
             return _result;
         }
@@ -1103,7 +1103,7 @@ public sealed class GameLoopOrchestratorTests
             _results = new Queue<ChatParseResult>(results);
         }
 
-        public ChatParseResult Parse(string ocrText)
+        public ChatParseResult Parse(string ocrText, string? fallbackTargetName = null)
         {
             return _results.Count > 0 ? _results.Dequeue() : new ChatParseResult(null, []);
         }
