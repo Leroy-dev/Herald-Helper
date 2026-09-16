@@ -61,6 +61,9 @@ internal sealed class RuntimeController : IDisposable
 
     public event Action<string>? TickFailed;
 
+    /// <summary>Raised when the loop stops on its own (repeated failures).</summary>
+    public event Action? Stopped;
+
     public bool IsRunning => _loop?.IsRunning ?? false;
 
     public AppRuntimeSettings? RuntimeSettings => _loop?.RuntimeSettings;
@@ -105,6 +108,7 @@ internal sealed class RuntimeController : IDisposable
             _loop = new RuntimeLoop(session, _loopInput, _loopInterval);
             _loop.TickCompleted += result => TickCompleted?.Invoke(result);
             _loop.TickFailed += message => TickFailed?.Invoke(message);
+            _loop.Stopped += () => Stopped?.Invoke();
             // Settings edits rebuild the session underneath — keep a running
             // loop running so the UI doesn't silently stall behind the user.
             if (wasRunning)

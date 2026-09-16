@@ -11,6 +11,8 @@ internal sealed class RuntimeLoop : IDisposable
     private readonly Func<LoopTickInput> _input;
     private readonly DispatcherTimer _timer;
     private bool _tickInProgress;
+    private string? _lastFailure;
+    private int _sameFailureCount;
 
     public RuntimeLoop(IRuntimeSession session, Func<LoopTickInput> input, TimeSpan interval)
     {
@@ -35,6 +37,9 @@ internal sealed class RuntimeLoop : IDisposable
     public event Action<LoopTickResult>? TickCompleted;
 
     public event Action<string>? TickFailed;
+
+    /// <summary>Raised when the loop stops itself (not via <see cref="Stop"/>).</summary>
+    public event Action? Stopped;
 
     public void Start()
     {
@@ -61,7 +66,7 @@ internal sealed class RuntimeLoop : IDisposable
             || _session.RuntimeSettings.BlackthornRelayEnabled;
         if (input.ChatRegion is null && _session.RuntimeSettings.OcrWatchRegions.Count == 0 && !nonOcrChat)
         {
-            TickFailed?.Invoke("Select chat area first (drag selection).");
+            ReportFailure("Select chat area first (drag selection).");
             return;
         }
 
@@ -73,16 +78,34 @@ internal sealed class RuntimeLoop : IDisposable
                 input.Shard,
                 input.ResistPercent,
                 CancellationToken.None);
+            _lastFailure = null;
+            _sameFailureCount = 0;
             TickCompleted?.Invoke(result);
         }
         catch (Exception ex)
         {
-            TickFailed?.Invoke($"{ex.GetType().Name}: {ex.Message}");
+            ReportFailure($"{ex.GetType().Name}: {ex.Message}");
         }
         finally
         {
             _tickInProgress = false;
         }
+    }
+
+    private void ReportFailure(string message)
+    {
+        _sameFailureCount = string.Equals(message, _lastFailure, StringComparison.Ordinal)
+            ? _sameFailureCount + 1
+            : 0;
+        _lastFailure = message;
+        if (_sameFailureCount >= 20)
+        {
+            Stop();
+            TickFailed?.Invoke($"Loop stopped — repeated failures: {message}");
+            Stopped?.Invoke();
+            return;
+        }
+        TickFailed?.Invoke(message);
     }
 
     public void Dispose()

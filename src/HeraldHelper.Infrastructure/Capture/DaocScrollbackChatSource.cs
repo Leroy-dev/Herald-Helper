@@ -15,14 +15,15 @@ namespace HeraldHelper.Infrastructure.Capture;
 /// (allocated at the arena's growing edge) are the fresh chat segments.
 ///
 /// Arena discovery is structural: a region whose string density and content
-/// look like chat text (mixed sentences + chat-shaped prefixes). Lines are
-/// stored window-wrapped (~40-char segments); segments at the measured wrap
-/// width join with the next segment to rebuild the logical line. Multiple
-/// chat windows keep their own copies — identical text emitted within a few
-/// seconds is deduped.
+/// look like chat text (mixed sentences + chat-shaped prefixes). Wrapped
+/// segments are rejoined per arena: a segment that looks truncated (no
+/// sentence end, no channel prefix) is held until its continuation lands
+/// or ~1.5s pass. New lines are detected by allocation address — repeats
+/// of identical text still emit. Per-window copies collapse within ~1.5s.
 ///
-/// Requires elevation (same as DaocMemoryChatSource). Needs at least one
-/// chat line to have occurred to find the arena — binds lazily until then.
+/// Requires elevation (same as DaocMemoryChatSource). Needs at least a
+/// few chat lines to have occurred to find the arena — binds lazily
+/// until then.
 /// </summary>
 public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAwareChatCaptureService, IChatCaptureSourceTelemetry, IDisposable
 {
@@ -356,7 +357,7 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
             // wrapped scrollback regions hold ~40-char fragments. Rank by how
             // many strings look like finished chat lines.
             var completeLines = strings.Count(IsCompleteLine);
-            if (hintHits < 10 || strings.Length < 30)
+            if (hintHits < 5 || strings.Length < 30)
             {
                 continue;
             }

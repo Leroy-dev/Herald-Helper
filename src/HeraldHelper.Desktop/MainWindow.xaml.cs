@@ -158,6 +158,11 @@ public partial class MainWindow : Window
             OutputBox.Text = message;
             LoopStatusText.Text = $"Tick failed {DateTime.Now:HH:mm:ss}";
         };
+        _runtimeController.Stopped += () =>
+        {
+            UpdateLoopButton();
+            LoopStatusText.Text = "Loop stopped — repeated failures";
+        };
         _authController = services.GetRequiredService<AuthController>();
 
         var legacyCfgPath = FindFilePath("cfg.ini");
