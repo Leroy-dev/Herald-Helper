@@ -7,6 +7,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <WrapPanel Margin="0,0,0,10">
@@ -71,7 +72,28 @@
                                 </StackPanel>
                             </Button>
                         </WrapPanel>
-                        <DataGrid Grid.Row="2"
+                        <WrapPanel Grid.Row="2" Margin="0,0,0,10">
+                            <TextBox Width="420"
+                                     x:Name="AbilityTestText" x:FieldModifier="public"
+                                     Style="{StaticResource CompactInputTextBoxStyle}"
+                                     materialDesign:HintAssist.Hint="Paste a chat line to test"
+                                     ToolTip="Run a chat line through the ability parser — e.g. 'You target [Foo]. You perform the Slam perfectly!'" />
+                            <Button Margin="8,0,0,0"
+                                    Style="{StaticResource ToolbarButtonStyle}"
+                                    Click="AbilityTestLine_Click"
+                                    ToolTip="Parse the line with the enabled abilities and show resolved hits">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="TestTube" Width="14" Height="14" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                    <TextBlock Text="Test Line" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Margin="12,0,0,0"
+                                       x:Name="AbilityTestResult" x:FieldModifier="public"
+                                       VerticalAlignment="Center"
+                                       FontFamily="Consolas"
+                                       Foreground="{DynamicResource VsMutedTextBrush}" />
+                        </WrapPanel>
+                        <DataGrid Grid.Row="3"
                                   x:Name="AbilitiesGrid" x:FieldModifier="public"
                                   AutoGenerateColumns="False"
                                   CanUserAddRows="True"

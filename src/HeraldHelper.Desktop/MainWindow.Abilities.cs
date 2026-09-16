@@ -130,6 +130,47 @@ public partial class MainWindow : Window
         _abilityProfileController.ReloadRows();
     }
 
+    internal void AbilityTestLine_Click(object sender, RoutedEventArgs e)
+    {
+        var text = AbilitiesView?.AbilityTestText?.Text;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        var abilities = _abilityProfileController.AbilityEntries
+            .Where(x => x.IsEnabled && !string.IsNullOrWhiteSpace(x.AbilityName))
+            .Select(row => new AbilityDefinition(
+                row.AbilityName.Trim(),
+                row.SkillCode.Trim().ToLowerInvariant(),
+                Math.Max(1, row.DurationSeconds),
+                AbilitiesChatEventParser.ParseEffectTypeCode(row.EffectType),
+                row.Aliases
+                    .Split([';', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList()))
+            .ToList();
+
+        var parser = new AbilitiesChatEventParser(abilities);
+        var result = parser.Parse(text, fallbackTargetName: "TestTarget");
+
+        var parts = new List<string>();
+        if (result.TargetEvent is { } target)
+        {
+            parts.Add($"target={target.Name}");
+        }
+        if (result.CastEvent is { } cast)
+        {
+            parts.Add($"cast={cast.EventType}:{cast.SpellName}");
+        }
+        parts.AddRange(result.AbilityHits.Select(hit =>
+            $"{hit.AbilityName} → {hit.TargetName} [{hit.EffectType} {hit.BaseDurationSeconds}s]{(hit.LandedSuccessfully ? string.Empty : " (failed)")}"));
+
+        AbilitiesView!.AbilityTestResult.Text = parts.Count == 0
+            ? "no match — the line names none of the enabled abilities"
+            : string.Join("   ", parts);
+    }
+
     internal void AbilityFilter_TextChanged(object sender, TextChangedEventArgs e)
     {
         _abilitiesView?.Refresh();

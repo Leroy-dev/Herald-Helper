@@ -50,4 +50,8 @@ public partial class AbilitiesView : System.Windows.Controls.UserControl
     {
         Main?.UpdateCatalogsOnline_Click(sender, e);
     }
+    private void AbilityTestLine_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.AbilityTestLine_Click(sender, e);
+    }
 }

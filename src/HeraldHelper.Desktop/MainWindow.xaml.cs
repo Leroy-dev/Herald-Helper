@@ -153,7 +153,11 @@ public partial class MainWindow : Window
             () => new LoopTickInput(_chatRegion, _shardType, _resistPercent),
             _loopInterval);
         _runtimeController.TickCompleted += OnLoopTickCompleted;
-        _runtimeController.TickFailed += message => OutputBox.Text = message;
+        _runtimeController.TickFailed += message =>
+        {
+            OutputBox.Text = message;
+            LoopStatusText.Text = $"Tick failed {DateTime.Now:HH:mm:ss}";
+        };
         _authController = services.GetRequiredService<AuthController>();
 
         var legacyCfgPath = FindFilePath("cfg.ini");
@@ -255,10 +259,18 @@ public partial class MainWindow : Window
 
     private void OnLoopTickCompleted(LoopTickResult tick)
     {
-        OutputBox.Text = tick.Output;
-        _lastOverlaySnapshot = tick.Snapshot;
-        DiagnosticsBox.Text = tick.DiagnosticsText;
-        LiveView?.UpdateClientState(tick.AdapterValues);
+        // A UI hiccup here must not surface as a capture failure in the loop.
+        try
+        {
+            OutputBox.Text = tick.Output;
+            _lastOverlaySnapshot = tick.Snapshot;
+            DiagnosticsBox.Text = tick.DiagnosticsText;
+            LiveView?.UpdateClientState(tick.AdapterValues);
+        }
+        catch (Exception ex)
+        {
+            _responseDiagnostics.Log($"[UI] tick mirror failed: {ex.Message}");
+        }
         LoopStatusText.Text = $"Last tick {DateTime.Now:HH:mm:ss}";
     }
 
