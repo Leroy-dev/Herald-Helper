@@ -54,7 +54,11 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
         public long Base = baseAddr;
         public long Size = size;
         public int Score;
-        public readonly HashSet<string> Seen = new(StringComparer.Ordinal);
+
+        /// <summary>addr → last text seen there. Emit on a new address OR a
+        /// changed string at a reused one — identical chat lines re-arrive as
+        /// fresh allocations, so text-identity dedupe would drop repeats.</summary>
+        public readonly Dictionary<long, string> Seen = new();
     }
 
     private readonly List<Arena> _candidates = [];
@@ -148,13 +152,16 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
                     dead.Add(arena);
                     continue;
                 }
-                foreach (var s in ExtractStrings(buf))
+                foreach (var (offset, s) in ExtractStrings(buf))
                 {
-                    if (arena.Seen.Add(s))
+                    var addr = arena.Base + offset;
+                    if (arena.Seen.TryGetValue(addr, out var old) && old == s)
                     {
-                        fresh.Add(s);
-                        _wrapWidth = Math.Max(_wrapWidth, s.Length);
+                        continue; // unchanged string — not a new line
                     }
+                    arena.Seen[addr] = s;
+                    fresh.Add(s);
+                    _wrapWidth = Math.Max(_wrapWidth, s.Length);
                 }
             }
             foreach (var d in dead)
@@ -272,15 +279,17 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
         return hasLowerWord;
     }
 
-    /// <summary>Drop exact dupes (per-window copies) and wrapped fragments
-    /// whose full line was already emitted.</summary>
+    /// <summary>Drop per-window copies (same text lands within ~1 poll) and
+    /// wrapped fragments whose full line was already emitted. Kept narrow —
+    /// legit repeats (same cast twice) arrive seconds apart and must flow.</summary>
     private bool IsDuplicate(string line) =>
         _recentEmitted.Any(x =>
-            DateTime.UtcNow - x.At < TimeSpan.FromSeconds(5) &&
+            DateTime.UtcNow - x.At < TimeSpan.FromSeconds(1.5) &&
             (x.Text == line || (line.Length < 55 && x.Text.Contains(line, StringComparison.Ordinal))));
 
-    /// <summary>NUL-terminated printable ASCII strings, ≥4 chars.</summary>
-    internal static IEnumerable<string> ExtractStrings(byte[] buf)
+    /// <summary>NUL-terminated printable ASCII strings ≥4 chars, with their
+    /// byte offset inside the buffer (offset = identity across polls).</summary>
+    internal static IEnumerable<(int Offset, string Text)> ExtractStrings(byte[] buf)
     {
         var start = -1;
         for (var i = 0; i <= buf.Length; i++)
@@ -294,7 +303,7 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
             {
                 if (i - start >= 4)
                 {
-                    yield return Encoding.ASCII.GetString(buf, start, i - start);
+                    yield return (start, Encoding.ASCII.GetString(buf, start, i - start));
                 }
                 start = -1;
             }
@@ -325,7 +334,7 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
             {
                 continue;
             }
-            var strings = ExtractStrings(buf).ToArray();
+            var strings = ExtractStrings(buf).Select(x => x.Text).ToArray();
             var hintHits = strings.Count(s => ArenaHints.Any(h => s.Contains(h, StringComparison.Ordinal)));
             // The message-queue arena holds complete lines (sentence endings);
             // wrapped scrollback regions hold ~40-char fragments. Rank by how
@@ -336,9 +345,9 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
                 continue;
             }
             var arena = new Arena(rb, rs) { Score = completeLines * 4 + hintHits };
-            foreach (var s in strings)
+            foreach (var (offset, s) in ExtractStrings(buf))
             {
-                arena.Seen.Add(s);
+                arena.Seen[rb + offset] = s;
             }
             _candidates.Add(arena);
         }

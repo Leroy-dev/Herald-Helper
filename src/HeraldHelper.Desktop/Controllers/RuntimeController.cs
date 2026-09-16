@@ -97,6 +97,7 @@ internal sealed class RuntimeController : IDisposable
 
     public void Rebuild(IReadOnlyDictionary<string, string> settingsMap, Action onCharacterStatsSaved)
     {
+        var wasRunning = _loop?.IsRunning ?? false;
         _loop?.Dispose();
         var session = BuildSession(settingsMap, onCharacterStatsSaved);
         if (_loopInput is not null)
@@ -104,6 +105,12 @@ internal sealed class RuntimeController : IDisposable
             _loop = new RuntimeLoop(session, _loopInput, _loopInterval);
             _loop.TickCompleted += result => TickCompleted?.Invoke(result);
             _loop.TickFailed += message => TickFailed?.Invoke(message);
+            // Settings edits rebuild the session underneath — keep a running
+            // loop running so the UI doesn't silently stall behind the user.
+            if (wasRunning)
+            {
+                _loop.Start();
+            }
         }
         else
         {

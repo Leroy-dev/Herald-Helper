@@ -7,13 +7,13 @@ namespace HeraldHelper.Tests;
 public class DaocScrollbackChatSourceTests
 {
     [Fact]
-    public void ExtractStrings_PullsPrintableRuns()
+    public void ExtractStrings_PullsPrintableRunsWithOffsets()
     {
         var buf = Encoding.ASCII.GetBytes("\0\0You say, \"hi\"\0\x01\x02 casts a spell!\0ab\0");
         var strings = DaocScrollbackChatSource.ExtractStrings(buf).ToArray();
-        Assert.Contains("You say, \"hi\"", strings);
-        Assert.Contains(" casts a spell!", strings);
-        Assert.DoesNotContain("ab", strings); // below the 4-char floor
+        Assert.Contains(strings, x => x.Text == "You say, \"hi\"" && x.Offset == 2);
+        Assert.Contains(strings, x => x.Text == " casts a spell!");
+        Assert.DoesNotContain(strings, x => x.Text == "ab"); // below the 4-char floor
     }
 
     [Fact]

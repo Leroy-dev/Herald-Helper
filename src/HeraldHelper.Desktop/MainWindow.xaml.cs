@@ -526,16 +526,25 @@ public partial class MainWindow : Window
         if (_runtimeController.IsRunning)
         {
             _runtimeController.Stop();
-            ToggleLoopIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Run;
-            ToggleLoopText.Text = "Start";
+            UpdateLoopButton();
             LoopStatusText.Text = "Loop stopped";
             return;
         }
 
         _runtimeController.Start();
-        ToggleLoopIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Stop;
-        ToggleLoopText.Text = "Stop";
+        UpdateLoopButton();
         LoopStatusText.Text = $"Loop running · {_loopInterval}ms";
+    }
+
+    /// <summary>Reflect the loop's real state — rebuilds can swap the loop
+    /// instance underneath the button.</summary>
+    private void UpdateLoopButton()
+    {
+        var running = _runtimeController.IsRunning;
+        ToggleLoopIcon.Kind = running
+            ? MaterialDesignThemes.Wpf.PackIconKind.Stop
+            : MaterialDesignThemes.Wpf.PackIconKind.Run;
+        ToggleLoopText.Text = running ? "Stop" : "Start";
     }
 
     private void OpenSpellBrowser_Click(object sender, RoutedEventArgs e)
@@ -785,6 +794,7 @@ public partial class MainWindow : Window
         AbilitiesView.Visibility = item.Tag is "Abilities" ? Visibility.Visible : Visibility.Collapsed;
         OverlayView.Visibility = item.Tag is "Overlay" ? Visibility.Visible : Visibility.Collapsed;
         HeraldView.Visibility = item.Tag is "Herald" ? Visibility.Visible : Visibility.Collapsed;
+        UpdateLoopButton();
         if (HeraldView.Visibility == Visibility.Visible)
         {
             RefreshHeraldResults();
