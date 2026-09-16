@@ -20,6 +20,23 @@ public sealed class CcImmunityTrackerTests
     }
 
     [Fact]
+    public void RegisterSuccessfulHit_MeleeStunSkillCode_UsesStunImmunity()
+    {
+        // Hand-edited profiles use skill_code as the trigger label
+        // ('m' = melee line) — immunity math must follow EffectType.
+        var tracker = new CcImmunityTracker();
+        var now = DateTimeOffset.UtcNow;
+        var hit = new AbilityHit("TargetA", "Slam perfectly", "m", ControlEffectType.Stun, 9, true);
+
+        tracker.RegisterSuccessfulHit(hit, "Cleric", 0, now);
+        var active = tracker.GetActiveTimers(now);
+
+        var entry = Assert.Single(active);
+        var remaining = entry.RemainingSeconds(now);
+        Assert.InRange(remaining, 62, 69); // 60 + ~9s stun path, not the ~63s mezz path
+    }
+
+    [Fact]
     public void GetActiveTimers_ExpiresTimerWhenTimePasses()
     {
         var tracker = new CcImmunityTracker();

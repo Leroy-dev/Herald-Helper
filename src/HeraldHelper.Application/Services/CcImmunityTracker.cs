@@ -1,4 +1,5 @@
 using HeraldHelper.Application.Contracts;
+using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 
 namespace HeraldHelper.Application.Services;
@@ -40,12 +41,14 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
 
     private static int CalculateImmunitySeconds(AbilityHit hit, string? targetClass, int resistPercent)
     {
+        // EffectType is the authoritative CC class — SkillCode is a trigger
+        // label ('s'/'m' for spell vs melee line in hand-edited profiles) and
+        // mixes the two in real configs.
         var ccLength = hit.BaseDurationSeconds;
-        var skillCode = hit.SkillCode.Trim().ToLowerInvariant();
         var baseMultiplier = 0.74 - (resistPercent / 100.0);
         var ccLengthModifier = 10;
 
-        if (skillCode == "m")
+        if (hit.EffectType == ControlEffectType.Mezz)
         {
             ccLengthModifier = 6;
         }
@@ -68,7 +71,7 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
         }
 
         var total = ccLength * ccLengthModifier;
-        if (total >= 60 || skillCode == "s")
+        if (total >= 60 || hit.EffectType == ControlEffectType.Stun)
         {
             total = 60 + ccLength;
         }
