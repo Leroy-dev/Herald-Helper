@@ -9,6 +9,7 @@ namespace HeraldHelper.Desktop.Models;
 public sealed record OverlayViewState(
     string TargetText,
     string TimerText,
+    IReadOnlyList<(string Text, System.Windows.Media.Color Color)>? ResistsLines,
     CastBarState? Cast,
     System.Windows.Media.Color TargetColor,
     System.Windows.Media.Color TimerColor,

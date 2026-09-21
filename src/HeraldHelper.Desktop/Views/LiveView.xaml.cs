@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using HeraldHelper.Desktop.Models;
@@ -36,8 +37,31 @@ public partial class LiveView : System.Windows.Controls.UserControl
     {
         var hasContent = !string.IsNullOrWhiteSpace(state.TargetText) ||
                          !string.IsNullOrWhiteSpace(state.TimerText) ||
+                         state.ResistsLines is { Count: > 0 } ||
                          state.Cast is not null;
         MirrorEmptyText.Visibility = hasContent ? Visibility.Collapsed : Visibility.Visible;
+
+        if (state.ResistsLines is { Count: > 0 } resistsLines)
+        {
+            MirrorResistsText.Inlines.Clear();
+            for (var i = 0; i < resistsLines.Count; i++)
+            {
+                if (i > 0)
+                {
+                    MirrorResistsText.Inlines.Add(new Run("  "));
+                }
+                MirrorResistsText.Inlines.Add(
+                    new Run(resistsLines[i].Text)
+                    {
+                        Foreground = new SolidColorBrush(resistsLines[i].Color)
+                    });
+            }
+            MirrorResistsText.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            MirrorResistsText.Visibility = Visibility.Collapsed;
+        }
 
         MirrorTargetText.Text = state.TargetText;
         MirrorTargetText.Foreground = new SolidColorBrush(state.TargetColor);

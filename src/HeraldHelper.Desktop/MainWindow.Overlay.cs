@@ -37,6 +37,11 @@ public partial class MainWindow : Window
         PickCastOverlayPosition();
     }
 
+    internal void PickResistsOverlayPosition_Click(object sender, RoutedEventArgs e)
+    {
+        PickResistsOverlayPosition();
+    }
+
     internal void PickTargetSize_Click(object sender, RoutedEventArgs e)
     {
         PickSizeLive(OverlayFontSizeText, "Target", isTimerOverlay: false);
@@ -62,8 +67,11 @@ public partial class MainWindow : Window
             TimerY = NormalizeIntText(OverlayTimerYText.Text, 900),
             CastX = NormalizeIntText(OverlayCastXText.Text, 1200),
             CastY = NormalizeIntText(OverlayCastYText.Text, 986),
+            ResistsX = NormalizeIntText(OverlayResistsXText.Text, 1200),
+            ResistsY = NormalizeIntText(OverlayResistsYText.Text, 830),
             FontSize = NormalizeIntText(OverlayFontSizeText.Text, 20),
             TimerSize = NormalizeIntText(OverlayTimerSizeText.Text, 20),
+            ResistsSize = NormalizeIntText(OverlayResistsSizeText.Text, 20),
             TargetColor = NormalizeColorText(TargetColorText.Text, "#FFFFFF"),
             TimerColor = NormalizeColorText(TimerColorText.Text, "#FFFFFF"),
             OutlineColor = NormalizeColorText(OutlineColorText.Text, "#000000"),
@@ -71,6 +79,12 @@ public partial class MainWindow : Window
             ShowTarget = ShowTargetCheckbox?.IsChecked ?? true,
             ShowTimers = ShowTimersCheckbox?.IsChecked ?? true,
             ShowCastBar = ShowCastBarCheckbox?.IsChecked ?? true,
+            ShowResists = ShowResistsCheckbox?.IsChecked ?? false,
+            ShowGuild = ShowGuildCheckbox?.IsChecked ?? true,
+            ShowClass = ShowClassCheckbox?.IsChecked ?? true,
+            ShowLevel = ShowLevelCheckbox?.IsChecked ?? true,
+            ShowRealmRank = ShowRealmRankCheckbox?.IsChecked ?? true,
+            ShowSoloKills = ShowSoloKillsCheckbox?.IsChecked ?? true,
             DynamicCastSpeedEnabled = DynamicCastSpeedCheckbox?.IsChecked ?? false,
             EstimatedSpellDamageEnabled = EstimatedSpellDamageCheckbox?.IsChecked ?? false,
             OcrReplayEnabled = OcrReplayCheckbox?.IsChecked ?? false,

@@ -67,6 +67,12 @@ public partial class MainWindow : Window
     private System.Windows.Controls.CheckBox ShowTargetCheckbox => OverlayView!.ShowTargetCheckbox;
     private System.Windows.Controls.CheckBox ShowTimersCheckbox => OverlayView!.ShowTimersCheckbox;
     private System.Windows.Controls.CheckBox ShowCastBarCheckbox => OverlayView!.ShowCastBarCheckbox;
+    private System.Windows.Controls.CheckBox ShowResistsCheckbox => OverlayView!.ShowResistsCheckbox;
+    private System.Windows.Controls.CheckBox ShowGuildCheckbox => OverlayView!.ShowGuildCheckbox;
+    private System.Windows.Controls.CheckBox ShowClassCheckbox => OverlayView!.ShowClassCheckbox;
+    private System.Windows.Controls.CheckBox ShowLevelCheckbox => OverlayView!.ShowLevelCheckbox;
+    private System.Windows.Controls.CheckBox ShowRealmRankCheckbox => OverlayView!.ShowRealmRankCheckbox;
+    private System.Windows.Controls.CheckBox ShowSoloKillsCheckbox => OverlayView!.ShowSoloKillsCheckbox;
     private System.Windows.Controls.CheckBox DynamicCastSpeedCheckbox => OverlayView!.DynamicCastSpeedCheckbox;
     private System.Windows.Controls.CheckBox EstimatedSpellDamageCheckbox => OverlayView!.EstimatedSpellDamageCheckbox;
     private System.Windows.Controls.CheckBox OcrReplayCheckbox => OverlayView!.OcrReplayCheckbox;
@@ -80,6 +86,9 @@ public partial class MainWindow : Window
     private System.Windows.Controls.TextBox OverlayTimerSizeText => OverlayView!.OverlayTimerSizeText;
     private System.Windows.Controls.TextBox OverlayCastXText => OverlayView!.OverlayCastXText;
     private System.Windows.Controls.TextBox OverlayCastYText => OverlayView!.OverlayCastYText;
+    private System.Windows.Controls.TextBox OverlayResistsXText => OverlayView!.OverlayResistsXText;
+    private System.Windows.Controls.TextBox OverlayResistsYText => OverlayView!.OverlayResistsYText;
+    private System.Windows.Controls.TextBox OverlayResistsSizeText => OverlayView!.OverlayResistsSizeText;
     private System.Windows.Controls.TextBox TargetColorText => OverlayView!.TargetColorText;
     private System.Windows.Controls.CheckBox UseRealmColorsCheckbox => OverlayView!.UseRealmColorsCheckbox;
     private System.Windows.Controls.TextBox TimerColorText => OverlayView!.TimerColorText;
@@ -916,6 +925,33 @@ public partial class MainWindow : Window
         SaveOverlaySettings_Click(this, new RoutedEventArgs());
     }
 
+    private void PickResistsOverlayPosition()
+    {
+        var originalX = OverlayResistsXText.Text;
+        var originalY = OverlayResistsYText.Text;
+
+        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
+        {
+            OverlayResistsXText.Text = x.ToString();
+            OverlayResistsYText.Text = y.ToString();
+            _liveOverlay?.SetPreviewResistsPosition(x, y);
+            RenderLiveOverlayPreview();
+        });
+
+        if (selected is null)
+        {
+            OverlayResistsXText.Text = originalX;
+            OverlayResistsYText.Text = originalY;
+            _liveOverlay?.ClearPreview();
+            RenderLiveOverlayPreview();
+            return;
+        }
+
+        OverlayResistsXText.Text = selected.Value.X.ToString();
+        OverlayResistsYText.Text = selected.Value.Y.ToString();
+        SaveOverlaySettings_Click(this, new RoutedEventArgs());
+    }
+
     private void PickSizeLive(System.Windows.Controls.TextBox targetBox, string label, bool isTimerOverlay)
     {
         var original = NormalizeIntText(targetBox.Text, 20);
@@ -962,9 +998,19 @@ public partial class MainWindow : Window
         CastingSpeedBonusText.Text = (stats?.CastingSpeedPercent ?? 0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
         SpellDamageBonusText.Text = (stats?.SpellDamagePercent ?? 0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
 
+        OverlayResistsXText.Text = settings.ResistsX.ToString();
+        OverlayResistsYText.Text = settings.ResistsY.ToString();
+        OverlayResistsSizeText.Text = settings.ResistsSize.ToString();
+
         BindToggle(ShowTargetCheckbox, settings.ShowTarget, OverlayVisibilityChanged);
         BindToggle(ShowTimersCheckbox, settings.ShowTimers, OverlayVisibilityChanged);
         BindToggle(ShowCastBarCheckbox, settings.ShowCastBar, OverlayVisibilityChanged);
+        BindToggle(ShowResistsCheckbox, settings.ShowResists, OverlayVisibilityChanged);
+        BindToggle(ShowGuildCheckbox, settings.ShowGuild, OverlayVisibilityChanged);
+        BindToggle(ShowClassCheckbox, settings.ShowClass, OverlayVisibilityChanged);
+        BindToggle(ShowLevelCheckbox, settings.ShowLevel, OverlayVisibilityChanged);
+        BindToggle(ShowRealmRankCheckbox, settings.ShowRealmRank, OverlayVisibilityChanged);
+        BindToggle(ShowSoloKillsCheckbox, settings.ShowSoloKills, OverlayVisibilityChanged);
         BindToggle(DynamicCastSpeedCheckbox, settings.DynamicCastSpeedEnabled, OverlayVisibilityChanged);
         BindToggle(EstimatedSpellDamageCheckbox, settings.EstimatedSpellDamageEnabled, OverlayVisibilityChanged);
         BindToggle(OcrReplayCheckbox, settings.OcrReplayEnabled, OverlayVisibilityChanged);
@@ -1021,14 +1067,22 @@ public partial class MainWindow : Window
 
     private void OverlayVisibilityChanged(object sender, RoutedEventArgs e)
     {
-        _overlaySettingsController.SaveVisibility(
-            ShowTargetCheckbox?.IsChecked ?? true,
-            ShowTimersCheckbox?.IsChecked ?? true,
-            ShowCastBarCheckbox?.IsChecked ?? true,
-            UseRealmColorsCheckbox?.IsChecked ?? true,
-            DynamicCastSpeedCheckbox?.IsChecked ?? false,
-            EstimatedSpellDamageCheckbox?.IsChecked ?? false,
-            OcrReplayCheckbox?.IsChecked ?? false);
+        _overlaySettingsController.UpdateOverlay(overlay =>
+        {
+            overlay.ShowTarget = ShowTargetCheckbox?.IsChecked ?? true;
+            overlay.ShowTimers = ShowTimersCheckbox?.IsChecked ?? true;
+            overlay.ShowCastBar = ShowCastBarCheckbox?.IsChecked ?? true;
+            overlay.ShowResists = ShowResistsCheckbox?.IsChecked ?? false;
+            overlay.ShowGuild = ShowGuildCheckbox?.IsChecked ?? true;
+            overlay.ShowClass = ShowClassCheckbox?.IsChecked ?? true;
+            overlay.ShowLevel = ShowLevelCheckbox?.IsChecked ?? true;
+            overlay.ShowRealmRank = ShowRealmRankCheckbox?.IsChecked ?? true;
+            overlay.ShowSoloKills = ShowSoloKillsCheckbox?.IsChecked ?? true;
+            overlay.UseRealmColors = UseRealmColorsCheckbox?.IsChecked ?? true;
+            overlay.DynamicCastSpeedEnabled = DynamicCastSpeedCheckbox?.IsChecked ?? false;
+            overlay.EstimatedSpellDamageEnabled = EstimatedSpellDamageCheckbox?.IsChecked ?? false;
+            overlay.OcrReplayEnabled = OcrReplayCheckbox?.IsChecked ?? false;
+        });
         RebuildRuntimeFromFiles();
     }
 

@@ -22,25 +22,9 @@ internal sealed class OverlaySettingsController
         _settings.Update(s => s.Overlay = overlay);
     }
 
-    public void SaveVisibility(
-        bool showTarget,
-        bool showTimers,
-        bool showCastBar,
-        bool useRealmColors,
-        bool dynamicCastSpeed,
-        bool estimatedSpellDamage,
-        bool ocrReplay)
+    public void UpdateOverlay(Action<OverlaySettings> mutate)
     {
-        _settings.Update(s =>
-        {
-            s.Overlay.ShowTarget = showTarget;
-            s.Overlay.ShowTimers = showTimers;
-            s.Overlay.ShowCastBar = showCastBar;
-            s.Overlay.UseRealmColors = useRealmColors;
-            s.Overlay.DynamicCastSpeedEnabled = dynamicCastSpeed;
-            s.Overlay.EstimatedSpellDamageEnabled = estimatedSpellDamage;
-            s.Overlay.OcrReplayEnabled = ocrReplay;
-        });
+        _settings.Update(s => mutate(s.Overlay));
     }
 
     public OverlaySettings WithDefaults(OverlaySettings current, int fontSize, int timerSize)

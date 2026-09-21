@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
@@ -85,6 +86,7 @@ public sealed class OverlayTextWindow : Window
 
         var family = new System.Windows.Media.FontFamily(fontFamily);
 
+        _mainTextBlock.Inlines.Clear();
         _mainTextBlock.Text = text;
         _mainTextBlock.FontSize = fontSize;
         _mainTextBlock.FontFamily = family;
@@ -100,6 +102,7 @@ public sealed class OverlayTextWindow : Window
 
         foreach (var outline in _outlineTextBlocks)
         {
+            outline.Inlines.Clear();
             outline.Text = text;
             outline.FontSize = fontSize;
             outline.FontFamily = family;
@@ -110,6 +113,64 @@ public sealed class OverlayTextWindow : Window
             outline.Foreground = new SolidColorBrush(outlineColor);
         }
 
+        ClampToScreen(x, y);
+        if (!IsVisible)
+        {
+            Show();
+        }
+    }
+
+    /// <summary>Multi-color variant: each entry becomes a line in its own color
+    /// (the outline runs stay a single outline color). Used by the resists
+    /// overlay where green/white/red carry the verdict.</summary>
+    public void Update(IReadOnlyList<(string Text, MediaColor Color)> lines, double x, double y, double fontSize, string fontFamily, MediaColor outlineColor)
+    {
+        var visible = lines.Where(l => !string.IsNullOrWhiteSpace(l.Text)).ToList();
+        if (visible.Count == 0)
+        {
+            Hide();
+            return;
+        }
+
+        var family = new System.Windows.Media.FontFamily(fontFamily);
+        _mainTextBlock.Inlines.Clear();
+        _mainTextBlock.FontSize = fontSize;
+        _mainTextBlock.FontFamily = family;
+        _mainTextBlock.FontWeight = FontWeights.SemiBold;
+        if (_mainTextBlock.Effect is DropShadowEffect shadow)
+        {
+            shadow.Color = outlineColor;
+        }
+
+        for (var i = 0; i < visible.Count; i++)
+        {
+            if (i > 0)
+            {
+                _mainTextBlock.Inlines.Add(new LineBreak());
+            }
+            _mainTextBlock.Inlines.Add(new Run(visible[i].Text) { Foreground = new SolidColorBrush(visible[i].Color) });
+        }
+
+        var plain = string.Join("\n", visible.Select(l => l.Text));
+        foreach (var outline in _outlineTextBlocks)
+        {
+            outline.Inlines.Clear();
+            outline.Text = plain;
+            outline.FontSize = fontSize;
+            outline.FontFamily = family;
+            outline.FontWeight = FontWeights.SemiBold;
+            outline.Foreground = new SolidColorBrush(outlineColor);
+        }
+
+        ClampToScreen(x, y);
+        if (!IsVisible)
+        {
+            Show();
+        }
+    }
+
+    private void ClampToScreen(double x, double y)
+    {
         // Saved/preview positions can sit past the visible screen (smaller
         // game resolution, VM, monitor rearranged) — keep a slice on-screen
         // so the overlay can't render invisibly.
@@ -119,10 +180,6 @@ public sealed class OverlayTextWindow : Window
         Top = Math.Clamp(y,
             SystemParameters.VirtualScreenTop,
             SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight - 20);
-        if (!IsVisible)
-        {
-            Show();
-        }
     }
 
     private static TextBlock CreateOutlineText(double offsetX, double offsetY)

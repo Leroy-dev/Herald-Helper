@@ -7,6 +7,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <WrapPanel Grid.Row="0" Margin="0,0,0,10">
@@ -29,6 +30,8 @@
                                 <CheckBox x:Name="ShowTargetCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Target" />
                                 <CheckBox x:Name="ShowTimersCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Timers" />
                                 <CheckBox x:Name="ShowCastBarCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Spellbar" />
+                                <CheckBox x:Name="ShowResistsCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Resists"
+                                          ToolTip="Show Thrust/Slash/Crush for the target's armor class — green = weak to it, red = resists it." />
                                 <CheckBox x:Name="DynamicCastSpeedCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Dynamic Cast Speed"
                                           ToolTip="Adjust the catalog cast time using the OCR-read Dexterity and the configured casting-speed bonus." />
                                 <CheckBox x:Name="EstimatedSpellDamageCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Estimated Spell Damage"
@@ -42,7 +45,18 @@
                             </WrapPanel>
                         </GroupBox>
 
-                        <Grid Grid.Row="2">
+                        <GroupBox Grid.Row="2" Header="Target Info Fields"
+                                  ToolTip="Choose which fields appear in the target overlay.">
+                            <WrapPanel Margin="8">
+                                <CheckBox x:Name="ShowGuildCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Guild" />
+                                <CheckBox x:Name="ShowClassCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Class" />
+                                <CheckBox x:Name="ShowLevelCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Level" />
+                                <CheckBox x:Name="ShowRealmRankCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Realm Rank" />
+                                <CheckBox x:Name="ShowSoloKillsCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Solo Kills" />
+                            </WrapPanel>
+                        </GroupBox>
+
+                        <Grid Grid.Row="3">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
@@ -81,6 +95,16 @@
                                             </StackPanel>
                                         </Button>
                                     </WrapPanel>
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <TextBox Width="90" x:Name="OverlayResistsXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Resists X" />
+                                        <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayResistsYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Resists Y" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickResistsOverlayPosition_Click" ToolTip="Drag the resists overlay position">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="CursorMove" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Drag" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </WrapPanel>
                                     <WrapPanel>
                                         <ComboBox Width="140" x:Name="OverlayTargetFontCombo" x:FieldModifier="public" Style="{StaticResource CompactInputComboBoxStyle}" materialDesign:HintAssist.Hint="Target Font" />
                                         <TextBox Margin="8,0,0,0" Width="60" x:Name="OverlayFontSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Size" />
@@ -103,6 +127,7 @@
                                     </WrapPanel>
                                     <WrapPanel Margin="0,8,0,0">
                                         <ComboBox Width="140" x:Name="OverlayCastbarFontCombo" x:FieldModifier="public" Style="{StaticResource CompactInputComboBoxStyle}" materialDesign:HintAssist.Hint="Spellbar Font" />
+                                        <TextBox Margin="8,0,0,0" Width="60" x:Name="OverlayResistsSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Resists Size" />
                                     </WrapPanel>
                                 </StackPanel>
                             </Border>

@@ -43,11 +43,17 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock x:Name="MirrorTargetText"
-                               VerticalAlignment="Top"
-                               FontWeight="SemiBold"
-                               TextWrapping="Wrap"
-                               TextTrimming="CharacterEllipsis" />
+                    <StackPanel VerticalAlignment="Top">
+                        <TextBlock x:Name="MirrorTargetText"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="MirrorResistsText"
+                                   Margin="0,4,0,0"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Visibility="Collapsed" />
+                    </StackPanel>
                     <TextBlock x:Name="MirrorTimerText"
                                Grid.Column="1"
                                HorizontalAlignment="Right"

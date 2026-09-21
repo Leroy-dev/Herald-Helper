@@ -18,6 +18,10 @@ public partial class OverlayView : System.Windows.Controls.UserControl
     {
         Main?.PickCastOverlayPosition_Click(sender, e);
     }
+    private void PickResistsOverlayPosition_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.PickResistsOverlayPosition_Click(sender, e);
+    }
     private void PickOutlineColor_Click(object sender, RoutedEventArgs e)
     {
         Main?.PickOutlineColor_Click(sender, e);

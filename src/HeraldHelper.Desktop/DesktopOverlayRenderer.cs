@@ -14,6 +14,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private readonly Func<IReadOnlyDictionary<string, string>>? _getMap;
     private readonly OverlayTextWindow _targetWindow;
     private readonly OverlayTextWindow _timerWindow;
+    private readonly OverlayTextWindow _resistsWindow;
     private readonly CastBarWindow _castBarWindow;
     private int? _previewTargetX;
     private int? _previewTargetY;
@@ -21,6 +22,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private int? _previewTimerY;
     private int? _previewCastX;
     private int? _previewCastY;
+    private int? _previewResistsX;
+    private int? _previewResistsY;
     private MediaColor? _previewTargetColor;
     private MediaColor? _previewTimerColor;
     private MediaColor? _previewOutlineColor;
@@ -34,6 +37,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _getMap = getMap;
         _targetWindow = new OverlayTextWindow();
         _timerWindow = new OverlayTextWindow();
+        _resistsWindow = new OverlayTextWindow();
         _castBarWindow = new CastBarWindow();
     }
 
@@ -90,6 +94,9 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 cy = _previewCastY.Value;
             }
 
+            var rx = _previewResistsX ?? overlay.ResistsX;
+            var ry = _previewResistsY ?? overlay.ResistsY;
+
             var f1 = overlay.FontSize;
             var f2 = overlay.TimerSize;
             if (_previewTargetFontSize is not null)
@@ -132,16 +139,22 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 outlineColor = _previewOutlineColor.Value;
             }
 
-            var targetText = overlay.ShowTarget ? BuildTargetText(snapshot.Target, _getMap) : string.Empty;
+            var targetText = overlay.ShowTarget ? BuildTargetText(snapshot.Target, overlay) : string.Empty;
             var timerText = overlay.ShowTimers ? BuildTimerText(snapshot.Timers) : string.Empty;
+            var resistsLines = overlay.ShowResists ? BuildResistsLines(snapshot.Target) : null;
 
             _targetWindow.Update(targetText, ox, oy, f1, overlay.TargetFontFamily, targetColor, outlineColor, FontWeights.SemiBold);
             _timerWindow.Update(timerText, tx, ty, f2, overlay.TimerFontFamily, timerColor, outlineColor);
+            _resistsWindow.Update(
+                (IReadOnlyList<(string Text, MediaColor Color)>?)resistsLines ?? Array.Empty<(string Text, MediaColor Color)>(),
+                rx, ry,
+                overlay.ResistsSize, overlay.TargetFontFamily, outlineColor);
             var cast = overlay.ShowCastBar ? snapshot.ActiveCast : null;
             _castBarWindow.Update(cast, cx, cy, castbarColor, timerColor, outlineColor, overlay.CastbarFontFamily);
             Rendered?.Invoke(this, new OverlayViewState(
                 targetText,
                 timerText,
+                resistsLines,
                 cast,
                 targetColor,
                 timerColor,
@@ -194,6 +207,12 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewCastY = y;
     }
 
+    public void SetPreviewResistsPosition(int x, int y)
+    {
+        _previewResistsX = x;
+        _previewResistsY = y;
+    }
+
     public void ClearPreview()
     {
         _previewTargetX = null;
@@ -207,6 +226,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewTimerFontSize = null;
         _previewCastX = null;
         _previewCastY = null;
+        _previewResistsX = null;
+        _previewResistsY = null;
     }
 
     public void Dispose()
@@ -227,6 +248,20 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         dispatcher.Invoke(CloseWindows);
     }
 
+    /// <summary>Typed-flag variant — the Overlay view's field checkboxes are the
+    /// source of truth; the map overloads remain for tests and legacy cfg.</summary>
+    internal static string BuildTargetText(TargetProfile? target, OverlaySettings overlay)
+    {
+        return BuildTargetTextCore(
+            target,
+            overlay.ShowGuild,
+            overlay.ShowClass,
+            overlay.ShowLevel,
+            overlay.ShowRealmRank,
+            overlay.ShowSoloKills,
+            allowDetailFallback: false);
+    }
+
     internal static string BuildTargetText(TargetProfile? target, IReadOnlyDictionary<string, string>? map)
     {
         return BuildTargetText(target, map is null ? null : () => map);
@@ -234,31 +269,76 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
 
     internal static string BuildTargetText(TargetProfile? target, Func<IReadOnlyDictionary<string, string>>? getMap)
     {
+        var map = getMap?.Invoke();
+        var show = map is not null && map.TryGetValue("show", out var bits) ? bits : "111110011";
+        bool Flag(int index, bool fallback = true) => show.Length > index ? show[index] == '1' : fallback;
+        return BuildTargetTextCore(
+            target, Flag(0), Flag(1), Flag(2), Flag(3), Flag(4),
+            allowDetailFallback: true);
+    }
+
+    /// <summary>Thrust/Slash/Crush verdict lines for the resists overlay —
+    /// green = target weak to it, red = resists, white = neutral.</summary>
+    internal static List<(string Text, MediaColor Color)>? BuildResistsLines(TargetProfile? target)
+    {
+        if (target is null || !IsRealPlayerTarget(target))
+        {
+            return null;
+        }
+
+        var (thrust, slash, crush) = ClassArmorTable.Lookup(target.Class);
+        if (thrust == DamageVerdict.Neutral && slash == DamageVerdict.Neutral && crush == DamageVerdict.Neutral)
+        {
+            // Cloth/unknown — nothing worth showing.
+            return null;
+        }
+
+        return
+        [
+            ("Thrust", VerdictColor(thrust)),
+            ("Slash", VerdictColor(slash)),
+            ("Crush", VerdictColor(crush)),
+        ];
+    }
+
+    private static MediaColor VerdictColor(DamageVerdict verdict) =>
+        verdict switch
+        {
+            DamageVerdict.Weak => MediaColor.FromRgb(0x00, 0xFF, 0x00),
+            DamageVerdict.Resists => MediaColor.FromRgb(0xFF, 0x09, 0x09),
+            _ => MediaColor.FromRgb(0xFF, 0xFF, 0xFF)
+        };
+
+    private static string BuildTargetTextCore(
+        TargetProfile? target,
+        bool showGuild,
+        bool showClass,
+        bool showLevel,
+        bool showRealmRank,
+        bool showSoloKills,
+        bool allowDetailFallback)
+    {
         if (target is null || string.IsNullOrWhiteSpace(target.Name) || !IsRealPlayerTarget(target))
         {
             return string.Empty;
         }
 
-        var map = getMap?.Invoke();
-        var show = map is not null && map.TryGetValue("show", out var bits) ? bits : "111110011";
-        bool Flag(int index, bool fallback = true) => show.Length > index ? show[index] == '1' : fallback;
-
         var line1 = target.Name;
-        if (Flag(0) && !string.IsNullOrWhiteSpace(target.Guild))
+        if (showGuild && !string.IsNullOrWhiteSpace(target.Guild))
         {
             line1 += $"  <{target.Guild}>";
         }
 
         var line2Parts = new List<string>();
-        if (Flag(1) && !string.IsNullOrWhiteSpace(target.Class))
+        if (showClass && !string.IsNullOrWhiteSpace(target.Class))
         {
             line2Parts.Add(target.Class);
         }
-        if (Flag(2) && target.Level is not null)
+        if (showLevel && target.Level is not null)
         {
             line2Parts.Add(target.Level.Value.ToString());
         }
-        if (Flag(3) && !string.IsNullOrWhiteSpace(target.RealmRank))
+        if (showRealmRank && !string.IsNullOrWhiteSpace(target.RealmRank))
         {
             line2Parts.Add(target.RealmRank);
         }
@@ -274,7 +354,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         {
             text += "\n" + string.Join("  ", line2Parts);
         }
-        else
+        else if (allowDetailFallback)
         {
             // Fallback for legacy "show" configs that hide details unintentionally.
             var fallbackParts = new List<string>();
@@ -296,7 +376,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 text += "\n" + string.Join("  ", fallbackParts);
             }
         }
-        if (Flag(4) && target.SoloKills is not null)
+        if (showSoloKills && target.SoloKills is not null)
         {
             text += "\n" + target.SoloKills.Value.ToString("N0");
         }
@@ -374,6 +454,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
 
         _targetWindow.Close();
         _timerWindow.Close();
+        _resistsWindow.Close();
         _castBarWindow.Close();
     }
 }

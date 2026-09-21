@@ -96,6 +96,9 @@ internal sealed class HeraldHelperSettingsService : SqliteWritableSettings<Heral
         overlay.TimerY = ReadInt(map, "overlayYTimer", overlay.TimerY);
         overlay.CastX = ReadInt(map, "overlayXCast", overlay.CastX);
         overlay.CastY = ReadInt(map, "overlayYCast", overlay.CastY);
+        overlay.ResistsX = ReadInt(map, "overlayXResists", overlay.ResistsX);
+        overlay.ResistsY = ReadInt(map, "overlayYResists", overlay.ResistsY);
+        overlay.ResistsSize = ReadInt(map, "resisSize", overlay.ResistsSize);
         overlay.FontSize = ReadInt(map, "fontSize", overlay.FontSize);
         overlay.TimerSize = ReadInt(map, "timerSize", overlay.TimerSize);
         overlay.TargetColor = ReadString(map, "targetColor", overlay.TargetColor);
@@ -110,6 +113,19 @@ internal sealed class HeraldHelperSettingsService : SqliteWritableSettings<Heral
         overlay.TargetFontFamily = ReadString(map, "targetFontFamily", overlay.TargetFontFamily);
         overlay.TimerFontFamily = ReadString(map, "timerFontFamily", overlay.TimerFontFamily);
         overlay.CastbarFontFamily = ReadString(map, "castbarFontFamily", overlay.CastbarFontFamily);
+
+        // Legacy cfg "show" bitstring: guild/class/level/RR/solo/resists.
+        if (map.TryGetValue("show", out var showBits) && !string.IsNullOrWhiteSpace(showBits))
+        {
+            bool Bit(int index, bool fallback) =>
+                showBits.Length > index ? showBits[index] == '1' : fallback;
+            overlay.ShowGuild = Bit(0, overlay.ShowGuild);
+            overlay.ShowClass = Bit(1, overlay.ShowClass);
+            overlay.ShowLevel = Bit(2, overlay.ShowLevel);
+            overlay.ShowRealmRank = Bit(3, overlay.ShowRealmRank);
+            overlay.ShowSoloKills = Bit(4, overlay.ShowSoloKills);
+            overlay.ShowResists = Bit(5, overlay.ShowResists);
+        }
 
         settings.Appearance.Theme = ReadString(map, "ui.theme.mode", settings.Appearance.Theme);
         settings.Appearance.AccentColor = ReadString(map, "ui.theme.accent", settings.Appearance.AccentColor);
