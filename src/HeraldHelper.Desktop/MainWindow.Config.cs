@@ -230,6 +230,20 @@ public partial class MainWindow : Window
         OutputBox.Text = "Shard auth settings saved.";
     }
 
+    internal void ToggleLoopHotkey_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (_isBindingControls)
+        {
+            return;
+        }
+
+        var text = ToggleLoopHotkeyText.Text.Trim();
+        _settingsController.Save([
+            new ConfigEntry { Key = "ui.toggleLoopHotkey", Value = text }
+        ]);
+        ApplyToggleLoopHotkey();
+    }
+
     internal void ConfigFilter_TextChanged(object sender, TextChangedEventArgs e)
     {
         _configView?.Refresh();

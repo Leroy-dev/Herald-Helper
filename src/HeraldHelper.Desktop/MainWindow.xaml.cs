@@ -41,6 +41,7 @@ public partial class MainWindow : Window
     private readonly ResponseDiagnosticsBuffer _responseDiagnostics;
     private readonly IShardAuthRefreshService _authRefreshService;
     private readonly AbilityIconIndex _abilityIconIndex;
+    private GlobalHotkey? _toggleLoopHotkey;
     private bool _isBindingControls;
     private ScreenRegion? _chatRegion;
     private ShardType _shardType;
@@ -215,8 +216,37 @@ public partial class MainWindow : Window
         OutputBox.Text = "Ready.";
     }
 
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        ApplyToggleLoopHotkey();
+    }
+
+    /// <summary>Reads ui.toggleLoopHotkey (default Ctrl+F9, empty = disabled)
+    /// and registers it globally so the loop can be toggled mid-game.</summary>
+    private void ApplyToggleLoopHotkey()
+    {
+        _toggleLoopHotkey ??= new GlobalHotkey(this, id: 0x5101,
+            () => ToggleLoop_Click(this, new RoutedEventArgs()));
+
+        var settings = _settingsController.LoadMap();
+        var gesture = settings.TryGetValue("ui.toggleLoopHotkey", out var raw)
+            ? raw
+            : "Ctrl+F9";
+
+        if (_toggleLoopHotkey.Apply(gesture))
+        {
+            return;
+        }
+
+        OutputBox.Text = string.IsNullOrWhiteSpace(gesture)
+            ? OutputBox.Text
+            : $"Toggle-loop hotkey '{gesture}' is invalid or already taken by another app.";
+    }
+
     protected override void OnClosed(EventArgs e)
     {
+        _toggleLoopHotkey?.Dispose();
         _runtimeController?.Dispose();
         _authController?.AuthRefreshTimer?.Stop();
         if (_responseDiagnostics is not null)
@@ -314,6 +344,9 @@ public partial class MainWindow : Window
             OcrEngineCombo.ItemsSource = Enum.GetValues(typeof(OcrEngineMode));
             OcrEngineCombo.SelectedItem = _ocrEngineMode;
             ResistText.Text = _resistPercent.ToString();
+            ToggleLoopHotkeyText.Text = _settingsController.LoadMap().TryGetValue("ui.toggleLoopHotkey", out var hk)
+                ? hk
+                : "Ctrl+F9";
         }
         finally
         {
