@@ -157,6 +157,12 @@
                             <TextBlock Text="Clear Log" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
+                    <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="CopyDiagnostics_Click" ToolTip="Copy all diagnostics (status + OCR + response log) to the clipboard for bug reports">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ContentCopy" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Text="Copy All" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </WrapPanel>
                 <TextBox Grid.Row="1"
                          x:Name="ResponseDiagnosticsBox" x:FieldModifier="public"

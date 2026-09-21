@@ -32,6 +32,16 @@ public partial class LiveView : System.Windows.Controls.UserControl
         Main?.ClearResponseDiagnostics_Click(sender, e);
     }
 
+    private void CopyDiagnostics_Click(object sender, RoutedEventArgs e)
+    {
+        // One bundle for bug reports: status, OCR diagnostics, response log.
+        var bundle =
+            "=== Status ===\n" + OutputBox.Text +
+            "\n\n=== OCR Diagnostics ===\n" + DiagnosticsBox.Text +
+            "\n\n=== Response Diagnostics ===\n" + ResponseDiagnosticsBox.Text;
+        System.Windows.Clipboard.SetText(bundle);
+    }
+
     /// <summary>
     /// Mirrors the last rendered overlay state into the Live panel — same
     /// text, fonts and colors the on-screen overlay windows just drew.
