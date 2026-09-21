@@ -19,4 +19,5 @@ public sealed record OverlayViewState(
     string TimerFontFamily,
     int TargetFontSize,
     int TimerFontSize,
+    int ResistsFontSize,
     DateTimeOffset RenderedAtUtc);

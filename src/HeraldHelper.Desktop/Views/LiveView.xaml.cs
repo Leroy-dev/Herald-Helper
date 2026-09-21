@@ -63,7 +63,7 @@ public partial class LiveView : System.Windows.Controls.UserControl
                 {
                     MirrorResistsText.Inlines.Add(new Run("  "));
                 }
-                AppendOverlayLine(MirrorResistsText, resistsLines[i], 11);
+                AppendOverlayLine(MirrorResistsText, resistsLines[i], Math.Clamp(state.ResistsFontSize, 9, 20));
             }
             MirrorResistsText.Visibility = Visibility.Visible;
         }

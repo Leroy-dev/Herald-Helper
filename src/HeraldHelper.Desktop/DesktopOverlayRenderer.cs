@@ -174,6 +174,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 overlay.TimerFontFamily,
                 f1,
                 f2,
+                f3,
                 DateTimeOffset.UtcNow));
         }).Task;
     }
