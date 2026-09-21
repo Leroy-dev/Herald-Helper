@@ -153,10 +153,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
 
             _targetWindow.Update(targetText, ox, oy, f1, overlay.TargetFontFamily, targetColor, outlineColor, FontWeights.SemiBold);
             _timerWindow.Update(
-                (IReadOnlyList<(string Text, MediaColor Color)>?)timerLines ?? Array.Empty<(string Text, MediaColor Color)>(),
+                (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)timerLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 tx, ty, f2, overlay.TimerFontFamily, outlineColor);
             _resistsWindow.Update(
-                (IReadOnlyList<(string Text, MediaColor Color)>?)resistsLines ?? Array.Empty<(string Text, MediaColor Color)>(),
+                (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)resistsLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 rx, ry,
                 f3, overlay.TargetFontFamily, outlineColor);
             var cast = overlay.ShowCastBar ? snapshot.ActiveCast : null;
@@ -296,7 +296,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
 
     /// <summary>Thrust/Slash/Crush verdict lines for the resists overlay —
     /// green = target weak to it, red = resists, white = neutral.</summary>
-    internal static List<(string Text, MediaColor Color)>? BuildResistsLines(TargetProfile? target)
+    internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildResistsLines(TargetProfile? target)
     {
         if (target is null || !IsRealPlayerTarget(target))
         {
@@ -312,9 +312,9 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
 
         return
         [
-            ("Thrust", VerdictColor(thrust)),
-            ("Slash", VerdictColor(slash)),
-            ("Crush", VerdictColor(crush)),
+            ("Thrust", VerdictColor(thrust), (IconSpriteRef?)null),
+            ("Slash", VerdictColor(slash), (IconSpriteRef?)null),
+            ("Crush", VerdictColor(crush), (IconSpriteRef?)null),
         ];
     }
 
@@ -402,8 +402,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     }
 
     /// <summary>Timer lines colored by CC type — the AHK palette: mezz yellow,
-    /// stun magenta, root amber; anything else takes the user's timer color.</summary>
-    internal static List<(string Text, MediaColor Color)>? BuildTimerLines(
+    /// stun magenta, root amber; anything else takes the user's timer color.
+    /// Each line can carry the ability's catalog icon (resolved lazily by the
+    /// caller via IconImageLoader).</summary>
+    internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildTimerLines(
         IReadOnlyCollection<CcTimerEntry> timers,
         MediaColor fallbackColor)
     {
@@ -418,7 +420,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             .ThenBy(x => x.EffectType)
             .Select(x => (
                 $"{ShortType(x.EffectType)} {x.TargetName} {x.RemainingSeconds(now)}",
-                EffectTypeColor(x.EffectType, fallbackColor)))
+                EffectTypeColor(x.EffectType, fallbackColor),
+                x.Icon))
             .Take(12)
             .ToList();
     }

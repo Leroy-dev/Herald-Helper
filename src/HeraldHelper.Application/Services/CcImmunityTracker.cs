@@ -30,7 +30,7 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
         var immunitySeconds = CalculateImmunitySeconds(hit, targetClass, resistPercent);
         _entries.RemoveAll(x => x.TargetName == hit.TargetName && x.EffectType == hit.EffectType);
         var expiresAtUtc = nowUtc.AddSeconds(immunitySeconds);
-        _entries.Add(new CcTimerEntry(hit.TargetName, hit.EffectType, expiresAtUtc));
+        _entries.Add(new CcTimerEntry(hit.TargetName, hit.EffectType, expiresAtUtc, hit.Icon));
     }
 
     public IReadOnlyCollection<CcTimerEntry> GetActiveTimers(DateTimeOffset nowUtc)

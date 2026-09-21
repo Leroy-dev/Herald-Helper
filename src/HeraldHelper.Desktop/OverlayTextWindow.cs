@@ -4,6 +4,7 @@ using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
+using HeraldHelper.Domain.Models;
 using MediaColor = System.Windows.Media.Color;
 
 namespace HeraldHelper.Desktop;
@@ -12,6 +13,7 @@ public sealed class OverlayTextWindow : Window
 {
     private readonly TextBlock _mainTextBlock;
     private readonly TextBlock[] _outlineTextBlocks;
+    private readonly IconImageLoader _iconLoader = new();
 
     public OverlayTextWindow()
     {
@@ -120,10 +122,11 @@ public sealed class OverlayTextWindow : Window
         }
     }
 
-    /// <summary>Multi-color variant: each entry becomes a line in its own color
-    /// (the outline runs stay a single outline color). Used by the resists
-    /// overlay where green/white/red carry the verdict.</summary>
-    public void Update(IReadOnlyList<(string Text, MediaColor Color)> lines, double x, double y, double fontSize, string fontFamily, MediaColor outlineColor)
+    /// <summary>Multi-color variant: each entry becomes a line in its own
+    /// color, optionally preceded by the ability's catalog icon. Outline
+    /// copies get a blank spacer of the icon width so the halo stays aligned
+    /// under the icon-offset text.</summary>
+    public void Update(IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)> lines, double x, double y, double fontSize, string fontFamily, MediaColor outlineColor)
     {
         var visible = lines.Where(l => !string.IsNullOrWhiteSpace(l.Text)).ToList();
         if (visible.Count == 0)
@@ -133,6 +136,7 @@ public sealed class OverlayTextWindow : Window
         }
 
         var family = new System.Windows.Media.FontFamily(fontFamily);
+        var iconSize = fontSize * 0.9;
         _mainTextBlock.Inlines.Clear();
         _mainTextBlock.FontSize = fontSize;
         _mainTextBlock.FontFamily = family;
@@ -148,18 +152,47 @@ public sealed class OverlayTextWindow : Window
             {
                 _mainTextBlock.Inlines.Add(new LineBreak());
             }
+
+            var iconImage = visible[i].Icon is { } iconRef ? _iconLoader.Load(iconRef) : null;
+            if (iconImage is not null)
+            {
+                _mainTextBlock.Inlines.Add(new InlineUIContainer(
+                    new System.Windows.Controls.Image
+                    {
+                        Source = iconImage,
+                        Width = iconSize,
+                        Height = iconSize,
+                        Margin = new Thickness(0, 0, 4, 0),
+                        VerticalAlignment = VerticalAlignment.Center
+                    }));
+            }
+
             _mainTextBlock.Inlines.Add(new Run(visible[i].Text) { Foreground = new SolidColorBrush(visible[i].Color) });
         }
 
-        var plain = string.Join("\n", visible.Select(l => l.Text));
         foreach (var outline in _outlineTextBlocks)
         {
             outline.Inlines.Clear();
-            outline.Text = plain;
             outline.FontSize = fontSize;
             outline.FontFamily = family;
             outline.FontWeight = FontWeights.SemiBold;
             outline.Foreground = new SolidColorBrush(outlineColor);
+
+            for (var i = 0; i < visible.Count; i++)
+            {
+                if (i > 0)
+                {
+                    outline.Inlines.Add(new LineBreak());
+                }
+
+                if (visible[i].Icon is not null)
+                {
+                    outline.Inlines.Add(new InlineUIContainer(
+                        new Border { Width = iconSize + 4, Height = iconSize }));
+                }
+
+                outline.Inlines.Add(new Run(visible[i].Text));
+            }
         }
 
         ClampToScreen(x, y);

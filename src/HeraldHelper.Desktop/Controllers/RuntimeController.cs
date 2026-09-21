@@ -24,6 +24,7 @@ internal sealed class RuntimeController : IDisposable
     private readonly IOnlineSyncService? _onlineSync;
     private readonly IResponseDiagnostics? _responseDiagnostics;
     private readonly DesktopOverlayRenderer _liveOverlay;
+    private readonly AbilityIconIndex _abilityIconIndex;
 
     // The controller owns the live loop; the window supplies per-tick input and
     // subscribes to tick events once — rebuilds swap the session underneath.
@@ -41,6 +42,7 @@ internal sealed class RuntimeController : IDisposable
         HttpClient httpClient,
         IShardAuthRefreshService authRefreshService,
         DesktopOverlayRenderer liveOverlay,
+        AbilityIconIndex? abilityIconIndex = null,
         IOnlineSyncService? onlineSync = null,
         IResponseDiagnostics? responseDiagnostics = null)
     {
@@ -54,6 +56,7 @@ internal sealed class RuntimeController : IDisposable
         _authRefreshService = authRefreshService;
         _onlineSync = onlineSync;
         _liveOverlay = liveOverlay;
+        _abilityIconIndex = abilityIconIndex ?? new AbilityIconIndex(catalogOverrideRepository);
         _responseDiagnostics = responseDiagnostics;
     }
 
@@ -183,6 +186,7 @@ internal sealed class RuntimeController : IDisposable
         IReadOnlyDictionary<string, string> settingsMap,
         ShardType shard)
     {
+        var icons = _abilityIconIndex.Get(shard);
         if (SupportsAbilityProfiles(shard))
         {
             var characterName = ReadOrDefault(
@@ -197,14 +201,14 @@ internal sealed class RuntimeController : IDisposable
             {
                 return _abilityProfileRepository.LoadAbilityProfile(shard, characterName, className)
                     .Where(x => x.IsEnabled)
-                    .Select(ToAbilityDefinition)
+                    .Select(row => ToAbilityDefinition(row, icons))
                     .ToList();
             }
         }
 
         return _abilityRepository.LoadAbilities()
             .Where(x => x.IsEnabled)
-            .Select(ToAbilityDefinition)
+            .Select(row => ToAbilityDefinition(row, icons))
             .ToList();
     }
 
@@ -213,8 +217,9 @@ internal sealed class RuntimeController : IDisposable
         return shard is ShardType.Eden or ShardType.Blackthorn;
     }
 
-    private static AbilityDefinition ToAbilityDefinition(AbilityEditorRow row)
+    private static AbilityDefinition ToAbilityDefinition(AbilityEditorRow row, IReadOnlyDictionary<string, IconSpriteRef> icons)
     {
+        icons.TryGetValue(row.AbilityName.Trim(), out var icon);
         return new AbilityDefinition(
             row.AbilityName.Trim(),
             row.SkillCode.Trim().ToLowerInvariant(),
@@ -223,7 +228,8 @@ internal sealed class RuntimeController : IDisposable
             row.Aliases
                 .Split([';', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList());
+                .ToList(),
+            icon);
     }
 
     private static string ReadOrDefault(IReadOnlyDictionary<string, string> map, string key, string fallback)

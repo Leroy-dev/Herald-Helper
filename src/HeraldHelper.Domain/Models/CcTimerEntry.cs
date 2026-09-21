@@ -5,7 +5,8 @@ namespace HeraldHelper.Domain.Models;
 public sealed record CcTimerEntry(
     string TargetName,
     ControlEffectType EffectType,
-    DateTimeOffset ExpiresAtUtc)
+    DateTimeOffset ExpiresAtUtc,
+    IconSpriteRef? Icon = null)
 {
     public int RemainingSeconds(DateTimeOffset nowUtc)
     {

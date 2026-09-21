@@ -116,7 +116,8 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
                 mention.Ability.EffectType,
                 mention.Ability.DurationSeconds,
                 landed,
-                occurrenceOrdinal));
+                occurrenceOrdinal,
+                mention.Ability.Icon));
         }
 
         return new ChatParseResult(targetEvent, hits, castEvent, visibleTargetEvents, visibleCastEvents);

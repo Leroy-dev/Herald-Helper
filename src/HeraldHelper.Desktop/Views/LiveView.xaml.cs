@@ -6,11 +6,14 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using HeraldHelper.Desktop.Models;
+using HeraldHelper.Domain.Models;
 
 namespace HeraldHelper.Desktop.Views;
 
 public partial class LiveView : System.Windows.Controls.UserControl
 {
+    private readonly IconImageLoader _iconLoader = new();
+
     private HeraldHelper.Desktop.MainWindow? Main =>
         Window.GetWindow(this) as HeraldHelper.Desktop.MainWindow;
 
@@ -50,11 +53,7 @@ public partial class LiveView : System.Windows.Controls.UserControl
                 {
                     MirrorResistsText.Inlines.Add(new Run("  "));
                 }
-                MirrorResistsText.Inlines.Add(
-                    new Run(resistsLines[i].Text)
-                    {
-                        Foreground = new SolidColorBrush(resistsLines[i].Color)
-                    });
+                AppendOverlayLine(MirrorResistsText, resistsLines[i], 11);
             }
             MirrorResistsText.Visibility = Visibility.Visible;
         }
@@ -77,11 +76,7 @@ public partial class LiveView : System.Windows.Controls.UserControl
                 {
                     MirrorTimerText.Inlines.Add(new LineBreak());
                 }
-                MirrorTimerText.Inlines.Add(
-                    new Run(timerLines[i].Text)
-                    {
-                        Foreground = new SolidColorBrush(timerLines[i].Color)
-                    });
+                AppendOverlayLine(MirrorTimerText, timerLines[i], Math.Clamp(state.TimerFontSize, 10, 18));
             }
         }
         else
@@ -109,6 +104,31 @@ public partial class LiveView : System.Windows.Controls.UserControl
         {
             MirrorCastPanel.Visibility = Visibility.Collapsed;
         }
+    }
+
+    private void AppendOverlayLine(
+        TextBlock target,
+        (string Text, System.Windows.Media.Color Color, IconSpriteRef? Icon) line,
+        double fontSize)
+    {
+        if (line.Icon is { } iconRef)
+        {
+            var image = _iconLoader.Load(iconRef);
+            if (image is not null)
+            {
+                target.Inlines.Add(new InlineUIContainer(
+                    new System.Windows.Controls.Image
+                    {
+                        Source = image,
+                        Width = fontSize,
+                        Height = fontSize,
+                        Margin = new Thickness(0, 0, 3, 0),
+                        VerticalAlignment = VerticalAlignment.Center
+                    }));
+            }
+        }
+
+        target.Inlines.Add(new Run(line.Text) { Foreground = new SolidColorBrush(line.Color) });
     }
 
     /// <summary>

@@ -72,6 +72,7 @@ internal static class AppServiceProvider
         services.AddSingleton<IOnlineTargetProfileClient, RestOnlineTargetProfileClient>();
         services.AddSingleton<IOnlineSyncService, OnlineSyncService>();
 
+        services.AddSingleton<AbilityIconIndex>();
         services.AddSingleton<RuntimeController>();
 
         services.AddSingleton<IAuthNotifications, WpfAuthNotifications>();

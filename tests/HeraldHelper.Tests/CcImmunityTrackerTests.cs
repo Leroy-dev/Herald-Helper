@@ -37,6 +37,19 @@ public sealed class CcImmunityTrackerTests
     }
 
     [Fact]
+    public void RegisterSuccessfulHit_CarriesAbilityIconOntoTimerEntry()
+    {
+        var tracker = new CcImmunityTracker();
+        var now = DateTimeOffset.UtcNow;
+        var icon = new IconSpriteRef("eden/spells", 3, 2, 32, 32);
+        var hit = new AbilityHit("TargetA", "Slam perfectly", "m", ControlEffectType.Stun, 9, true, Icon: icon);
+
+        tracker.RegisterSuccessfulHit(hit, "Cleric", 0, now);
+
+        Assert.Equal(icon, tracker.GetActiveTimers(now).Single().Icon);
+    }
+
+    [Fact]
     public void GetActiveTimers_ExpiresTimerWhenTimePasses()
     {
         var tracker = new CcImmunityTracker();

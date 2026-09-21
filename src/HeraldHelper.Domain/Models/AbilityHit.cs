@@ -9,4 +9,5 @@ public sealed record AbilityHit(
     ControlEffectType EffectType,
     int BaseDurationSeconds,
     bool LandedSuccessfully,
-    int OccurrenceOrdinal = 1);
+    int OccurrenceOrdinal = 1,
+    IconSpriteRef? Icon = null);
