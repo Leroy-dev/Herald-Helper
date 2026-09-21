@@ -127,7 +127,16 @@
                                     </WrapPanel>
                                     <WrapPanel Margin="0,8,0,0">
                                         <ComboBox Width="140" x:Name="OverlayCastbarFontCombo" x:FieldModifier="public" Style="{StaticResource CompactInputComboBoxStyle}" materialDesign:HintAssist.Hint="Spellbar Font" />
-                                        <TextBox Margin="8,0,0,0" Width="60" x:Name="OverlayResistsSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Resists Size" />
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,8,0,0">
+                                        <TextBlock Width="140" VerticalAlignment="Center" Foreground="{DynamicResource VsMutedTextBrush}" Text="Resists (target font)" />
+                                        <TextBox Width="60" x:Name="OverlayResistsSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Size" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickResistsSize_Click" ToolTip="Resize the resists overlay">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="ArrowExpand" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Resize" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
                                     </WrapPanel>
                                 </StackPanel>
                             </Border>

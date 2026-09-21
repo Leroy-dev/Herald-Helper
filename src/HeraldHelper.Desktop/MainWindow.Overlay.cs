@@ -44,12 +44,17 @@ public partial class MainWindow : Window
 
     internal void PickTargetSize_Click(object sender, RoutedEventArgs e)
     {
-        PickSizeLive(OverlayFontSizeText, "Target", isTimerOverlay: false);
+        PickSizeLive(OverlayFontSizeText, "Target", size => _liveOverlay?.SetPreviewFontSize(false, size));
     }
 
     internal void PickTimerSize_Click(object sender, RoutedEventArgs e)
     {
-        PickSizeLive(OverlayTimerSizeText, "Timers", isTimerOverlay: true);
+        PickSizeLive(OverlayTimerSizeText, "Timers", size => _liveOverlay?.SetPreviewFontSize(true, size));
+    }
+
+    internal void PickResistsSize_Click(object sender, RoutedEventArgs e)
+    {
+        PickSizeLive(OverlayResistsSizeText, "Resists", size => _liveOverlay?.SetPreviewResistsFontSize(size));
     }
     internal void ReloadOverlaySettings_Click(object sender, RoutedEventArgs e)
     {

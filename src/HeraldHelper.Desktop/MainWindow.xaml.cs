@@ -952,7 +952,7 @@ public partial class MainWindow : Window
         SaveOverlaySettings_Click(this, new RoutedEventArgs());
     }
 
-    private void PickSizeLive(System.Windows.Controls.TextBox targetBox, string label, bool isTimerOverlay)
+    private void PickSizeLive(System.Windows.Controls.TextBox targetBox, string label, Action<int> previewSetter)
     {
         var original = NormalizeIntText(targetBox.Text, 20);
         targetBox.Text = original.ToString();
@@ -960,14 +960,14 @@ public partial class MainWindow : Window
         var selected = LiveSizePickerWindow.Pick(this, label, original, size =>
         {
             targetBox.Text = size.ToString();
-            _liveOverlay?.SetPreviewFontSize(isTimerOverlay, size);
+            previewSetter(size);
             RenderLiveOverlayPreview();
         });
 
         if (selected is null)
         {
             targetBox.Text = original.ToString();
-            _liveOverlay?.SetPreviewFontSize(isTimerOverlay, original);
+            previewSetter(original);
             RenderLiveOverlayPreview();
             return;
         }

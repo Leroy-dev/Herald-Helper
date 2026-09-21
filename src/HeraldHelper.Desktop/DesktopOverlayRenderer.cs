@@ -24,6 +24,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private int? _previewCastY;
     private int? _previewResistsX;
     private int? _previewResistsY;
+    private int? _previewResistsFontSize;
     private MediaColor? _previewTargetColor;
     private MediaColor? _previewTimerColor;
     private MediaColor? _previewOutlineColor;
@@ -99,6 +100,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
 
             var f1 = overlay.FontSize;
             var f2 = overlay.TimerSize;
+            var f3 = overlay.ResistsSize;
             if (_previewTargetFontSize is not null)
             {
                 f1 = _previewTargetFontSize.Value;
@@ -107,6 +109,11 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             if (_previewTimerFontSize is not null)
             {
                 f2 = _previewTimerFontSize.Value;
+            }
+
+            if (_previewResistsFontSize is not null)
+            {
+                f3 = _previewResistsFontSize.Value;
             }
 
             var baseTargetColor = ReadColor(overlay.TargetColor, Colors.White);
@@ -151,7 +158,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             _resistsWindow.Update(
                 (IReadOnlyList<(string Text, MediaColor Color)>?)resistsLines ?? Array.Empty<(string Text, MediaColor Color)>(),
                 rx, ry,
-                overlay.ResistsSize, overlay.TargetFontFamily, outlineColor);
+                f3, overlay.TargetFontFamily, outlineColor);
             var cast = overlay.ShowCastBar ? snapshot.ActiveCast : null;
             _castBarWindow.Update(cast, cx, cy, castbarColor, timerColor, outlineColor, overlay.CastbarFontFamily);
             Rendered?.Invoke(this, new OverlayViewState(
@@ -217,6 +224,11 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewResistsY = y;
     }
 
+    public void SetPreviewResistsFontSize(int size)
+    {
+        _previewResistsFontSize = Math.Clamp(size, 10, 72);
+    }
+
     public void ClearPreview()
     {
         _previewTargetX = null;
@@ -232,6 +244,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewCastY = null;
         _previewResistsX = null;
         _previewResistsY = null;
+        _previewResistsFontSize = null;
     }
 
     public void Dispose()
