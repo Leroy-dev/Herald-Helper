@@ -44,6 +44,20 @@ public sealed class CachingTargetProfileCacheTests
     }
 
     [Fact]
+    public void Delete_EvictsMemoryAndBackend()
+    {
+        var backend = new InMemoryTargetProfileCache();
+        backend.Save(ShardType.Eden, new TargetProfile("Alice", "Guild", "Hero", 50, "RR5L0", 12));
+        var cache = new CachingTargetProfileCache(backend, asyncWrites: false);
+        cache.Load(ShardType.Eden, "Alice"); // warm the memory layer
+
+        cache.Delete(ShardType.Eden, "Alice");
+
+        Assert.False(backend.Contains(ShardType.Eden, "Alice"));
+        Assert.Null(cache.Load(ShardType.Eden, "Alice"));
+    }
+
+    [Fact]
     public void Save_WritesThroughAndUpdatesCache()
     {
         var backend = new InMemoryTargetProfileCache();
@@ -121,6 +135,11 @@ public sealed class CachingTargetProfileCacheTests
         public void Save(ShardType shardType, TargetProfile profile)
         {
             _profiles[(shardType, profile.Name.Trim().ToLowerInvariant())] = profile;
+        }
+
+        public void Delete(ShardType shardType, string targetName)
+        {
+            _profiles.Remove((shardType, targetName.Trim().ToLowerInvariant()));
         }
 
         public bool Contains(ShardType shardType, string targetName)

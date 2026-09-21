@@ -22,4 +22,9 @@ public partial class HeraldView : System.Windows.Controls.UserControl
     {
         Main?.RefreshHeraldResults();
     }
+
+    private void HeraldRemove_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.HeraldRemove_Click(sender, e);
+    }
 }

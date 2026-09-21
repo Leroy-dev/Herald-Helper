@@ -1148,6 +1148,11 @@ public sealed class GameLoopOrchestratorTests
         {
             _profiles[(shardType, profile.Name.Trim().ToLowerInvariant())] = profile;
         }
+
+        public void Delete(ShardType shardType, string targetName)
+        {
+            _profiles.Remove((shardType, targetName.Trim().ToLowerInvariant()));
+        }
     }
 
     private sealed class NamedHeraldClient : IHeraldClient

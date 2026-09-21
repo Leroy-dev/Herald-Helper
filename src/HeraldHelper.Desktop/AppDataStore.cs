@@ -140,6 +140,11 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
         _targetProfileCache.Save(shardType, profile);
     }
 
+    public void Delete(ShardType shardType, string targetName)
+    {
+        _targetProfileCache.Delete(shardType, targetName);
+    }
+
     public IReadOnlyList<TargetProfileRow> SearchTargetProfiles(string? server, string? nameFragment, int limit = 200)
     {
         return _targetProfileCache.Search(server, nameFragment, limit);

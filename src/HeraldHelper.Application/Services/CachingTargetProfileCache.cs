@@ -126,6 +126,27 @@ public sealed class CachingTargetProfileCache : ITargetProfileCache, IDisposable
         }
     }
 
+    public void Delete(ShardType shardType, string targetName)
+    {
+        if (string.IsNullOrWhiteSpace(targetName))
+        {
+            return;
+        }
+
+        var key = NormalizeKey(shardType, targetName);
+        _memory.TryRemove(key, out _);
+        try
+        {
+            _backend.Delete(shardType, targetName);
+            _diagnostics?.Log($"[Cache] delete | {key.Shard}/{key.NormalizedName}");
+        }
+        catch (Exception ex)
+        {
+            _diagnostics?.Log($"[Cache] delete failed | {key.Shard}/{key.NormalizedName} | {ex.Message}");
+            throw;
+        }
+    }
+
     public void Dispose()
     {
         if (_pendingWrites.IsEmpty)

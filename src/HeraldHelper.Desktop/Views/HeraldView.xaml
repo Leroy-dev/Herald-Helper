@@ -32,6 +32,15 @@
                        x:Name="HeraldResultText" x:FieldModifier="public"
                        VerticalAlignment="Center"
                        Foreground="{DynamicResource VsMutedTextBrush}" />
+            <Button Margin="12,0,0,0"
+                    Style="{StaticResource ToolbarButtonStyle}"
+                    Click="HeraldRemove_Click"
+                    ToolTip="Delete the selected cached profile — stale or renamed characters keep their old entry otherwise">
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="AccountRemove" Width="15" Height="15" Margin="0,0,5,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                    <TextBlock Text="Forget" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
         </WrapPanel>
 
         <GroupBox Grid.Row="1" Header="Cached players">
@@ -52,6 +61,7 @@
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
                 <DataGridTextColumn Header="Guild" Binding="{Binding Guild}" Width="*" />
                 <DataGridTextColumn Header="Class" Binding="{Binding Class}" Width="110" />
+                <DataGridTextColumn Header="Realm" Binding="{Binding Realm}" Width="85" />
                 <DataGridTextColumn Header="Lvl" Binding="{Binding Level}" Width="50" />
                 <DataGridTextColumn Header="Realm Rank" Binding="{Binding RealmRank}" Width="90" />
                 <DataGridTextColumn Header="Solo Kills" Binding="{Binding SoloKills}" Width="80" />

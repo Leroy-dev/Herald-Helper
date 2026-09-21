@@ -103,4 +103,22 @@ internal sealed class SqliteTargetProfileCache : SqliteRepositoryBase, ITargetPr
         cmd.Parameters.AddWithValue("$updated", DateTimeOffset.UtcNow.ToString("O"));
         cmd.ExecuteNonQuery();
     }
+
+    public void Delete(ShardType shardType, string targetName)
+    {
+        if (string.IsNullOrWhiteSpace(targetName))
+        {
+            return;
+        }
+
+        using var connection = ConnectionFactory.OpenConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+            DELETE FROM target_profile_cache
+            WHERE server = $server AND normalized_name = $name;
+            """;
+        cmd.Parameters.AddWithValue("$server", shardType.ToString().ToLowerInvariant());
+        cmd.Parameters.AddWithValue("$name", NormalizeProfileSegment(targetName));
+        cmd.ExecuteNonQuery();
+    }
 }

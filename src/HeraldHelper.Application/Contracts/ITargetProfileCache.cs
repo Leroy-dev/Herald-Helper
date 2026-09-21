@@ -8,4 +8,6 @@ public interface ITargetProfileCache
     TargetProfile? Load(ShardType shardType, string targetName);
 
     void Save(ShardType shardType, TargetProfile profile);
+
+    void Delete(ShardType shardType, string targetName);
 }
