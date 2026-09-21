@@ -192,7 +192,7 @@ internal sealed class RuntimeController : IDisposable
             var className = ReadOrDefault(
                 settingsMap,
                 CharacterSettingsKeys.AbilityProfileClass(shard, characterName),
-                ReadOrDefault(settingsMap, CharacterSettingsKeys.LegacyAbilityProfileClass(shard), string.Empty));
+                ReadOrDefault(settingsMap, CharacterSettingsKeys.DefaultAbilityProfileClass(shard), string.Empty));
             if (!string.IsNullOrWhiteSpace(className))
             {
                 return _abilityProfileRepository.LoadAbilityProfile(shard, characterName, className)

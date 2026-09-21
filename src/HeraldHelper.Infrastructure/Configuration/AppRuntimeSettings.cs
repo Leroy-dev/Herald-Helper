@@ -182,13 +182,9 @@ public sealed record AppRuntimeSettings(
             return [];
         }
 
-        var legacyKey = CharacterSettingsKeys.LegacyOcrWindows(shard, characterName);
         var key = CharacterSettingsKeys.OcrWindows(shard, characterName);
         var result = new List<OcrWatchRegion>();
-        if (!map.TryGetValue(key, out var raw))
-        {
-            map.TryGetValue(legacyKey, out raw);
-        }
+        map.TryGetValue(key, out var raw);
         try
         {
             var items = string.IsNullOrWhiteSpace(raw) ? [] : JsonSerializer.Deserialize<List<OcrWatchRegion>>(raw) ?? [];

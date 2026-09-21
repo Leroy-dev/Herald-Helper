@@ -20,19 +20,16 @@ public static class CharacterSettingsKeys
         return $"ability.profile.class.{ShardSegment(shard)}.{characterKey}";
     }
 
-    public static string LegacyAbilityProfileClass(ShardType shard)
+    /// <summary>Shard-wide class fallback — where the legacy
+    /// `ability.profile.class.&lt;shard&gt;` key is migrated to.</summary>
+    public static string DefaultAbilityProfileClass(ShardType shard)
     {
-        return $"ability.profile.class.{ShardSegment(shard)}";
+        return $"ability.profile.class.{ShardSegment(shard)}.default";
     }
 
     public static string OcrWindows(ShardType shard, string characterName)
     {
         return $"daoc.ocr.windows.{ShardSegment(shard)}.{NormalizeSegment(characterName)}";
-    }
-
-    public static string LegacyOcrWindows(ShardType shard, string characterName)
-    {
-        return $"daoc.ocr.windows.{ShardSegment(shard)}.{LegacyNormalizeSegment(characterName)}";
     }
 
     public static string OcrStats(ShardType shard, string characterName)
@@ -50,11 +47,6 @@ public static class CharacterSettingsKeys
         return string.IsNullOrWhiteSpace(value)
             ? string.Empty
             : new string(value.Trim().ToLowerInvariant().Select(x => char.IsLetterOrDigit(x) ? x : '_').ToArray());
-    }
-
-    public static string LegacyNormalizeSegment(string? value)
-    {
-        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToLowerInvariant();
     }
 
     private static string ShardSegment(ShardType shard)

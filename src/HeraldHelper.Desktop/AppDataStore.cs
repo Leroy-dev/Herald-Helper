@@ -56,6 +56,9 @@ public sealed class AppDataStore : ITargetProfileCache, ISettingsRepository, ICh
     public void Initialize()
     {
         _migrationsRepository.MigrateDatabase();
+        // Key-level settings migrations run after the schema — idempotent
+        // renames so readers never need legacy fallbacks.
+        Services.LegacySettingsMigrator.Migrate(_settingsRepository);
     }
 
     public int GetDatabaseMigrationVersion()

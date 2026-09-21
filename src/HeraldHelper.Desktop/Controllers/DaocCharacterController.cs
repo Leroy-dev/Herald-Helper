@@ -33,10 +33,9 @@ internal sealed class DaocCharacterController
     {
         var settings = _settingsRepository.LoadSettingsMap();
         var key = CharacterSettingsKeys.OcrWindows(shard, characterName);
-        var legacyKey = CharacterSettingsKeys.LegacyOcrWindows(shard, characterName);
         if (!settings.TryGetValue(key, out var raw))
         {
-            settings.TryGetValue(legacyKey, out raw);
+            return [];
         }
 
         if (string.IsNullOrWhiteSpace(raw))
@@ -62,13 +61,6 @@ internal sealed class DaocCharacterController
         var key = CharacterSettingsKeys.OcrWindows(shard, characterName);
 
         settings[key] = raw;
-
-        var legacyKey = CharacterSettingsKeys.LegacyOcrWindows(shard, characterName);
-        if (!string.Equals(key, legacyKey, StringComparison.OrdinalIgnoreCase) && settings.ContainsKey(legacyKey))
-        {
-            settings[legacyKey] = string.Empty;
-        }
-
         _settingsRepository.SaveSettings(settings.Select(x => new ConfigEntry { Key = x.Key, Value = x.Value }));
     }
 }

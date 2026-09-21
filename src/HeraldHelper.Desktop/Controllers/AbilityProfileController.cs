@@ -67,7 +67,7 @@ internal sealed class AbilityProfileController
         var selectedClass = ReadOrDefault(
             settings,
             CharacterSettingsKeys.AbilityProfileClass(Shard, Character),
-            ReadOrDefault(settings, CharacterSettingsKeys.LegacyAbilityProfileClass(Shard), string.Empty));
+            ReadOrDefault(settings, CharacterSettingsKeys.DefaultAbilityProfileClass(Shard), string.Empty));
         Class = classes.FirstOrDefault(x =>
             string.Equals(x, selectedClass, StringComparison.OrdinalIgnoreCase));
         IsClassEnabled = true;

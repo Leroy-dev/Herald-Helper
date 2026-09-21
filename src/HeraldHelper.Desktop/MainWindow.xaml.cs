@@ -181,6 +181,8 @@ public partial class MainWindow : Window
         var legacyCfgPath = FindFilePath("cfg.ini");
         var legacyAbilitiesPath = FindFilePath("abilities.txt");
         LegacyTextImporter.ImportIfNeeded(_store, legacyCfgPath, legacyAbilitiesPath);
+        // Idempotent — normalizes whatever a first-run cfg.ini import just wrote.
+        Services.LegacySettingsMigrator.Migrate(_store);
         _settingsController.EnsureDefaultAuthSettings();
 
         _authController.ConfigureTimer();
@@ -363,9 +365,7 @@ public partial class MainWindow : Window
             foreach (var profile in profiles)
             {
                 var normalizedKey = CharacterSettingsKeys.OcrWindows(shard, profile.CharacterName);
-                var legacyKey = CharacterSettingsKeys.LegacyOcrWindows(shard, profile.CharacterName);
-                if (!settings.TryGetValue(normalizedKey, out var raw) &&
-                    !settings.TryGetValue(legacyKey, out raw))
+                if (!settings.TryGetValue(normalizedKey, out var raw))
                 {
                     continue;
                 }

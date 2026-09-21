@@ -153,9 +153,9 @@ public static class AppComposition
         {
             return selectedClass.Trim();
         }
-        return settings.TryGetValue(CharacterSettingsKeys.LegacyAbilityProfileClass(shard), out var legacyClass) &&
-               !string.IsNullOrWhiteSpace(legacyClass)
-            ? legacyClass.Trim()
+        return settings.TryGetValue(CharacterSettingsKeys.DefaultAbilityProfileClass(shard), out var defaultClass) &&
+               !string.IsNullOrWhiteSpace(defaultClass)
+            ? defaultClass.Trim()
             : null;
     }
 
