@@ -105,6 +105,7 @@
                                   CanUserAddRows="True"
                                   CanUserDeleteRows="True"
                                   HeadersVisibility="Column"
+                                  RowEditEnding="AbilitiesGrid_RowEditEnding"
                                   IsReadOnly="False">
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn Header="" Width="34" IsReadOnly="True">

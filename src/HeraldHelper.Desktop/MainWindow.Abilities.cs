@@ -29,9 +29,46 @@ namespace HeraldHelper.Desktop;
 
 public partial class MainWindow : Window
 {
+    internal void MarkAbilitiesDirty()
+    {
+        _abilityProfileController.MarkDirty();
+        AbilityProfileSummaryText.Text = _abilityProfileController.Summary + "  (unsaved)";
+    }
+
+    /// <summary>Returns false when the user chose Cancel — edits stay loaded.</summary>
+    private bool ConfirmDiscardAbilityEdits()
+    {
+        if (!_abilityProfileController.IsDirty)
+        {
+            return true;
+        }
+
+        var choice = System.Windows.MessageBox.Show(
+            this,
+            "The ability profile has unsaved changes.\n\nSave before continuing?",
+            "Unsaved Abilities",
+            MessageBoxButton.YesNoCancel,
+            MessageBoxImage.Warning);
+        switch (choice)
+        {
+            case MessageBoxResult.Yes:
+                _abilityProfileController.Save();
+                return true;
+            case MessageBoxResult.No:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     internal void ReloadAbilities_Click(object sender, RoutedEventArgs e)
     {
+        if (!ConfirmDiscardAbilityEdits())
+        {
+            return;
+        }
         ReloadEditorData();
+        AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
         OutputBox.Text = "Abilities reloaded.";
     }
 
@@ -96,6 +133,7 @@ public partial class MainWindow : Window
         _abilityProfileController.Save();
         ReloadEditorData();
         RebuildRuntimeFromFiles();
+        AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
         OutputBox.Text = _abilityProfileController.GetSaveMessage();
     }
 
@@ -147,6 +185,14 @@ public partial class MainWindow : Window
     {
         if (_isBindingControls || AbilityProfileServerCombo.SelectedItem is not ShardType shard)
         {
+            return;
+        }
+
+        if (!ConfirmDiscardAbilityEdits())
+        {
+            _isBindingControls = true;
+            try { AbilityProfileServerCombo.SelectedItem = _abilityProfileController.Shard; }
+            finally { _isBindingControls = false; }
             return;
         }
 
@@ -276,8 +322,17 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (!ConfirmDiscardAbilityEdits())
+        {
+            _isBindingControls = true;
+            try { AbilityProfileClassCombo.SelectedItem = _abilityProfileController.Class; }
+            finally { _isBindingControls = false; }
+            return;
+        }
+
         _abilityProfileController.SelectClass(className);
         ReloadEditorData();
+        AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
         if (_abilityProfileController.Shard == _shardType)
         {
             RebuildRuntimeFromFiles();

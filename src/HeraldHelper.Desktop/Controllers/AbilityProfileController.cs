@@ -30,6 +30,12 @@ internal sealed class AbilityProfileController
 
     public ObservableCollection<AbilityEditorRow> AbilityEntries => _abilityEntries;
 
+    /// <summary>Grid edits or add/remove happened since the last save/reload —
+    /// switching shard/class or reloading would lose them.</summary>
+    public bool IsDirty { get; private set; }
+
+    public void MarkDirty() => IsDirty = true;
+
     public ShardType[] ServerItems { get; } = [ShardType.Default, ShardType.Eden, ShardType.Blackthorn];
 
     public ShardType Shard { get; private set; } = ShardType.Default;
@@ -93,6 +99,7 @@ internal sealed class AbilityProfileController
     public void ReloadRows()
     {
         _abilityEntries.Clear();
+        IsDirty = false;
         var entries = Shard != ShardType.Default && !string.IsNullOrWhiteSpace(Class)
             ? _abilityProfileRepository.LoadAbilityProfile(Shard, Character, Class!)
             : _abilityRepository.LoadAbilities();
@@ -116,6 +123,7 @@ internal sealed class AbilityProfileController
         {
             _abilityRepository.SaveAbilities(_abilityEntries);
         }
+        IsDirty = false;
     }
 
     public AbilityEditorRow Add()
@@ -136,6 +144,7 @@ internal sealed class AbilityProfileController
 
         ResolveRowIcon(row);
         _abilityEntries.Add(row);
+        IsDirty = true;
         UpdateSummary();
         return row;
     }
@@ -189,11 +198,13 @@ internal sealed class AbilityProfileController
         if (Shard != ShardType.Default && !row.IsCustom)
         {
             row.IsEnabled = false;
+            IsDirty = true;
             UpdateSummary();
             return false;
         }
 
         _abilityEntries.Remove(row);
+        IsDirty = true;
         UpdateSummary();
         return true;
     }

@@ -42,6 +42,10 @@ public partial class AbilitiesView : System.Windows.Controls.UserControl
     {
         Main?.AddAbilityFromCatalog_Click(sender, e);
     }
+    private void AbilitiesGrid_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
+    {
+        Main?.MarkAbilitiesDirty();
+    }
     private void ReloadAbilities_Click(object sender, RoutedEventArgs e)
     {
         Main?.ReloadAbilities_Click(sender, e);

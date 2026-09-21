@@ -260,6 +260,16 @@ public partial class MainWindow : Window
         ]);
     }
 
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        if (!ConfirmDiscardAbilityEdits())
+        {
+            e.Cancel = true;
+            return;
+        }
+        base.OnClosing(e);
+    }
+
     protected override void OnClosed(EventArgs e)
     {
         SaveWindowBounds();
