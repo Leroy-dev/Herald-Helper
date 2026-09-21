@@ -166,9 +166,26 @@ public partial class MainWindow : Window
         parts.AddRange(result.AbilityHits.Select(hit =>
             $"{hit.AbilityName} → {hit.TargetName} [{hit.EffectType} {hit.BaseDurationSeconds}s]{(hit.LandedSuccessfully ? string.Empty : " (failed)")}"));
 
-        AbilitiesView!.AbilityTestResult.Text = parts.Count == 0
-            ? "no match — the line names none of the enabled abilities"
-            : string.Join("   ", parts);
+        if (parts.Count == 0)
+        {
+            // Check disabled rows too — "no match because it's off" is the most
+            // common profile mistake and otherwise invisible.
+            var disabledParser = new AbilitiesChatEventParser(_abilityProfileController.AbilityEntries
+                .Where(x => !x.IsEnabled && !string.IsNullOrWhiteSpace(x.AbilityName))
+                .Select(row => new AbilityDefinition(
+                    row.AbilityName.Trim(),
+                    row.SkillCode.Trim().ToLowerInvariant(),
+                    Math.Max(1, row.DurationSeconds),
+                    AbilitiesChatEventParser.ParseEffectTypeCode(row.EffectType)))
+                .ToList());
+            var disabledResult = disabledParser.Parse(text, fallbackTargetName: "TestTarget");
+            AbilitiesView!.AbilityTestResult.Text = disabledResult.AbilityHits.Count > 0
+                ? $"matches only DISABLED abilit{(disabledResult.AbilityHits.Count == 1 ? "y" : "ies")}: {string.Join(", ", disabledResult.AbilityHits.Select(h => h.AbilityName).Distinct())}"
+                : "no match — the line names none of the enabled abilities";
+            return;
+        }
+
+        AbilitiesView!.AbilityTestResult.Text = string.Join("   ", parts);
     }
 
     internal void AbilityFilter_TextChanged(object sender, TextChangedEventArgs e)
