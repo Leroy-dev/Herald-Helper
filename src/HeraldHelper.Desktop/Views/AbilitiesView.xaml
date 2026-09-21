@@ -67,7 +67,7 @@
                             </Button>
                             <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="AddAbilityFromCatalog_Click" ToolTip="Pick a spell/style/ability from the shard catalog — name, category and level are pre-filled">
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="BookOpenPlus" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                    <materialDesign:PackIcon Kind="BookPlus" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                     <TextBlock Text="From Catalog" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
