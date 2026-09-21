@@ -174,7 +174,52 @@ public partial class MainWindow : Window
         RebuildRuntimeFromFiles();
         OutputBox.Text = string.IsNullOrWhiteSpace(folder)
             ? "Custom UI folder cleared — OCR auto-detects from the launcher."
-            : $"Custom UI folder set: {folder}";
+            : $"Custom UI folder set: {folder} — {DescribeCustomUiPath(folder)}";
+    }
+
+    /// <summary>Echoes what the picked path resolves to so a wrong folder is
+    /// obvious — the resolver accepts a package dir, a ui root, a game root,
+    /// or a uimain.xml file.</summary>
+    private static string DescribeCustomUiPath(string folder)
+    {
+        var full = Path.GetFullPath(folder.Trim().Trim('"'));
+
+        if (File.Exists(full) && full.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+        {
+            return Path.GetFileName(full).Equals("uimain.xml", StringComparison.OrdinalIgnoreCase)
+                ? "manifest picked"
+                : "warning — picked file isn't uimain.xml";
+        }
+
+        if (!Directory.Exists(full))
+        {
+            return "warning — folder doesn't exist";
+        }
+
+        if (File.Exists(Path.Combine(full, "uimain.xml")))
+        {
+            return "package dir (uimain.xml found)";
+        }
+
+        var uiRoot = Directory.Exists(Path.Combine(full, "ui"))
+            ? Path.Combine(full, "ui")
+            : null;
+        var packages = 0;
+        try
+        {
+            if ((uiRoot ?? full) is { } root && Directory.Exists(root))
+            {
+                packages = Directory.EnumerateDirectories(root)
+                    .Count(d => File.Exists(Path.Combine(d, "uimain.xml")));
+            }
+        }
+        catch (Exception)
+        {
+            return "warning — couldn't list that folder";
+        }
+        return packages > 0
+            ? $"{packages} package(s) found under {(uiRoot is null ? "folder" : "ui\\")}"
+            : "warning — no uimain.xml found under that folder";
     }
 
     private void ReloadShardAuthRows()
