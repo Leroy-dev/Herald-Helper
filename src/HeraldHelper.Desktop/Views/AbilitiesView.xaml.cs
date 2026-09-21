@@ -30,6 +30,10 @@ public partial class AbilitiesView : System.Windows.Controls.UserControl
     {
         Main?.AddAbility_Click(sender, e);
     }
+    private void AddAbilityFromCatalog_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.AddAbilityFromCatalog_Click(sender, e);
+    }
     private void ReloadAbilities_Click(object sender, RoutedEventArgs e)
     {
         Main?.ReloadAbilities_Click(sender, e);

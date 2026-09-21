@@ -16,4 +16,8 @@ public sealed class AbilityEditorRow
     public string SourceEffectType { get; set; } = string.Empty;
     public string Aliases { get; set; } = string.Empty;
     public bool IsCustom { get; set; }
+
+    /// <summary>Resolved catalog icon for the ability name — display only,
+    /// refreshed when rows are loaded. Not persisted.</summary>
+    public System.Windows.Media.ImageSource? IconSource { get; set; }
 }

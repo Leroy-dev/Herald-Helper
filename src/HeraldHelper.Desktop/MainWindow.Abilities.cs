@@ -38,6 +38,7 @@ public partial class MainWindow : Window
     internal void ReloadAbilityCatalogs_Click(object sender, RoutedEventArgs e)
     {
         AbilityProfileCatalog.Refresh();
+        _abilityIconIndex.Invalidate();
         _abilityProfileController.RefreshClasses(_abilityProfileController.Shard);
         AbilityProfileServerCombo.SelectedItem = _abilityProfileController.Shard;
         AbilityProfileClassCombo.ItemsSource = _abilityProfileController.ClassItems;
@@ -73,6 +74,7 @@ public partial class MainWindow : Window
             await Task.Run(() =>
             {
                 AbilityProfileCatalog.Refresh();
+                _abilityIconIndex.Invalidate();
                 AbilityProfileCatalog.GetClasses(ShardType.Eden);
                 AbilityProfileCatalog.GetClasses(ShardType.Blackthorn);
                 AbilityProfileCatalog.GetProfile(ShardType.Eden, selectedClass);
@@ -101,6 +103,33 @@ public partial class MainWindow : Window
     {
         _abilityProfileController.Add();
         AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
+    }
+
+    internal void AddAbilityFromCatalog_Click(object sender, RoutedEventArgs e)
+    {
+        var shard = _abilityProfileController.Shard;
+        if (shard is not (ShardType.Eden or ShardType.Blackthorn))
+        {
+            OutputBox.Text = "Pick an Eden or Blackthorn ability profile first — catalog picking needs a shard.";
+            return;
+        }
+
+        var entries = _abilityIconIndex.GetEntries(shard);
+        if (entries.Count == 0)
+        {
+            OutputBox.Text = $"No {shard} catalog loaded — use 'Update Catalogs Online' first.";
+            return;
+        }
+
+        var picked = AbilityCatalogPickerWindow.Pick(this, entries, _abilityProfileController.Class);
+        if (picked is null)
+        {
+            return;
+        }
+
+        _abilityProfileController.AddFromCatalog(picked);
+        AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
+        OutputBox.Text = $"Added {picked.Name} — confirm duration and effect type, then save.";
     }
 
     internal void RemoveAbility_Click(object sender, RoutedEventArgs e)

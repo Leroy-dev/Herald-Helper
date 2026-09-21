@@ -6,14 +6,16 @@ using HeraldHelper.Domain.Models;
 namespace HeraldHelper.Desktop;
 
 /// <summary>
-/// Name → spell-icon index per shard, built from the charplan catalogs.
-/// Loaded once per shard on first use; hits for abilities the catalog has no
-/// icon for simply render without one.
+/// Per-shard charplan catalog cache: the full entry list plus a name → icon
+/// index derived from it. Loaded once per shard on first use — catalog parses
+/// are ~30 MB of JSON, so both the icon lookup and the ability picker share
+/// the one load. Abilities the catalog has no icon for simply render without.
 /// </summary>
 internal sealed class AbilityIconIndex
 {
     private readonly ICatalogOverrideRepository _overrides;
-    private readonly ConcurrentDictionary<ShardType, IReadOnlyDictionary<string, IconSpriteRef>> _cache = new();
+    private readonly ConcurrentDictionary<ShardType, IReadOnlyList<CatalogBrowserEntry>> _entries = new();
+    private readonly ConcurrentDictionary<ShardType, IReadOnlyDictionary<string, IconSpriteRef>> _icons = new();
 
     public AbilityIconIndex(ICatalogOverrideRepository overrides)
     {
@@ -22,36 +24,45 @@ internal sealed class AbilityIconIndex
 
     public IReadOnlyDictionary<string, IconSpriteRef> Get(ShardType shard)
     {
-        return _cache.GetOrAdd(shard, Build);
+        return _icons.GetOrAdd(shard, s => BuildIconMap(GetEntries(s)));
+    }
+
+    public IReadOnlyList<CatalogBrowserEntry> GetEntries(ShardType shard)
+    {
+        return _entries.GetOrAdd(shard, LoadEntries);
     }
 
     public void Invalidate()
     {
-        _cache.Clear();
+        _entries.Clear();
+        _icons.Clear();
     }
 
-    private IReadOnlyDictionary<string, IconSpriteRef> Build(ShardType shard)
+    private IReadOnlyList<CatalogBrowserEntry> LoadEntries(ShardType shard)
     {
         try
         {
-            var entries = shard switch
+            return shard switch
             {
                 ShardType.Eden => EdenDataBrowserCatalog.Load(_overrides.LoadCatalogEntryOverrides()),
                 ShardType.Blackthorn => BlackthornDataBrowserCatalog.Load(_overrides.LoadCatalogEntryOverrides()),
                 _ => []
             };
-
-            return entries
-                .Where(x => x.Icon is not null)
-                .GroupBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.First().Icon!,
-                    StringComparer.OrdinalIgnoreCase);
         }
         catch
         {
-            return new Dictionary<string, IconSpriteRef>(StringComparer.OrdinalIgnoreCase);
+            return [];
         }
+    }
+
+    private static IReadOnlyDictionary<string, IconSpriteRef> BuildIconMap(IReadOnlyList<CatalogBrowserEntry> entries)
+    {
+        return entries
+            .Where(x => x.Icon is not null)
+            .GroupBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                g => g.Key,
+                g => g.First().Icon!,
+                StringComparer.OrdinalIgnoreCase);
     }
 }

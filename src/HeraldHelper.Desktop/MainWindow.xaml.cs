@@ -40,6 +40,7 @@ public partial class MainWindow : Window
     private readonly AuthController _authController;
     private readonly ResponseDiagnosticsBuffer _responseDiagnostics;
     private readonly IShardAuthRefreshService _authRefreshService;
+    private readonly AbilityIconIndex _abilityIconIndex;
     private bool _isBindingControls;
     private ScreenRegion? _chatRegion;
     private ShardType _shardType;
@@ -159,6 +160,7 @@ public partial class MainWindow : Window
         _responseDiagnostics.LineAdded += OnResponseDiagnosticLineAdded;
         _liveOverlay = services.GetRequiredService<DesktopOverlayRenderer>();
         _liveOverlay.Rendered += (_, state) => LiveView?.UpdateMirror(state);
+        _abilityIconIndex = services.GetRequiredService<AbilityIconIndex>();
         _authRefreshService = services.GetRequiredService<IShardAuthRefreshService>();
         _runtimeController = services.GetRequiredService<RuntimeController>();
         _runtimeController.ConfigureLoopInput(

@@ -12,16 +12,20 @@ internal sealed class AbilityProfileController
     private readonly IAbilityProfileRepository _abilityProfileRepository;
     private readonly IAbilityRepository _abilityRepository;
     private readonly SettingsController _settingsController;
+    private readonly AbilityIconIndex _abilityIconIndex;
+    private readonly IconImageLoader _iconLoader = new();
     private readonly ObservableCollection<AbilityEditorRow> _abilityEntries = [];
 
     public AbilityProfileController(
         IAbilityProfileRepository abilityProfileRepository,
         IAbilityRepository abilityRepository,
-        SettingsController settingsController)
+        SettingsController settingsController,
+        AbilityIconIndex abilityIconIndex)
     {
         _abilityProfileRepository = abilityProfileRepository;
         _abilityRepository = abilityRepository;
         _settingsController = settingsController;
+        _abilityIconIndex = abilityIconIndex;
     }
 
     public ObservableCollection<AbilityEditorRow> AbilityEntries => _abilityEntries;
@@ -94,6 +98,7 @@ internal sealed class AbilityProfileController
             : _abilityRepository.LoadAbilities();
         foreach (var entry in entries)
         {
+            ResolveRowIcon(entry);
             _abilityEntries.Add(entry);
         }
 
@@ -128,9 +133,41 @@ internal sealed class AbilityProfileController
             IsCustom = Shard != ShardType.Default
         };
 
+        ResolveRowIcon(row);
         _abilityEntries.Add(row);
         UpdateSummary();
         return row;
+    }
+
+    /// <summary>Adds a catalog entry as a custom row — exact catalog name is
+    /// what the parser must match, category/level carry over, duration and
+    /// effect stay at their defaults for the user to confirm.</summary>
+    public AbilityEditorRow AddFromCatalog(CatalogBrowserEntry entry)
+    {
+        var row = Add();
+        row.AbilityName = entry.Name;
+        row.Category = string.IsNullOrWhiteSpace(entry.Category) ? row.Category : entry.Category;
+        row.Level = entry.Level;
+        row.IconSource = entry.Icon is null ? null : _iconLoader.Load(entry.Icon);
+        UpdateSummary();
+        return row;
+    }
+
+    private void ResolveRowIcon(AbilityEditorRow row)
+    {
+        // Manual (Default) profiles still resolve icons — against whichever
+        // shard the app is currently pointed at.
+        var shard = Shard;
+        if (shard == ShardType.Default &&
+            _settingsController.LoadMap().TryGetValue("server", out var serverRaw) &&
+            Enum.TryParse<ShardType>(serverRaw, true, out var parsed))
+        {
+            shard = parsed;
+        }
+
+        row.IconSource = _abilityIconIndex.Get(shard).TryGetValue(row.AbilityName, out var icon)
+            ? _iconLoader.Load(icon)
+            : null;
     }
 
     public bool Remove(AbilityEditorRow row)

@@ -65,6 +65,12 @@
                                     <TextBlock Text="Add Ability" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
+                            <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="AddAbilityFromCatalog_Click" ToolTip="Pick a spell/style/ability from the shard catalog — name, category and level are pre-filled">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="BookOpenPlus" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                    <TextBlock Text="From Catalog" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
                             <Button Style="{StaticResource ToolbarButtonStyle}" Click="RemoveAbility_Click" ToolTip="Remove the selected ability">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="Minus" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
@@ -101,6 +107,15 @@
                                   HeadersVisibility="Column"
                                   IsReadOnly="False">
                             <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="" Width="34" IsReadOnly="True">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Image Width="20" Height="20" Margin="2"
+                                                   Source="{Binding IconSource}"
+                                                   ToolTip="Catalog icon — empty means the name doesn't match a catalog entry" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled, UpdateSourceTrigger=PropertyChanged}" Width="75" />
                                 <DataGridTextColumn Header="Ability Name" Binding="{Binding AbilityName, UpdateSourceTrigger=PropertyChanged}" Width="*" />
                                 <DataGridTextColumn Header="Category" Binding="{Binding Category, UpdateSourceTrigger=PropertyChanged}" Width="150" />
