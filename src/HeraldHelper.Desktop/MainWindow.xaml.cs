@@ -212,11 +212,57 @@ public partial class MainWindow : Window
         ReloadOverlaySettingsFromStore();
         _themeController.Initialize();
         ThemeToggleButton.Content = _themeController.ToggleButtonContent;
+        RestoreWindowBounds();
         OutputBox.Text = "Ready.";
+    }
+
+    /// <summary>ui.windowBounds = "left,top,width,height" — restored so the
+    /// app reopens where the user left it; clamped into the virtual screen so
+    /// a resolution change can't strand it off-screen.</summary>
+    private void RestoreWindowBounds()
+    {
+        if (!_settingsController.LoadMap().TryGetValue("ui.windowBounds", out var raw))
+        {
+            return;
+        }
+
+        var parts = raw.Split(',', StringSplitOptions.TrimEntries);
+        if (parts.Length != 4 ||
+            !double.TryParse(parts[0], out var left) ||
+            !double.TryParse(parts[1], out var top) ||
+            !double.TryParse(parts[2], out var width) ||
+            !double.TryParse(parts[3], out var height))
+        {
+            return;
+        }
+
+        Left = Math.Clamp(left, SystemParameters.VirtualScreenLeft,
+            SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth - 100);
+        Top = Math.Clamp(top, SystemParameters.VirtualScreenTop,
+            SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight - 100);
+        Width = Math.Max(MinWidth, Math.Min(width, SystemParameters.VirtualScreenWidth));
+        Height = Math.Max(MinHeight, Math.Min(height, SystemParameters.VirtualScreenHeight));
+    }
+
+    private void SaveWindowBounds()
+    {
+        if (WindowState != WindowState.Normal)
+        {
+            return;
+        }
+
+        _settingsController.Save([
+            new ConfigEntry
+            {
+                Key = "ui.windowBounds",
+                Value = string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{Left},{Top},{Width},{Height}")
+            }
+        ]);
     }
 
     protected override void OnClosed(EventArgs e)
     {
+        SaveWindowBounds();
         _runtimeController?.Dispose();
         _authController?.AuthRefreshTimer?.Stop();
         if (_responseDiagnostics is not null)
