@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v1.2.3)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Build
+        run: dotnet build HeraldHelper.slnx -v minimal
+
+      - name: Test
+        run: dotnet test HeraldHelper.slnx --no-build
+
+      # Publishes a self-contained win-x64 build, bundles Chromium under
+      # .playwright/package/.local-browsers (downloads it via playwright.ps1),
+      # trims it, and produces artifacts/release/HeraldHelper-<ts>.exe + .7z.
+      - name: Package release
+        run: powershell -ExecutionPolicy Bypass -File scripts/release.ps1
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: HeraldHelper ${{ github.event.inputs.tag || github.ref_name }}
+          files: |
+            artifacts/release/HeraldHelper-*.exe
+            artifacts/release/HeraldHelper-*.7z
+          generate_release_notes: true
