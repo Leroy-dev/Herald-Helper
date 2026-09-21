@@ -53,6 +53,7 @@ public partial class MainWindow : Window
     private readonly Dictionary<ShardType, System.Windows.Controls.Button> _daocWindowButtons = new();
     private readonly Dictionary<ShardType, TextBlock> _daocCharacterSummaryBlocks = new();
     private OverlaySnapshot? _lastOverlaySnapshot;
+    private OverlaySnapshot? _demoSnapshot;
     private DataBrowserWindow? _edenBrowserWindow;
 
     internal System.Windows.Controls.TextBox OutputBox => LiveView!.OutputBox;
@@ -284,6 +285,10 @@ public partial class MainWindow : Window
         {
             OutputBox.Text = tick.Output;
             _lastOverlaySnapshot = tick.Snapshot;
+            if (tick.Snapshot is not null)
+            {
+                _demoSnapshot = null;
+            }
             DiagnosticsBox.Text = tick.DiagnosticsText;
             LiveView?.UpdateClientState(tick.AdapterValues);
         }
@@ -1201,7 +1206,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var snapshot = _runtimeController.LastSnapshot ?? _lastOverlaySnapshot;
+        var snapshot = _demoSnapshot ?? _runtimeController.LastSnapshot ?? _lastOverlaySnapshot;
         if (snapshot is null)
         {
             return;

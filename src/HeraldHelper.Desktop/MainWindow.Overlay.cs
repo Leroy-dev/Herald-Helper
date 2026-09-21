@@ -2,6 +2,8 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using HeraldHelper.Desktop.Models;
+using HeraldHelper.Domain.Enums;
+using HeraldHelper.Domain.Models;
 
 namespace HeraldHelper.Desktop;
 
@@ -55,6 +57,29 @@ public partial class MainWindow : Window
     internal void PickResistsSize_Click(object sender, RoutedEventArgs e)
     {
         PickSizeLive(OverlayResistsSizeText, "Resists", size => _liveOverlay?.SetPreviewResistsFontSize(size));
+    }
+
+    internal void PreviewOverlay_Click(object sender, RoutedEventArgs e)
+    {
+        // Fabricated snapshot so the overlay windows (and every Drag/Resize/
+        // color picker that re-renders the preview) work without the game.
+        // Cleared as soon as a real tick produces a snapshot.
+        _demoSnapshot = BuildDemoSnapshot();
+        RenderLiveOverlayPreview();
+    }
+
+    private static OverlaySnapshot BuildDemoSnapshot()
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new OverlaySnapshot(
+            new TargetProfile("Preview Player", "Example Guild", "Minstrel", 50, "RR5L2", 34),
+            [
+                new CcTimerEntry("Preview Player", ControlEffectType.Mezz, now.AddSeconds(48)),
+                new CcTimerEntry("Preview Player", ControlEffectType.Stun, now.AddSeconds(9)),
+                new CcTimerEntry("Preview Player", ControlEffectType.Root, now.AddSeconds(21))
+            ],
+            new CastBarState("Greater Heal", 2.4, now, now.AddSeconds(1.6), null),
+            string.Empty);
     }
     internal void ReloadOverlaySettings_Click(object sender, RoutedEventArgs e)
     {

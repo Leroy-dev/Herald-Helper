@@ -26,6 +26,10 @@ public partial class OverlayView : System.Windows.Controls.UserControl
     {
         Main?.PickResistsSize_Click(sender, e);
     }
+    private void PreviewOverlay_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.PreviewOverlay_Click(sender, e);
+    }
     private void PickOutlineColor_Click(object sender, RoutedEventArgs e)
     {
         Main?.PickOutlineColor_Click(sender, e);

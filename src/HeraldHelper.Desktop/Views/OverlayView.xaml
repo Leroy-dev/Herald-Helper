@@ -17,6 +17,12 @@
                                     <TextBlock Text="Reload Overlay Settings" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
+                            <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PreviewOverlay_Click" ToolTip="Render a demo target/timers/spellbar on the overlay windows so you can position and style them without being in-game">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="EyeOutline" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                    <TextBlock Text="Preview" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
                             <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Click="SaveOverlaySettings_Click" ToolTip="Save overlay settings">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="ContentSave" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
