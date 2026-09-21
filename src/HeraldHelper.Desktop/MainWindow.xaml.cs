@@ -864,7 +864,8 @@ public partial class MainWindow : Window
 
     private void OnResponseDiagnosticLineAdded(string line)
     {
-        Dispatcher.Invoke(() =>
+        // BeginInvoke — logging must never block the capture/parse thread.
+        Dispatcher.BeginInvoke(() =>
         {
             if (ResponseDiagnosticsBox.Text.Length > 80_000)
             {

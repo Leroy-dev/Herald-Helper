@@ -128,6 +128,41 @@ public sealed class GameLoopOrchestrator : IDisposable
         _diagnostics?.Log($"[Timing] tick: {tickStopwatch.ElapsedMilliseconds} ms");
     }
 
+    /// <summary>Logs chat lines the capture layer actually saw — once per
+    /// distinct line so OCR regions re-emitting the whole window every tick
+    /// don't drown the diagnostics view. The real question users ask is
+    /// "did my Slam line even arrive" and nothing answered that before.</summary>
+    private void LogNewChatLines(string text, string label)
+    {
+        if (_diagnostics is null)
+        {
+            return;
+        }
+
+        foreach (var rawLine in text.Split('\n'))
+        {
+            var line = rawLine.TrimEnd('\r').Trim();
+            if (line.Length == 0 || line.Length > 200)
+            {
+                continue;
+            }
+
+            if (_seenChatLines.Add(line))
+            {
+                _seenChatLinesQueue.Enqueue(line);
+                _diagnostics.Log($"[chat] {label}: {line}");
+            }
+        }
+
+        while (_seenChatLinesQueue.Count > 400)
+        {
+            _seenChatLines.Remove(_seenChatLinesQueue.Dequeue());
+        }
+    }
+
+    private readonly HashSet<string> _seenChatLines = new(StringComparer.Ordinal);
+    private readonly Queue<string> _seenChatLinesQueue = new();
+
     private sealed record FrameCapture(string OcrText, List<OcrReplayCapture> ReplayCaptures);
 
     private async Task<FrameCapture> CaptureFrameAsync(
@@ -161,6 +196,7 @@ public sealed class GameLoopOrchestrator : IDisposable
                     _diagnostics?.Log($"[OCR] {captureRegion.Label}: {text.Length} chars");
                     if (!string.IsNullOrWhiteSpace(text))
                     {
+                        LogNewChatLines(text, captureRegion.Label);
                         ocrSegments.Add(configuredCaptureRegions
                             ? $"[{captureRegion.Label}]\n{text}"
                             : text);
