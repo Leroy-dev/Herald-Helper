@@ -155,13 +155,6 @@
                              ToolTip="Background loop interval in milliseconds"
                              Text="350"
                              TextChanged="LoopMsText_TextChanged" />
-                    <TextBox Margin="6,0,0,0"
-                             Width="90"
-                             Name="ToggleLoopHotkeyText"
-                             Style="{StaticResource CompactInputTextBoxStyle}"
-                             materialDesign:HintAssist.Hint="Hotkey"
-                             ToolTip="Global hotkey to start/stop the loop (e.g. Ctrl+F9, Alt+F1, F9). Works while the game has focus. Empty = disabled."
-                             LostFocus="ToggleLoopHotkey_LostFocus" />
                     <ComboBox Margin="6,0,0,0"
                               Width="130"
                               Name="OcrEngineCombo"
