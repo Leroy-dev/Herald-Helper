@@ -140,11 +140,14 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             }
 
             var targetText = overlay.ShowTarget ? BuildTargetText(snapshot.Target, overlay) : string.Empty;
-            var timerText = overlay.ShowTimers ? BuildTimerText(snapshot.Timers) : string.Empty;
+            var timerLines = overlay.ShowTimers ? BuildTimerLines(snapshot.Timers, timerColor) : null;
+            var timerText = timerLines is null ? string.Empty : string.Join("\n", timerLines.Select(l => l.Text));
             var resistsLines = overlay.ShowResists ? BuildResistsLines(snapshot.Target) : null;
 
             _targetWindow.Update(targetText, ox, oy, f1, overlay.TargetFontFamily, targetColor, outlineColor, FontWeights.SemiBold);
-            _timerWindow.Update(timerText, tx, ty, f2, overlay.TimerFontFamily, timerColor, outlineColor);
+            _timerWindow.Update(
+                (IReadOnlyList<(string Text, MediaColor Color)>?)timerLines ?? Array.Empty<(string Text, MediaColor Color)>(),
+                tx, ty, f2, overlay.TimerFontFamily, outlineColor);
             _resistsWindow.Update(
                 (IReadOnlyList<(string Text, MediaColor Color)>?)resistsLines ?? Array.Empty<(string Text, MediaColor Color)>(),
                 rx, ry,
@@ -154,6 +157,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             Rendered?.Invoke(this, new OverlayViewState(
                 targetText,
                 timerText,
+                timerLines,
                 resistsLines,
                 cast,
                 targetColor,
@@ -384,22 +388,36 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         return text;
     }
 
-    private static string BuildTimerText(IReadOnlyCollection<CcTimerEntry> timers)
+    /// <summary>Timer lines colored by CC type — the AHK palette: mezz yellow,
+    /// stun magenta, root amber; anything else takes the user's timer color.</summary>
+    internal static List<(string Text, MediaColor Color)>? BuildTimerLines(
+        IReadOnlyCollection<CcTimerEntry> timers,
+        MediaColor fallbackColor)
     {
         if (timers.Count == 0)
         {
-            return string.Empty;
+            return null;
         }
 
         var now = DateTimeOffset.UtcNow;
-        var rows = timers
+        return timers
             .OrderBy(x => x.TargetName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(x => x.EffectType)
-            .Select(x => $"{ShortType(x.EffectType)} {x.TargetName} {x.RemainingSeconds(now)}")
-            .Take(12);
-
-        return string.Join("\n", rows);
+            .Select(x => (
+                $"{ShortType(x.EffectType)} {x.TargetName} {x.RemainingSeconds(now)}",
+                EffectTypeColor(x.EffectType, fallbackColor)))
+            .Take(12)
+            .ToList();
     }
+
+    private static MediaColor EffectTypeColor(ControlEffectType type, MediaColor fallback) =>
+        type switch
+        {
+            ControlEffectType.Mezz => MediaColor.FromRgb(0xDC, 0xD3, 0x35),
+            ControlEffectType.Stun => MediaColor.FromRgb(0xCF, 0x33, 0xA4),
+            ControlEffectType.Root => MediaColor.FromRgb(0xA8, 0x71, 0x30),
+            _ => fallback
+        };
 
     private static string ShortType(ControlEffectType type)
     {

@@ -68,8 +68,27 @@ public partial class LiveView : System.Windows.Controls.UserControl
         MirrorTargetText.FontFamily = new System.Windows.Media.FontFamily(state.TargetFontFamily);
         MirrorTargetText.FontSize = Math.Clamp(state.TargetFontSize, 11, 22);
 
-        MirrorTimerText.Text = state.TimerText;
-        MirrorTimerText.Foreground = new SolidColorBrush(state.TimerColor);
+        if (state.TimerLines is { Count: > 0 } timerLines)
+        {
+            MirrorTimerText.Inlines.Clear();
+            for (var i = 0; i < timerLines.Count; i++)
+            {
+                if (i > 0)
+                {
+                    MirrorTimerText.Inlines.Add(new LineBreak());
+                }
+                MirrorTimerText.Inlines.Add(
+                    new Run(timerLines[i].Text)
+                    {
+                        Foreground = new SolidColorBrush(timerLines[i].Color)
+                    });
+            }
+        }
+        else
+        {
+            MirrorTimerText.Text = state.TimerText;
+            MirrorTimerText.Foreground = new SolidColorBrush(state.TimerColor);
+        }
         MirrorTimerText.FontFamily = new System.Windows.Media.FontFamily(state.TimerFontFamily);
         MirrorTimerText.FontSize = Math.Clamp(state.TimerFontSize, 10, 18);
 
