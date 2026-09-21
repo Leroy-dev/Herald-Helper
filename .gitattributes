@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Generated catalog data is machine-written with LF endings; snapshot tests
+# compare it byte-for-byte, so it must check out as LF even on Windows.
+data/** text eol=lf

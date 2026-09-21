@@ -43,8 +43,10 @@ public sealed class EdenCharplanCrawlTests
 
             foreach (var rel in liveFiles)
             {
-                var liveText = File.ReadAllText(Path.Combine(liveGenerated, rel));
-                var stagedText = File.ReadAllText(Path.Combine(stagedGenerated, rel));
+                // Checkout line endings vary with the platform's autocrlf;
+                // the content assertion should not.
+                var liveText = File.ReadAllText(Path.Combine(liveGenerated, rel)).Replace("\r\n", "\n");
+                var stagedText = File.ReadAllText(Path.Combine(stagedGenerated, rel)).Replace("\r\n", "\n");
                 if (rel == "manifest.json")
                 {
                     // generatedAt legitimately differs per run.
