@@ -250,7 +250,10 @@ public partial class MainWindow : Window
                 Domain = Read($"auth.{key}.domain"),
                 CookieNames = Read($"auth.{key}.cookieNames"),
                 RequiredCookies = Read($"auth.{key}.requiredCookies"),
-                ValidateUrl = Read($"auth.{key}.validateUrl")
+                ValidateUrl = Read($"auth.{key}.validateUrl"),
+                Session = string.IsNullOrWhiteSpace(Read($"auth.{key}.cookieHeader"))
+                    ? "no session"
+                    : "cookies stored"
             });
         }
     }

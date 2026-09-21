@@ -343,12 +343,31 @@ public partial class MainWindow : Window
 
     private async void RefreshAuthCurrent_Click(object sender, RoutedEventArgs e)
     {
-        await _authController.RefreshCurrentAsync(_shardType);
+        var ok = await _authController.RefreshCurrentAsync(_shardType);
+        UpdateAuthSessionColumn(_shardType, ok);
     }
 
     private async void RefreshAuthAll_Click(object sender, RoutedEventArgs e)
     {
-        await _authController.RefreshAllAsync();
+        var refreshed = await _authController.RefreshAllAsync();
+        foreach (var shard in Enum.GetValues<ShardType>().Where(s => s != ShardType.Default))
+        {
+            UpdateAuthSessionColumn(shard, refreshed.Contains(shard.ToString()));
+        }
+    }
+
+    private void UpdateAuthSessionColumn(ShardType shard, bool ok)
+    {
+        var row = _shardAuthRows.FirstOrDefault(r => r.Shard == shard);
+        if (row is null)
+        {
+            return;
+        }
+
+        row.Session = ok
+            ? $"ok {DateTime.Now:HH:mm}"
+            : "failed — sign in via Browser";
+        ConfigView?.ShardAuthGrid?.Items.Refresh();
     }
 
 }

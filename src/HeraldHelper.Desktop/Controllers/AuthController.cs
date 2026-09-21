@@ -58,7 +58,7 @@ internal sealed class AuthController
         }
     }
 
-    public async Task RefreshCurrentAsync(ShardType shard)
+    public async Task<bool> RefreshCurrentAsync(ShardType shard)
     {
         try
         {
@@ -67,19 +67,21 @@ internal sealed class AuthController
             if (bundle is null)
             {
                 _notifications.Log($"No valid auth captured for {shard}. Use the Browser button to sign in, then refresh again.");
-                return;
+                return false;
             }
 
             _notifications.OnRefreshed();
             _notifications.Log($"Auth refreshed for {shard}.");
+            return true;
         }
         catch (Exception ex)
         {
             _notifications.Log($"Auth refresh failed for {shard}: {ex.Message}");
+            return false;
         }
     }
 
-    public async Task RefreshAllAsync()
+    public async Task<IReadOnlyCollection<string>> RefreshAllAsync()
     {
         try
         {
@@ -89,10 +91,12 @@ internal sealed class AuthController
             _notifications.Log(refreshed.Count == 0
                 ? "No enabled shard auth profiles."
                 : $"Auth refreshed: {string.Join(", ", refreshed)}");
+            return refreshed;
         }
         catch (Exception ex)
         {
             _notifications.Log($"Auth refresh failed: {ex.Message}");
+            return [];
         }
     }
 

@@ -91,6 +91,7 @@
                                         <DataGridTextColumn Header="Cookies" Binding="{Binding CookieNames, UpdateSourceTrigger=PropertyChanged}" Width="180" />
                                         <DataGridTextColumn Header="Required" Binding="{Binding RequiredCookies, UpdateSourceTrigger=PropertyChanged}" Width="140" />
                                         <DataGridTextColumn Header="Validate URL" Binding="{Binding ValidateUrl, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                                        <DataGridTextColumn Header="Session" Binding="{Binding Session}" Width="120" IsReadOnly="True" />
                                     </DataGrid.Columns>
                                 </DataGrid>
                                 <Button Margin="0,8,0,0"
