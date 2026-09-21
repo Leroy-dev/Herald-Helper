@@ -420,7 +420,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             .OrderBy(x => x.TargetName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(x => x.EffectType)
             .Select(x => (
-                $"{ShortType(x.EffectType)} {x.TargetName} {x.RemainingSeconds(now)}",
+                $"{ShortType(x.EffectType)} {x.TargetName}{ShortClassTag(x.TargetClass)} {x.RemainingSeconds(now)}",
                 EffectTypeColor(x.EffectType, fallbackColor),
                 x.Icon))
             .Take(12)
@@ -435,6 +435,13 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             ControlEffectType.Root => MediaColor.FromRgb(0xA8, 0x71, 0x30),
             _ => fallback
         };
+
+    /// <summary>" ·Cle" — 3-letter class tag when the herald profile resolved
+    /// the target, so multi-target lines say who is stunned, not just a name.</summary>
+    private static string ShortClassTag(string? targetClass) =>
+        string.IsNullOrWhiteSpace(targetClass)
+            ? string.Empty
+            : $" ·{targetClass[..Math.Min(3, targetClass.Length)]}";
 
     private static string ShortType(ControlEffectType type)
     {
