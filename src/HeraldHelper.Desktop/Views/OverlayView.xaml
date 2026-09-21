@@ -154,6 +154,10 @@
                                               ToolTip="Color the target overlay by the target's realm (Albion=red, Midgard=blue, Hibernia=green). Falls back to the Target Color when the realm is unknown." />
                                     <WrapPanel Margin="0,0,0,8">
                                         <TextBox Width="170" x:Name="TargetColorText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Target Color (#RRGGBB)" />
+                                        <Border Width="18" Height="18" Margin="6,6,0,0" CornerRadius="3"
+                                                BorderBrush="{DynamicResource VsBorderBrush}" BorderThickness="1"
+                                                Background="{Binding Text, ElementName=TargetColorText, Converter={StaticResource HexToBrush}}"
+                                                ToolTip="Current color preview" />
                                         <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickTargetColor_Click" ToolTip="Pick the target overlay color">
                                             <StackPanel Orientation="Horizontal">
                                                 <materialDesign:PackIcon Kind="Eyedropper" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
@@ -163,6 +167,10 @@
                                     </WrapPanel>
                                     <WrapPanel Margin="0,0,0,8">
                                         <TextBox Width="170" x:Name="TimerColorText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Timer Color (#RRGGBB)" />
+                                        <Border Width="18" Height="18" Margin="6,6,0,0" CornerRadius="3"
+                                                BorderBrush="{DynamicResource VsBorderBrush}" BorderThickness="1"
+                                                Background="{Binding Text, ElementName=TimerColorText, Converter={StaticResource HexToBrush}}"
+                                                ToolTip="Current color preview" />
                                         <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickTimerColor_Click" ToolTip="Pick the timer overlay color">
                                             <StackPanel Orientation="Horizontal">
                                                 <materialDesign:PackIcon Kind="Eyedropper" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
@@ -172,6 +180,10 @@
                                     </WrapPanel>
                                     <WrapPanel>
                                         <TextBox Width="170" x:Name="OutlineColorText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Outline Color (#RRGGBB)" />
+                                        <Border Width="18" Height="18" Margin="6,6,0,0" CornerRadius="3"
+                                                BorderBrush="{DynamicResource VsBorderBrush}" BorderThickness="1"
+                                                Background="{Binding Text, ElementName=OutlineColorText, Converter={StaticResource HexToBrush}}"
+                                                ToolTip="Current color preview" />
                                         <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickOutlineColor_Click" ToolTip="Pick the overlay outline color">
                                             <StackPanel Orientation="Horizontal">
                                                 <materialDesign:PackIcon Kind="Eyedropper" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />

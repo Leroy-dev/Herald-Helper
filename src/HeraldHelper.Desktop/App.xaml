@@ -17,6 +17,7 @@
             <SolidColorBrush x:Key="VsTextBrush" Color="#D4D4D4" />
             <SolidColorBrush x:Key="VsMutedTextBrush" Color="#9DA1A6" />
             <SolidColorBrush x:Key="VsAccentBrush" Color="#007ACC" />
+            <local:HexToBrushConverter x:Key="HexToBrush" />
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
         </Style>
