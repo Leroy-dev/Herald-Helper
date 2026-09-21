@@ -46,4 +46,8 @@ public partial class ConfigView : System.Windows.Controls.UserControl
     {
         Main?.CustomUiFolder_LostFocus(sender, e);
     }
+    private void SaveShardAuth_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.SaveShardAuth_Click(sender, e);
+    }
 }

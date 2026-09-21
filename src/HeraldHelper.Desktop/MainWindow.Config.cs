@@ -177,6 +177,59 @@ public partial class MainWindow : Window
             : $"Custom UI folder set: {folder}";
     }
 
+    private void ReloadShardAuthRows()
+    {
+        _shardAuthRows.Clear();
+        var settings = _settingsController.LoadMap();
+        var defaults = ShardAuthProfileResolver.DefaultSettings()
+            .Where(e => !string.IsNullOrWhiteSpace(e.Value))
+            .ToDictionary(e => e.Key, e => e.Value, StringComparer.OrdinalIgnoreCase);
+
+        string Read(string key)
+        {
+            if (settings.TryGetValue(key, out var value) && value is not null)
+            {
+                return value;
+            }
+            return defaults.TryGetValue(key, out var fallback) ? fallback : string.Empty;
+        }
+
+        foreach (var shard in Enum.GetValues<ShardType>().Where(s => s != ShardType.Default))
+        {
+            var key = shard.ToString().ToLowerInvariant();
+            _shardAuthRows.Add(new ShardAuthConfigRow
+            {
+                Shard = shard,
+                Enabled = Read($"auth.{key}.enabled").Equals("true", StringComparison.OrdinalIgnoreCase),
+                HubUrl = Read($"auth.{key}.hubUrl"),
+                Domain = Read($"auth.{key}.domain"),
+                CookieNames = Read($"auth.{key}.cookieNames"),
+                RequiredCookies = Read($"auth.{key}.requiredCookies"),
+                ValidateUrl = Read($"auth.{key}.validateUrl")
+            });
+        }
+    }
+
+    internal void SaveShardAuth_Click(object sender, RoutedEventArgs e)
+    {
+        var updates = new List<ConfigEntry>();
+        foreach (var row in _shardAuthRows)
+        {
+            var key = row.Shard.ToString().ToLowerInvariant();
+            updates.Add(new ConfigEntry { Key = $"auth.{key}.enabled", Value = row.Enabled.ToString().ToLowerInvariant() });
+            updates.Add(new ConfigEntry { Key = $"auth.{key}.hubUrl", Value = row.HubUrl.Trim() });
+            updates.Add(new ConfigEntry { Key = $"auth.{key}.domain", Value = row.Domain.Trim() });
+            updates.Add(new ConfigEntry { Key = $"auth.{key}.cookieNames", Value = row.CookieNames.Trim() });
+            updates.Add(new ConfigEntry { Key = $"auth.{key}.requiredCookies", Value = row.RequiredCookies.Trim() });
+            updates.Add(new ConfigEntry { Key = $"auth.{key}.validateUrl", Value = row.ValidateUrl.Trim() });
+        }
+
+        _settingsController.Save(updates);
+        _authController.ConfigureTimer();
+        ReloadEditorData();
+        OutputBox.Text = "Shard auth settings saved.";
+    }
+
     internal void ConfigFilter_TextChanged(object sender, TextChangedEventArgs e)
     {
         _configView?.Refresh();

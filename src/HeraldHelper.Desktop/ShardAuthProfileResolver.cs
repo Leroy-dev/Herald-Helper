@@ -18,6 +18,9 @@ public static class ShardAuthProfileResolver
         var hub = Get(settings, $"auth.{key}.hubUrl", defaultProfile?.HubUrl);
         var domain = Get(settings, $"auth.{key}.domain", defaultProfile?.Domain);
         var cookieNamesCsv = Get(settings, $"auth.{key}.cookieNames", defaultProfile is null ? null : string.Join(",", defaultProfile.PreferredCookieNames));
+        var requiredCsv = Get(settings, $"auth.{key}.requiredCookies", defaultProfile is null ? null : string.Join(",", defaultProfile.RequiredCookieNames ?? []));
+        var validateUrl = Get(settings, $"auth.{key}.validateUrl", defaultProfile?.ValidateUrl);
+        var validateDenyRaw = Get(settings, $"auth.{key}.validateDeny", defaultProfile is null ? null : string.Join("|", defaultProfile.ValidateDenyPhrases ?? []));
 
         if (string.IsNullOrWhiteSpace(hub) || string.IsNullOrWhiteSpace(domain))
         {
@@ -27,8 +30,14 @@ public static class ShardAuthProfileResolver
         var names = (cookieNamesCsv ?? string.Empty)
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToList();
+        var required = (requiredCsv ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+        var deny = (validateDenyRaw ?? string.Empty)
+            .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
 
-        return new ShardAuthProfile(shard, hub, domain, names);
+        return new ShardAuthProfile(shard, hub, domain, names, required, validateUrl, deny);
     }
 
     public static IEnumerable<ConfigEntry> DefaultSettings()
@@ -37,6 +46,9 @@ public static class ShardAuthProfileResolver
         yield return new ConfigEntry { Key = "auth.eden.hubUrl", Value = "https://eden-daoc.net/hub" };
         yield return new ConfigEntry { Key = "auth.eden.domain", Value = "eden-daoc.net" };
         yield return new ConfigEntry { Key = "auth.eden.cookieNames", Value = "eden_daoc_u,eden_daoc_k,eden_daoc_sid" };
+        yield return new ConfigEntry { Key = "auth.eden.requiredCookies", Value = "eden_daoc_u,eden_daoc_sid" };
+        yield return new ConfigEntry { Key = "auth.eden.validateUrl", Value = "https://eden-daoc.net/herald" };
+        yield return new ConfigEntry { Key = "auth.eden.validateDeny", Value = "The requested page|is not available" };
         yield return new ConfigEntry { Key = "auth.eden.cookieHeader", Value = "" };
         yield return new ConfigEntry { Key = "auth.eden.userAgent", Value = "" };
         yield return new ConfigEntry { Key = "auth.phoenix.enabled", Value = "false" };
@@ -49,7 +61,14 @@ public static class ShardAuthProfileResolver
     {
         return shard switch
         {
-            ShardType.Eden => new ShardAuthProfile(ShardType.Eden, "https://eden-daoc.net/hub", "eden-daoc.net", ["eden_daoc_u", "eden_daoc_k", "eden_daoc_sid"]),
+            ShardType.Eden => new ShardAuthProfile(
+                ShardType.Eden,
+                "https://eden-daoc.net/hub",
+                "eden-daoc.net",
+                ["eden_daoc_u", "eden_daoc_k", "eden_daoc_sid"],
+                ["eden_daoc_u", "eden_daoc_sid"],
+                "https://eden-daoc.net/herald",
+                ["The requested page", "is not available"]),
             _ => null
         };
     }

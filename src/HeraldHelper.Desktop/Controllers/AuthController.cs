@@ -66,7 +66,7 @@ internal sealed class AuthController
             var bundle = await _authRefreshService.RefreshAsync(shard, CancellationToken.None);
             if (bundle is null)
             {
-                _notifications.Log($"No valid auth captured for {shard}. Sign in inside the Playwright browser and retry.");
+                _notifications.Log($"No valid auth captured for {shard}. Use the Browser button to sign in, then refresh again.");
                 return;
             }
 

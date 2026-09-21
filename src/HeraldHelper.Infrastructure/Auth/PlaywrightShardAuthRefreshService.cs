@@ -43,16 +43,14 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
             return null;
         }
 
-        Directory.CreateDirectory(_profilesRoot);
-        var userDataDir = Path.Combine(_profilesRoot, shard.ToString().ToLowerInvariant());
-        Directory.CreateDirectory(userDataDir);
+        var userDataDir = PrepareUserDataDir(shard);
 
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchPersistentContextAsync(
             userDataDir,
             new BrowserTypeLaunchPersistentContextOptions
             {
-                Headless = false,
+                Headless = true,
                 Args =
                 [
                     "--disable-blink-features=AutomationControlled",
@@ -68,10 +66,13 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
             WaitUntil = WaitUntilState.NetworkIdle
         });
 
-        var cookieHeader = await WaitForCookieHeaderAsync(browser, profile, shard, page, cancellationToken);
+        // Headless cannot offer interactive login — the persistent profile's
+        // cookies are either already valid or the user must sign in via the
+        // browser window. A short wait only covers session writes racing in.
+        var cookieHeader = await WaitForCookieHeaderAsync(
+            browser, profile, page, TimeSpan.FromSeconds(10), cancellationToken);
         if (string.IsNullOrWhiteSpace(cookieHeader))
         {
-            // Do not overwrite existing auth with empty values if login is incomplete.
             return null;
         }
 
@@ -82,17 +83,15 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
         return bundle;
     }
 
-    public async Task OpenBrowserAsync(ShardType shard, CancellationToken cancellationToken)
+    public async Task<ShardAuthBundle?> OpenBrowserAsync(ShardType shard, CancellationToken cancellationToken)
     {
         var profile = _resolveProfile(shard);
         if (profile is null)
         {
-            return;
+            return null;
         }
 
-        Directory.CreateDirectory(_profilesRoot);
-        var userDataDir = Path.Combine(_profilesRoot, shard.ToString().ToLowerInvariant());
-        Directory.CreateDirectory(userDataDir);
+        var userDataDir = PrepareUserDataDir(shard);
 
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchPersistentContextAsync(
@@ -115,10 +114,48 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
             WaitUntil = WaitUntilState.NetworkIdle
         });
 
-        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        browser.Close += (_, _) => tcs.TrySetResult();
-        await using var registration = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
-        await tcs.Task;
+        var closeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        browser.Close += (_, _) => closeTcs.TrySetResult();
+        await using var registration = cancellationToken.Register(() =>
+        {
+            closeTcs.TrySetCanceled(cancellationToken);
+        });
+
+        var cookieTask = WaitForCookieHeaderAsync(
+            browser, profile, page, TimeSpan.FromMinutes(3), cancellationToken);
+        var completed = await Task.WhenAny(cookieTask, closeTcs.Task);
+        if (completed == closeTcs.Task)
+        {
+            closeTcs.Task.GetAwaiter().GetResult(); // surface cancellation if that is what completed it
+            return null;
+        }
+
+        if (!cookieTask.IsCompletedSuccessfully || string.IsNullOrWhiteSpace(cookieTask.Result))
+        {
+            // Login wait timed out or was cancelled.
+            return null;
+        }
+
+        var userAgent = await TryReadUserAgentAsync(page, cancellationToken);
+        var bundle = new ShardAuthBundle(cookieTask.Result, userAgent);
+        _onRefreshed(shard, bundle);
+        try
+        {
+            await browser.CloseAsync();
+        }
+        catch
+        {
+            // Already closing/closed by the user.
+        }
+        return bundle;
+    }
+
+    private string PrepareUserDataDir(ShardType shard)
+    {
+        Directory.CreateDirectory(_profilesRoot);
+        var userDataDir = Path.Combine(_profilesRoot, shard.ToString().ToLowerInvariant());
+        Directory.CreateDirectory(userDataDir);
+        return userDataDir;
     }
 
     private static string BuildCookieHeader(IReadOnlyList<BrowserContextCookiesResult> cookies, ShardAuthProfile profile)
@@ -169,20 +206,19 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
     private static async Task<string> WaitForCookieHeaderAsync(
         IBrowserContext browser,
         ShardAuthProfile profile,
-        ShardType shard,
         IPage page,
+        TimeSpan timeout,
         CancellationToken cancellationToken)
     {
-        // Keep the browser open long enough for manual login; return once required cookies exist.
         var started = DateTimeOffset.UtcNow;
-        while (DateTimeOffset.UtcNow - started < TimeSpan.FromMinutes(3))
+        while (DateTimeOffset.UtcNow - started < timeout)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var cookies = await browser.CookiesAsync([profile.HubUrl]);
             var cookieHeader = BuildCookieHeader(cookies, profile);
             var userAgent = await TryReadUserAgentAsync(page, cancellationToken);
             if (!string.IsNullOrWhiteSpace(cookieHeader) &&
-                await IsLoginValidatedAsync(shard, cookieHeader, userAgent, cancellationToken))
+                await IsLoginValidatedAsync(profile, cookieHeader, userAgent, cancellationToken))
             {
                 return cookieHeader;
             }
@@ -193,29 +229,32 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
         return string.Empty;
     }
 
+    /// <summary>Profile-driven validation: every cookie in RequiredCookieNames
+    /// must carry a value, and when a ValidateUrl is configured the response
+    /// must be a success page that does not contain ALL of the deny phrases.</summary>
     private static async Task<bool> IsLoginValidatedAsync(
-        ShardType shard,
+        ShardAuthProfile profile,
         string cookieHeader,
         string? userAgent,
         CancellationToken cancellationToken)
     {
-        if (shard != ShardType.Eden)
+        foreach (var required in profile.RequiredCookieNames ?? [])
         {
-            return true;
+            if (!HasCookieValue(cookieHeader, required))
+            {
+                return false;
+            }
         }
 
-        // eden_daoc_u and eden_daoc_sid are required to avoid persisting completely anonymous cookie sets.
-        var hasBaseSession = HasCookieValue(cookieHeader, "eden_daoc_u")
-            && HasCookieValue(cookieHeader, "eden_daoc_sid");
-        if (!hasBaseSession)
+        if (string.IsNullOrWhiteSpace(profile.ValidateUrl))
         {
-            return false;
+            return true;
         }
 
         try
         {
             using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(12) };
-            using var req = new HttpRequestMessage(HttpMethod.Get, "https://eden-daoc.net/herald");
+            using var req = new HttpRequestMessage(HttpMethod.Get, profile.ValidateUrl);
             req.Headers.TryAddWithoutValidation("Cookie", cookieHeader);
             req.Headers.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
             if (!string.IsNullOrWhiteSpace(userAgent))
@@ -229,9 +268,14 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
                 return false;
             }
 
+            var deny = profile.ValidateDenyPhrases;
+            if (deny is null || deny.Count == 0)
+            {
+                return true;
+            }
+
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
-            return !content.Contains("The requested page", StringComparison.OrdinalIgnoreCase)
-                   || !content.Contains("is not available", StringComparison.OrdinalIgnoreCase);
+            return !deny.All(phrase => content.Contains(phrase, StringComparison.OrdinalIgnoreCase));
         }
         catch
         {

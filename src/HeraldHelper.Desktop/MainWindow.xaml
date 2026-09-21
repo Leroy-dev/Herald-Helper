@@ -112,10 +112,10 @@
                             <TextBlock Text="Spells" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="OpenEdenBrowser_Click" ToolTip="Open the item/eden browser">
+                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="OpenEdenBrowser_Click" ToolTip="Open the shard login browser — sign in, the window closes itself once auth is captured">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Web" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
-                            <TextBlock Text="Browser" VerticalAlignment="Center" />
+                            <materialDesign:PackIcon Kind="LoginVariant" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                            <TextBlock Text="Login" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
                     <Separator Margin="6,4" VerticalAlignment="Stretch" Width="1" Background="{DynamicResource VsBorderBrush}" />

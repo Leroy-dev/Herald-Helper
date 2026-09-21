@@ -46,6 +46,7 @@ public partial class MainWindow : Window
     private int _resistPercent;
     private OcrEngineMode _ocrEngineMode;
     private readonly ObservableCollection<ConfigEntry> _cfgEntries = [];
+    private readonly ObservableCollection<ShardAuthConfigRow> _shardAuthRows = [];
     private readonly AbilityProfileController _abilityProfileController;
     private readonly DaocCharacterController _daocCharacterController;
     private readonly ThemeController _themeController;
@@ -61,6 +62,7 @@ public partial class MainWindow : Window
     private System.Windows.Controls.TextBox ResponseDiagnosticsBox => LiveView!.ResponseDiagnosticsBox;
     private System.Windows.Controls.StackPanel DaocCharacterPanel => ConfigView!.DaocCharacterPanel;
     private System.Windows.Controls.DataGrid ConfigGrid => ConfigView!.ConfigGrid;
+    private System.Windows.Controls.DataGrid ShardAuthGrid => ConfigView!.ShardAuthGrid;
     private System.Windows.Controls.ComboBox AbilityProfileServerCombo => AbilitiesView!.AbilityProfileServerCombo;
     private System.Windows.Controls.ComboBox AbilityProfileClassCombo => AbilitiesView!.AbilityProfileClassCombo;
     private System.Windows.Controls.TextBlock AbilityProfileSummaryText => AbilitiesView!.AbilityProfileSummaryText;
@@ -194,6 +196,7 @@ public partial class MainWindow : Window
             Filter = MatchesConfigFilter
         };
         ConfigGrid.ItemsSource = _configView;
+        ShardAuthGrid.ItemsSource = _shardAuthRows;
         _abilitiesView = new System.Windows.Data.ListCollectionView(_abilityProfileController.AbilityEntries)
         {
             Filter = MatchesAbilityFilter
@@ -326,6 +329,8 @@ public partial class MainWindow : Window
 
         _abilityProfileController.ReloadRows();
         AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
+
+        ReloadShardAuthRows();
 
         if (ConfigView?.CustomUiFolderText is not null)
         {
@@ -608,13 +613,16 @@ public partial class MainWindow : Window
     {
         try
         {
-            OutputBox.Text = "Opening Eden Playwright browser...";
-            await _authRefreshService.OpenBrowserAsync(ShardType.Eden, CancellationToken.None);
-            OutputBox.Text = "Eden Playwright browser closed.";
+            var shard = _shardType;
+            OutputBox.Text = $"Opening {shard} login browser...";
+            var bundle = await _authRefreshService.OpenBrowserAsync(shard, CancellationToken.None);
+            OutputBox.Text = bundle is not null
+                ? $"Signed in — {shard} auth captured."
+                : $"{shard} login browser closed (no auth captured, or no auth profile configured for this shard).";
         }
         catch (Exception ex)
         {
-            OutputBox.Text = $"Could not open Eden Playwright browser: {ex.Message}";
+            OutputBox.Text = $"Could not open the login browser: {ex.Message}";
         }
     }
 

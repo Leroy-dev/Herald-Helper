@@ -8,6 +8,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <GroupBox Grid.Row="0" Header="DAoC Characters">
@@ -70,7 +71,41 @@
                                 </Button>
                             </StackPanel>
                         </GroupBox>
-                        <Expander Grid.Row="3"
+                        <GroupBox Grid.Row="3" Header="Shard auth (auto-refresh)"
+                                  ToolTip="Per-shard login settings. Enable a shard and set its hub URL to let the Auth button and the auto-refresh timer harvest cookies. The refresh itself runs headless — use the Login toolbar button to sign in once.">
+                            <StackPanel>
+                                <DataGrid x:Name="ShardAuthGrid" x:FieldModifier="public"
+                                          Margin="0,8,0,0"
+                                          AutoGenerateColumns="False"
+                                          CanUserAddRows="False"
+                                          CanUserDeleteRows="False"
+                                          HeadersVisibility="Column"
+                                          IsReadOnly="False"
+                                          MaxHeight="220"
+                                          VerticalScrollBarVisibility="Auto">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Shard" Binding="{Binding Shard}" Width="80" IsReadOnly="True" />
+                                        <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding Enabled, UpdateSourceTrigger=PropertyChanged}" Width="60" />
+                                        <DataGridTextColumn Header="Hub URL" Binding="{Binding HubUrl, UpdateSourceTrigger=PropertyChanged}" Width="220" />
+                                        <DataGridTextColumn Header="Domain" Binding="{Binding Domain, UpdateSourceTrigger=PropertyChanged}" Width="120" />
+                                        <DataGridTextColumn Header="Cookies" Binding="{Binding CookieNames, UpdateSourceTrigger=PropertyChanged}" Width="180" />
+                                        <DataGridTextColumn Header="Required" Binding="{Binding RequiredCookies, UpdateSourceTrigger=PropertyChanged}" Width="140" />
+                                        <DataGridTextColumn Header="Validate URL" Binding="{Binding ValidateUrl, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <Button Margin="0,8,0,0"
+                                        HorizontalAlignment="Left"
+                                        Style="{StaticResource ToolbarButtonStyle}"
+                                        Click="SaveShardAuth_Click"
+                                        ToolTip="Save the shard auth table">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="ContentSave" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                        <TextBlock Text="Save Auth Settings" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </GroupBox>
+                        <Expander Grid.Row="4"
                                   Header="Advanced raw configuration"
                                   IsExpanded="False"
                                   Foreground="{DynamicResource VsTextBrush}"
