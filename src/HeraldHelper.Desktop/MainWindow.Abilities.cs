@@ -193,7 +193,17 @@ public partial class MainWindow : Window
             parts.Add($"cast={cast.EventType}:{cast.SpellName}");
         }
         parts.AddRange(result.AbilityHits.Select(hit =>
-            $"{hit.AbilityName} → {hit.TargetName} [{hit.EffectType} {hit.BaseDurationSeconds}s]{(hit.LandedSuccessfully ? string.Empty : " (failed)")}"));
+        {
+            if (!hit.LandedSuccessfully)
+            {
+                return $"{hit.AbilityName} → {hit.TargetName} [{hit.EffectType} {hit.BaseDurationSeconds}s] (failed)";
+            }
+
+            var targetClass = TryGetCachedTargetClass(hit.TargetName);
+            var immunity = CcImmunityTracker.PreviewImmunitySeconds(hit, targetClass, _resistPercent);
+            var classNote = targetClass is null ? string.Empty : $" ({targetClass})";
+            return $"{hit.AbilityName} → {hit.TargetName}{classNote} [{hit.EffectType} {hit.BaseDurationSeconds}s → imm {immunity}s]";
+        }));
 
         if (parts.Count == 0)
         {
@@ -215,6 +225,21 @@ public partial class MainWindow : Window
         }
 
         AbilitiesView!.AbilityTestResult.Text = string.Join("   ", parts);
+    }
+
+    /// <summary>The immunity preview is only as good as the det-class lookup —
+    /// pull the cached herald profile when the name is a known player.</summary>
+    private string? TryGetCachedTargetClass(string targetName)
+    {
+        try
+        {
+            var profile = _store.Load(_shardType, targetName);
+            return profile?.Class;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     internal void AbilityFilter_TextChanged(object sender, TextChangedEventArgs e)

@@ -50,6 +50,22 @@ public sealed class CcImmunityTrackerTests
     }
 
     [Fact]
+    public void PreviewImmunitySeconds_MatchesTrackedTimerDuration()
+    {
+        // The abilities "test line" previews this value — keep it identical
+        // to what the runtime tracker actually schedules.
+        var now = DateTimeOffset.UtcNow;
+        var hit = new AbilityHit("TargetA", "Slam perfectly", "m", ControlEffectType.Stun, 9, true);
+
+        var preview = CcImmunityTracker.PreviewImmunitySeconds(hit, "Cleric", 25);
+
+        var tracker = new CcImmunityTracker();
+        tracker.RegisterSuccessfulHit(hit, "Cleric", 25, now);
+        var remaining = tracker.GetActiveTimers(now).Single().RemainingSeconds(now);
+        Assert.Equal(preview, remaining);
+    }
+
+    [Fact]
     public void GetActiveTimers_ExpiresTimerWhenTimePasses()
     {
         var tracker = new CcImmunityTracker();

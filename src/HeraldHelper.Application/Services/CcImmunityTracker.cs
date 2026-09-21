@@ -39,6 +39,13 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
         return _entries.AsReadOnly();
     }
 
+    /// <summary>What the immunity window would be for this hit — used by the
+    /// abilities "test line" so users can verify durations without a client.</summary>
+    public static int PreviewImmunitySeconds(AbilityHit hit, string? targetClass, int resistPercent)
+    {
+        return CalculateImmunitySeconds(hit, targetClass, resistPercent);
+    }
+
     private static int CalculateImmunitySeconds(AbilityHit hit, string? targetClass, int resistPercent)
     {
         // EffectType is the authoritative CC class — SkillCode is a trigger
