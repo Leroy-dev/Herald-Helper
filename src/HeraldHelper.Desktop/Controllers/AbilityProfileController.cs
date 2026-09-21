@@ -98,6 +98,7 @@ internal sealed class AbilityProfileController
             : _abilityRepository.LoadAbilities();
         foreach (var entry in entries)
         {
+            entry.EffectType = NormalizeEffectCode(entry.EffectType);
             ResolveRowIcon(entry);
             _abilityEntries.Add(entry);
         }
@@ -151,6 +152,19 @@ internal sealed class AbilityProfileController
         row.IconSource = entry.Icon is null ? null : _iconLoader.Load(entry.Icon);
         UpdateSummary();
         return row;
+    }
+
+    /// <summary>Canonical effect codes are m/s/r; older saves may carry
+    /// long-form names which the grid dropdown can't display.</summary>
+    private static string NormalizeEffectCode(string raw)
+    {
+        return raw.Trim().ToLowerInvariant() switch
+        {
+            "m" or "mezz" or "mesmerize" or "mesmerise" => "m",
+            "s" or "stun" => "s",
+            "r" or "root" => "r",
+            _ => "s"
+        };
     }
 
     private void ResolveRowIcon(AbilityEditorRow row)

@@ -12,6 +12,14 @@ public partial class AbilitiesView : System.Windows.Controls.UserControl
     public AbilitiesView()
     {
         InitializeComponent();
+        // Free-text effect codes silently fall back to Stun — a dropdown
+        // can't produce an invalid one.
+        EffectTypeColumn.ItemsSource = new[]
+        {
+            new { Code = "s", Label = "Stun (s)" },
+            new { Code = "m", Label = "Mezz (m)" },
+            new { Code = "r", Label = "Root (r)" }
+        };
     }
 
     private void AbilityFilter_TextChanged(object sender, TextChangedEventArgs e)

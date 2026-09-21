@@ -123,7 +123,12 @@
                                 <DataGridTextColumn Header="OCR Aliases" Binding="{Binding Aliases, UpdateSourceTrigger=PropertyChanged}" Width="180" />
                                 <DataGridTextColumn Header="Skill Code" Binding="{Binding SkillCode, UpdateSourceTrigger=PropertyChanged}" Width="110" />
                                 <DataGridTextColumn Header="Duration (s)" Binding="{Binding DurationSeconds, UpdateSourceTrigger=PropertyChanged}" Width="110" />
-                                <DataGridTextColumn Header="Effect Type" Binding="{Binding EffectType, UpdateSourceTrigger=PropertyChanged}" Width="110" />
+                                <DataGridComboBoxColumn Header="Effect Type"
+                                                        x:Name="EffectTypeColumn" x:FieldModifier="public"
+                                                        SelectedValueBinding="{Binding EffectType, UpdateSourceTrigger=PropertyChanged}"
+                                                        SelectedValuePath="Code"
+                                                        DisplayMemberPath="Label"
+                                                        Width="110" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
