@@ -25,6 +25,7 @@ internal sealed class RuntimeController : IDisposable
     private readonly IResponseDiagnostics? _responseDiagnostics;
     private readonly DesktopOverlayRenderer _liveOverlay;
     private readonly AbilityIconIndex _abilityIconIndex;
+    private readonly IAlertSound? _alertSound;
 
     // The controller owns the live loop; the window supplies per-tick input and
     // subscribes to tick events once — rebuilds swap the session underneath.
@@ -44,7 +45,8 @@ internal sealed class RuntimeController : IDisposable
         DesktopOverlayRenderer liveOverlay,
         AbilityIconIndex? abilityIconIndex = null,
         IOnlineSyncService? onlineSync = null,
-        IResponseDiagnostics? responseDiagnostics = null)
+        IResponseDiagnostics? responseDiagnostics = null,
+        IAlertSound? alertSound = null)
     {
         _settingsRepository = settingsRepository;
         _catalogOverrideRepository = catalogOverrideRepository;
@@ -58,6 +60,7 @@ internal sealed class RuntimeController : IDisposable
         _liveOverlay = liveOverlay;
         _abilityIconIndex = abilityIconIndex ?? new AbilityIconIndex(catalogOverrideRepository);
         _responseDiagnostics = responseDiagnostics;
+        _alertSound = alertSound;
     }
 
     public event Action<LoopTickResult>? TickCompleted;
@@ -152,7 +155,8 @@ internal sealed class RuntimeController : IDisposable
                 onCharacterStatsSaved();
             },
             _targetProfileCache,
-            _onlineSync);
+            _onlineSync,
+            _alertSound);
 
         return new RuntimeSession(orchestrator, debugOverlay, runtimeSettings, capture, captureChain);
     }

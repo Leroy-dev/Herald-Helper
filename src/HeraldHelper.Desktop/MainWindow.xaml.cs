@@ -109,6 +109,11 @@ public partial class MainWindow : Window
     private System.Windows.Controls.TextBox OverlayWorldXText => OverlayView!.OverlayWorldXText;
     private System.Windows.Controls.TextBox OverlayWorldYText => OverlayView!.OverlayWorldYText;
     private System.Windows.Controls.TextBox OverlayWorldSizeText => OverlayView!.OverlayWorldSizeText;
+    private System.Windows.Controls.CheckBox SoundsEnabledCheckbox => OverlayView!.SoundsEnabledCheckbox;
+    private System.Windows.Controls.CheckBox SoundSelfCcCheckbox => OverlayView!.SoundSelfCcCheckbox;
+    private System.Windows.Controls.CheckBox SoundPeelCheckbox => OverlayView!.SoundPeelCheckbox;
+    private System.Windows.Controls.CheckBox SoundInterruptCheckbox => OverlayView!.SoundInterruptCheckbox;
+    private System.Windows.Controls.TextBox OverlayOpacityText => OverlayView!.OverlayOpacityText;
     private System.Windows.Controls.TextBox TargetColorText => OverlayView!.TargetColorText;
     private System.Windows.Controls.CheckBox UseRealmColorsCheckbox => OverlayView!.UseRealmColorsCheckbox;
     private System.Windows.Controls.TextBox TimerColorText => OverlayView!.TimerColorText;
@@ -1221,6 +1226,7 @@ public partial class MainWindow : Window
         OverlayWorldXText.Text = settings.WorldX.ToString();
         OverlayWorldYText.Text = settings.WorldY.ToString();
         OverlayWorldSizeText.Text = settings.WorldSize.ToString();
+        OverlayOpacityText.Text = ((int)Math.Round(settings.OverlayOpacity * 100)).ToString();
 
         BindToggle(ShowTargetCheckbox, settings.ShowTarget, OverlayVisibilityChanged);
         BindToggle(ShowTimersCheckbox, settings.ShowTimers, OverlayVisibilityChanged);
@@ -1230,6 +1236,10 @@ public partial class MainWindow : Window
         BindToggle(ShowSelfCcCheckbox, settings.ShowSelfCc, OverlayVisibilityChanged);
         BindToggle(ShowPeelCheckbox, settings.ShowPeel, OverlayVisibilityChanged);
         BindToggle(ShowWorldCheckbox, settings.ShowWorld, OverlayVisibilityChanged);
+        BindToggle(SoundsEnabledCheckbox, settings.SoundsEnabled, OverlayVisibilityChanged);
+        BindToggle(SoundSelfCcCheckbox, settings.SoundSelfCc, OverlayVisibilityChanged);
+        BindToggle(SoundPeelCheckbox, settings.SoundPeel, OverlayVisibilityChanged);
+        BindToggle(SoundInterruptCheckbox, settings.SoundInterrupt, OverlayVisibilityChanged);
         BindToggle(ShowGuildCheckbox, settings.ShowGuild, OverlayVisibilityChanged);
         BindToggle(ShowClassCheckbox, settings.ShowClass, OverlayVisibilityChanged);
         BindToggle(ShowLevelCheckbox, settings.ShowLevel, OverlayVisibilityChanged);

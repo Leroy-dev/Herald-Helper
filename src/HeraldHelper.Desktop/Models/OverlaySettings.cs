@@ -39,6 +39,11 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private bool _showSelfCc = true;
     private bool _showPeel = true;
     private bool _showWorld = true;
+    private bool _soundsEnabled;
+    private bool _soundSelfCc = true;
+    private bool _soundPeel = true;
+    private bool _soundInterrupt = true;
+    private double _overlayOpacity = 1.0;
     private bool _showGuild = true;
     private bool _showClass = true;
     private bool _showLevel = true;
@@ -86,6 +91,11 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public bool ShowSelfCc { get => _showSelfCc; set { _showSelfCc = value; OnPropertyChanged(nameof(ShowSelfCc)); } }
     public bool ShowPeel { get => _showPeel; set { _showPeel = value; OnPropertyChanged(nameof(ShowPeel)); } }
     public bool ShowWorld { get => _showWorld; set { _showWorld = value; OnPropertyChanged(nameof(ShowWorld)); } }
+    public bool SoundsEnabled { get => _soundsEnabled; set { _soundsEnabled = value; OnPropertyChanged(nameof(SoundsEnabled)); } }
+    public bool SoundSelfCc { get => _soundSelfCc; set { _soundSelfCc = value; OnPropertyChanged(nameof(SoundSelfCc)); } }
+    public bool SoundPeel { get => _soundPeel; set { _soundPeel = value; OnPropertyChanged(nameof(SoundPeel)); } }
+    public bool SoundInterrupt { get => _soundInterrupt; set { _soundInterrupt = value; OnPropertyChanged(nameof(SoundInterrupt)); } }
+    public double OverlayOpacity { get => _overlayOpacity; set { _overlayOpacity = Math.Clamp(value, 0.3, 1.0); OnPropertyChanged(nameof(OverlayOpacity)); } }
     public bool ShowGuild { get => _showGuild; set { _showGuild = value; OnPropertyChanged(nameof(ShowGuild)); } }
     public bool ShowClass { get => _showClass; set { _showClass = value; OnPropertyChanged(nameof(ShowClass)); } }
     public bool ShowLevel { get => _showLevel; set { _showLevel = value; OnPropertyChanged(nameof(ShowLevel)); } }

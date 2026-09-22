@@ -59,6 +59,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     private readonly ITargetProfileCache? _targetProfileCache;
     private readonly IOnlineSyncService? _onlineSync;
     private readonly IAdapterValueSource? _adapterValueSource;
+    private readonly IAlertSound? _alertSound;
     private CastBarState? _activeCast;
 
     public GameLoopOrchestrator(
@@ -80,7 +81,8 @@ public sealed class GameLoopOrchestrator : IDisposable
         IOcrReplaySink? ocrReplaySink = null,
         ITargetProfileCache? targetProfileCache = null,
         IOnlineSyncService? onlineSync = null,
-        IAdapterValueSource? adapterValueSource = null)
+        IAdapterValueSource? adapterValueSource = null,
+        IAlertSound? alertSound = null)
     {
         _chatCaptureService = chatCaptureService;
         _chatEventParser = chatEventParser;
@@ -101,6 +103,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         _targetProfileCache = targetProfileCache;
         _onlineSync = onlineSync;
         _adapterValueSource = adapterValueSource;
+        _alertSound = alertSound;
 
         foreach (var shard in Enum.GetValues<ShardType>())
         {
@@ -361,6 +364,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         {
             _selfCc = new SelfCcState(cc.Effect, nowUtc);
             _diagnostics?.Log($"[SelfCC] {cc.Effect}");
+            _alertSound?.Play(AlertKind.SelfCc);
         }
 
         foreach (var attack in _incomingAttackTracker.ObserveFrame(
@@ -371,6 +375,12 @@ public sealed class GameLoopOrchestrator : IDisposable
             _attackers.TryGetValue(attack.Attacker, out var entry);
             _attackers[attack.Attacker] = new PeelEntry(
                 attack.Attacker, (entry?.HitCount ?? 0) + 1, nowUtc);
+            if (entry is null)
+            {
+                // First sighting of this attacker — that's the alert moment,
+                // not every swing afterwards.
+                _alertSound?.Play(AlertKind.IncomingAttack);
+            }
             _diagnostics?.Log($"[Combat] {attack.Attacker} hit you" +
                               (attack.Damage is { } dmg ? $" for {dmg}" : "") +
                               (attack.IsCritical ? " (crit)" : "") +
@@ -473,6 +483,7 @@ public sealed class GameLoopOrchestrator : IDisposable
             _activeCast = null;
             _castInterruptedUntil = nowUtc.AddSeconds(1.4);
             _diagnostics?.Log("[Cast] interrupted");
+            _alertSound?.Play(AlertKind.CastInterrupted);
             return;
         }
 

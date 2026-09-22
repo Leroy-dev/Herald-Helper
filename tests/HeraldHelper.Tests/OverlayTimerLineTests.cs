@@ -22,4 +22,24 @@ public sealed class OverlayTimerLineTests
         Assert.Contains(lines, l => l.Text.Contains("Foo ·Cle"));
         Assert.Contains(lines, l => l.Text.StartsWith("M Bar ") && !l.Text.Contains('·'));
     }
+
+    [Fact]
+    public void BuildTimerLines_SortsByRemaining_MarksExpiring()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var timers = new[]
+        {
+            new CcTimerEntry("Long", ControlEffectType.Stun, now.AddSeconds(50)),
+            new CcTimerEntry("Soon", ControlEffectType.Mezz, now.AddSeconds(2)),
+            new CcTimerEntry("Mid", ControlEffectType.Root, now.AddSeconds(20))
+        };
+
+        var lines = DesktopOverlayRenderer.BuildTimerLines(timers, Colors.White)!;
+
+        Assert.True(lines[0].Text.Contains("Soon"), "expiring timer should sort first");
+        Assert.StartsWith("! ", lines[0].Text);
+        // Flash color alternates between white and the effect color with the
+        // render tick — both are acceptable, don't pin to the millisecond.
+        Assert.DoesNotContain(lines.Skip(1), l => l.Text.StartsWith("! "));
+    }
 }

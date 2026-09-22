@@ -27,7 +27,8 @@ public static class AppComposition
         Func<CharacterStatsSnapshot?>? loadCharacterStats = null,
         Action<CharacterStatsSnapshot>? saveCharacterStats = null,
         ITargetProfileCache? targetProfileCache = null,
-        IOnlineSyncService? onlineSync = null)
+        IOnlineSyncService? onlineSync = null,
+        IAlertSound? alertSound = null)
     {
         getSettings ??= () => settingsMap;
         var settings = AppRuntimeSettings.FromMap(settingsMap);
@@ -148,7 +149,8 @@ public static class AppComposition
             replaySink,
             targetProfileCache,
             onlineSync,
-            windowAwareCapture as IAdapterValueSource);
+            windowAwareCapture as IAdapterValueSource,
+            alertSound);
 
         return (orchestrator, overlay, settings, capture, windowAwareCapture);
     }

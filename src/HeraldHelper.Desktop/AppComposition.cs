@@ -55,6 +55,9 @@ internal static class AppServiceProvider
                 () => sp.GetRequiredService<SettingsController>().LoadMap()));
         services.AddSingleton<IOverlayRenderer>(sp => sp.GetRequiredService<DesktopOverlayRenderer>());
 
+        services.AddSingleton<HeraldHelper.Application.Contracts.IAlertSound>(sp =>
+            new AlertSoundService(() => sp.GetRequiredService<OverlaySettingsController>().Load()));
+
         services.AddSingleton<IShardAuthRefreshService>(sp =>
         {
             var settings = sp.GetRequiredService<SettingsController>();

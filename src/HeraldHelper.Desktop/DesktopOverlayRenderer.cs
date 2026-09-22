@@ -74,6 +74,16 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
 
             var overlay = _getOverlay();
 
+            var opacity = Math.Clamp(overlay.OverlayOpacity, 0.3, 1.0);
+            _targetWindow.Opacity = opacity;
+            _timerWindow.Opacity = opacity;
+            _resistsWindow.Opacity = opacity;
+            _castBarWindow.Opacity = opacity;
+            _groupWindow.Opacity = opacity;
+            _selfCcWindow.Opacity = opacity;
+            _peelWindow.Opacity = opacity;
+            _worldWindow.Opacity = opacity;
+
             var ox = overlay.X;
             var oy = overlay.Y;
             var tx = overlay.TimerX;
@@ -578,13 +588,24 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         }
 
         var now = DateTimeOffset.UtcNow;
+        // Expiring-soon timers float to the top and blink — the render cadence
+        // (~350ms) alternates them between the effect color and near-white.
+        var flashOn = now.Millisecond < 500;
         return timers
-            .OrderBy(x => x.TargetName, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(x => x.EffectType)
-            .Select(x => (
-                $"{ShortType(x.EffectType)} {x.TargetName}{ShortClassTag(x.TargetClass)} {x.RemainingSeconds(now)}",
-                EffectTypeColor(x.EffectType, fallbackColor),
-                x.Icon))
+            .OrderBy(x => x.RemainingSeconds(now))
+            .ThenBy(x => x.TargetName, StringComparer.OrdinalIgnoreCase)
+            .Select(x =>
+            {
+                var remaining = x.RemainingSeconds(now);
+                var expiring = remaining is > 0 and < 3;
+                var color = expiring && flashOn
+                    ? Colors.White
+                    : EffectTypeColor(x.EffectType, fallbackColor);
+                return (
+                    $"{(expiring ? "! " : "")}{ShortType(x.EffectType)} {x.TargetName}{ShortClassTag(x.TargetClass)} {remaining}",
+                    color,
+                    x.Icon);
+            })
             .Take(12)
             .ToList();
     }
