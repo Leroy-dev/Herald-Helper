@@ -213,7 +213,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)peelLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 px, py, overlay.PeelSize, overlay.TimerFontFamily, outlineColor);
 
-            var worldLines = overlay.ShowWorld ? BuildWorldTimerLines(snapshot.ClientState) : null;
+            var worldLines = overlay.ShowWorld ? BuildWorldTimerLines(snapshot.ClientState, snapshot.RecentRealmAbilityUses) : null;
             _worldWindow.Update(
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)worldLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 wx, wy, overlay.WorldSize, overlay.TimerFontFamily, outlineColor);
@@ -443,17 +443,37 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     /// <summary>Siege/relic/release/world timers straight out of the adapter
     /// map — the client's own widgets, flattened to text lines.</summary>
     internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildWorldTimerLines(
-        ClientStateSnapshot? state)
+        ClientStateSnapshot? state,
+        IReadOnlyCollection<RealmAbilityActivation>? raUses = null)
     {
-        if (state is null)
-        {
-            return null;
-        }
-
         var lines = new List<(string, MediaColor, IconSpriteRef?)>();
         var siegeColor = MediaColor.FromRgb(0xE7, 0xA9, 0x3A);
         var relicColor = MediaColor.FromRgb(0x4A, 0x9F, 0xE7);
         var neutral = MediaColor.FromRgb(0xDC, 0xDC, 0xDC);
+        var raColor = MediaColor.FromRgb(0x9C, 0x6E, 0xE8);
+        var now = DateTimeOffset.UtcNow;
+
+        if (raUses is not null)
+        {
+            foreach (var ra in raUses.OrderByDescending(x => x.UsedUtc).Take(6))
+            {
+                var elapsed = now - ra.UsedUtc;
+                if (ra.CooldownSeconds is { } cooldown && elapsed.TotalSeconds < cooldown)
+                {
+                    var left = TimeSpan.FromSeconds(cooldown) - elapsed;
+                    lines.Add(($"RA {ra.AbilityName} {left:m\\:ss}", raColor, null));
+                }
+                else if (elapsed.TotalMinutes < 30)
+                {
+                    lines.Add(($"RA {ra.AbilityName} {elapsed.TotalMinutes:0}m ago", raColor, null));
+                }
+            }
+        }
+
+        if (state is null)
+        {
+            return lines.Count == 0 ? null : lines;
+        }
 
         if (state.Siege is { } siege)
         {

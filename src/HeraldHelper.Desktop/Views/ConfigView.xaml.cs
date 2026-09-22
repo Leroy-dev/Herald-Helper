@@ -54,4 +54,8 @@ public partial class ConfigView : System.Windows.Controls.UserControl
     {
         Main?.ConservativeMode_Click(sender, e);
     }
+    private void CheckUpdates_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.CheckUpdates_Click(sender, e);
+    }
 }

@@ -105,7 +105,10 @@ public partial class MainWindow : Window
                 new PeelEntry("Xmlbeastie", 3, now.AddSeconds(-2)),
                 new PeelEntry("Moolish", 1, now.AddSeconds(-6))
             ],
-            null,
+            [
+                new RealmAbilityActivation("Purge", now.AddSeconds(-7 * 60), 20 * 60),
+                new RealmAbilityActivation("Ameliorating Melodies", now.AddSeconds(-95), 30 * 60)
+            ],
             new ClientStateSnapshot(
                 [
                     new GroupMemberState(0, "Leroy", "Cleric", 100, 87, 55, 50, "Emain Macha", null, null, null, []),

@@ -70,4 +70,12 @@ public partial class AbilitiesView : System.Windows.Controls.UserControl
     {
         Main?.AbilityTestLine_Click(sender, e);
     }
+    private void ExportProfile_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.ExportProfile_Click(sender, e);
+    }
+    private void ImportProfile_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.ImportProfile_Click(sender, e);
+    }
 }

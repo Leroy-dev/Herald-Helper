@@ -314,6 +314,95 @@ public partial class MainWindow : Window
                (row.Level?.ToString().Contains(fragment, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
+    internal void ExportProfile_Click(object sender, RoutedEventArgs e)
+    {
+        var rows = _abilityProfileController.AbilityEntries;
+        if (rows.Count == 0)
+        {
+            OutputBox.Text = "Nothing to export — the profile is empty.";
+            return;
+        }
+
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "Export ability profile",
+            Filter = "JSON files (*.json)|*.json",
+            FileName = $"abilities-{_abilityProfileController.Shard.ToString().ToLowerInvariant()}-{(_abilityProfileController.Class ?? "manual").ToLowerInvariant()}.json"
+        };
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        File.WriteAllText(dialog.FileName, JsonSerializer.Serialize(
+            rows, new JsonSerializerOptions { WriteIndented = true }));
+        OutputBox.Text = $"Profile exported: {rows.Count} rows → {dialog.FileName}";
+    }
+
+    internal void ImportProfile_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Import ability profile",
+            Filter = "JSON files (*.json)|*.json",
+            CheckFileExists = true
+        };
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        List<AbilityEditorRow>? imported;
+        try
+        {
+            imported = JsonSerializer.Deserialize<List<AbilityEditorRow>>(File.ReadAllText(dialog.FileName));
+        }
+        catch (Exception ex)
+        {
+            OutputBox.Text = $"Import failed — not a profile file: {ex.Message}";
+            return;
+        }
+
+        var rows = imported?.Where(r => !string.IsNullOrWhiteSpace(r.AbilityName)).ToList();
+        if (rows is null || rows.Count == 0)
+        {
+            OutputBox.Text = "Import failed — the file holds no ability rows.";
+            return;
+        }
+
+        var existing = _abilityProfileController.AbilityEntries;
+        var added = 0;
+        var updated = 0;
+        foreach (var row in rows)
+        {
+            var match = existing.FirstOrDefault(x =>
+                x.AbilityName.Equals(row.AbilityName.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (match is null)
+            {
+                existing.Add(row);
+                added++;
+            }
+            else
+            {
+                match.IsEnabled = row.IsEnabled;
+                match.SkillCode = row.SkillCode;
+                match.DurationSeconds = Math.Max(1, row.DurationSeconds);
+                match.EffectType = row.EffectType;
+                match.Category = row.Category;
+                match.Level = row.Level;
+                match.Aliases = row.Aliases;
+                match.SourceAbilityName = row.SourceAbilityName;
+                match.SourceEffectType = row.SourceEffectType;
+                updated++;
+            }
+        }
+
+        _abilityProfileController.MarkDirty();
+        _abilityProfileController.UpdateSummary();
+        AbilityProfileSummaryText.Text = _abilityProfileController.Summary;
+        OutputBox.Text = $"Profile imported: {added} added, {updated} updated — save to keep it.";
+    }
+
     internal void AbilityProfileClassCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_isBindingControls || _abilityProfileController.Shard == ShardType.Default ||

@@ -60,6 +60,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     private readonly IOnlineSyncService? _onlineSync;
     private readonly IAdapterValueSource? _adapterValueSource;
     private readonly IAlertSound? _alertSound;
+    private readonly IReadOnlyDictionary<string, int> _realmAbilityCooldowns;
     private CastBarState? _activeCast;
 
     public GameLoopOrchestrator(
@@ -82,7 +83,8 @@ public sealed class GameLoopOrchestrator : IDisposable
         ITargetProfileCache? targetProfileCache = null,
         IOnlineSyncService? onlineSync = null,
         IAdapterValueSource? adapterValueSource = null,
-        IAlertSound? alertSound = null)
+        IAlertSound? alertSound = null,
+        IReadOnlyDictionary<string, int>? realmAbilityCooldowns = null)
     {
         _chatCaptureService = chatCaptureService;
         _chatEventParser = chatEventParser;
@@ -104,6 +106,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         _onlineSync = onlineSync;
         _adapterValueSource = adapterValueSource;
         _alertSound = alertSound;
+        _realmAbilityCooldowns = realmAbilityCooldowns ?? new Dictionary<string, int>(0);
 
         foreach (var shard in Enum.GetValues<ShardType>())
         {
@@ -409,7 +412,9 @@ public sealed class GameLoopOrchestrator : IDisposable
                      static x => x.AbilityName,
                      static x => x.OccurrenceOrdinal))
         {
-            _realmAbilityUses.Add(new RealmAbilityActivation(ra.AbilityName, nowUtc));
+            _realmAbilityUses.Add(new RealmAbilityActivation(
+                ra.AbilityName, nowUtc,
+                _realmAbilityCooldowns.TryGetValue(ra.AbilityName, out var cooldown) ? cooldown : null));
             _diagnostics?.Log($"[RA] {ra.AbilityName}");
         }
     }
@@ -434,7 +439,10 @@ public sealed class GameLoopOrchestrator : IDisposable
         {
             _attackers.Remove(stale);
         }
-        _realmAbilityUses.RemoveAll(x => nowUtc - x.UsedUtc > TimeSpan.FromMinutes(30));
+        // Drop RA uses once their cooldown expired — unknown cooldowns keep a
+        // 30-minute shelf life so the list can't grow forever.
+        _realmAbilityUses.RemoveAll(x =>
+            nowUtc - x.UsedUtc > TimeSpan.FromSeconds(x.CooldownSeconds ?? 1800));
 
         var snapshot = new OverlaySnapshot(
             GetLastTarget(),

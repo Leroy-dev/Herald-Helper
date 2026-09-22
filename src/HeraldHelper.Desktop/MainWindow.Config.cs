@@ -446,4 +446,10 @@ public partial class MainWindow : Window
         OutputBox.Text = "Backup imported and runtime refreshed.";
     }
 
+    internal async void CheckUpdates_Click(object sender, RoutedEventArgs e)
+    {
+        OutputBox.Text = "Checking for updates…";
+        OutputBox.Text = await UpdateCheckService.CheckAsync();
+    }
+
 }

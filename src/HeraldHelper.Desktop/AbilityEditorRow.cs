@@ -19,5 +19,6 @@ public sealed class AbilityEditorRow
 
     /// <summary>Resolved catalog icon for the ability name — display only,
     /// refreshed when rows are loaded. Not persisted.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
     public System.Windows.Media.ImageSource? IconSource { get; set; }
 }

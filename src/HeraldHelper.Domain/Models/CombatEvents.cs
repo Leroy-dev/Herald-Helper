@@ -29,5 +29,10 @@ public sealed record CombatLifeEvent(CombatLifeKind Kind, string? OtherName, int
 /// the consumer maps the name to a known RA + cooldown.</summary>
 public sealed record RealmAbilityEvent(string AbilityName, int OccurrenceOrdinal);
 
-/// <summary>A tracked RA activation with its timestamp (for cooldown timers).</summary>
-public sealed record RealmAbilityActivation(string AbilityName, DateTimeOffset UsedUtc);
+/// <summary>A tracked RA activation with its timestamp (for cooldown timers).
+/// CooldownSeconds comes from the charplan delve ("Can use every: 20:00 min")
+/// when the catalog provides one — null means elapsed-only display.</summary>
+public sealed record RealmAbilityActivation(
+    string AbilityName,
+    DateTimeOffset UsedUtc,
+    int? CooldownSeconds = null);

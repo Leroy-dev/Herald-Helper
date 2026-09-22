@@ -77,6 +77,18 @@
                                     <TextBlock Text="Remove Selected" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="ExportProfile_Click" ToolTip="Export the current ability profile to a JSON file you can share or back up">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="FileExport" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                    <TextBlock Text="Export" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource ToolbarButtonStyle}" Click="ImportProfile_Click" ToolTip="Import a profile JSON — rows matching by name get updated, new rows are added">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="FileImport" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                    <TextBlock Text="Import" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
                         </WrapPanel>
                         <WrapPanel Grid.Row="2" Margin="0,0,0,10">
                             <TextBox Width="420"
