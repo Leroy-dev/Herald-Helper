@@ -227,7 +227,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)peelLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 px, py, overlay.PeelSize, overlay.TimerFontFamily, outlineColor);
 
-            var worldLines = overlay.ShowWorld ? BuildWorldTimerLines(snapshot.ClientState, snapshot.RecentRealmAbilityUses, snapshot.CombatStats) : null;
+            var worldLines = overlay.ShowWorld ? BuildWorldTimerLines(snapshot.RecentRealmAbilityUses, snapshot.CombatStats) : null;
             _worldWindow.Update(
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)worldLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 wx, wy, overlay.WorldSize, overlay.TimerFontFamily, outlineColor);
@@ -480,17 +480,14 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             .ToList();
     }
 
-    /// <summary>Siege/relic/release/world timers straight out of the adapter
-    /// map — the client's own widgets, flattened to text lines.</summary>
+    /// <summary>World window = session stats header + realm-ability cooldowns.
+    /// (Siege/relic/release adapter widgets were removed — they only ever
+    /// showed 0s placeholders without the matching client window open.)</summary>
     internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildWorldTimerLines(
-        ClientStateSnapshot? state,
         IReadOnlyCollection<RealmAbilityActivation>? raUses = null,
         SessionCombatStats? stats = null)
     {
         var lines = new List<(string, MediaColor, IconSpriteRef?)>();
-        var siegeColor = MediaColor.FromRgb(0xE7, 0xA9, 0x3A);
-        var relicColor = MediaColor.FromRgb(0x4A, 0x9F, 0xE7);
-        var neutral = MediaColor.FromRgb(0xDC, 0xDC, 0xDC);
         var raColor = MediaColor.FromRgb(0x9C, 0x6E, 0xE8);
         var statColor = MediaColor.FromRgb(0x8E, 0x9E, 0xB0);
         var now = DateTimeOffset.UtcNow;
@@ -518,44 +515,6 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                     lines.Add(($"RA {ra.AbilityName} {elapsed.TotalMinutes:0}m ago", raColor, null));
                 }
             }
-        }
-
-        if (state is null)
-        {
-            return lines.Count == 0 ? null : lines;
-        }
-
-        if (state.Siege is { } siege)
-        {
-            if (siege.TimerSeconds is { } t)
-            {
-                lines.Add(($"Siege {t:0}s", siegeColor, null));
-            }
-            if (siege.Moving)
-            {
-                lines.Add(("Siege moving!", siegeColor, null));
-            }
-            if (siege.Hits is { } hits)
-            {
-                lines.Add(($"Siege ×{hits} hits", siegeColor, null));
-            }
-            if (siege.HelperTimerSeconds is { } h)
-            {
-                lines.Add(($"Helper {h:0}s", siegeColor, null));
-            }
-        }
-
-        if (state.RelicTimePercent is { } relic)
-        {
-            lines.Add(($"Relic {relic:0}%", relicColor, null));
-        }
-        if (state.ReleaseTimerSeconds is { } release)
-        {
-            lines.Add(($"Release {release:0}s", neutral, null));
-        }
-        if (state.TimerSeconds is { } timer)
-        {
-            lines.Add(($"Timer {timer:0}s", neutral, null));
         }
 
         return lines.Count == 0 ? null : lines;

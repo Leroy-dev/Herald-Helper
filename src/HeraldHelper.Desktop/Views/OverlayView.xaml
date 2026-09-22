@@ -39,15 +39,17 @@
                                 <CheckBox x:Name="ShowCastBarCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Spellbar" />
                                 <CheckBox x:Name="ShowResistsCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Resists"
                                           ToolTip="Show Thrust/Slash/Crush for the target's armor class — green = weak to it, red = resists it." />
-                                <CheckBox x:Name="ShowGroupCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Group Frames"
+                                <!-- Group frames + buffs/pet read process memory (adapter feed) —
+                                     experimental features stay hidden from the options UI. -->
+                                <CheckBox x:Name="ShowGroupCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Group Frames" Visibility="Collapsed"
                                           ToolTip="Show group member frames (name, class, HP/End/Pow bars) — data comes from the client's group adapters, so it needs process-memory stats enabled (or a shard that feeds the adapter map). Not available in conservative mode." />
                                 <CheckBox x:Name="ShowSelfCcCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Self-CC"
                                           ToolTip="Big banner when you get stunned/mesmerized/rooted — shows elapsed time since the CC landed." />
                                 <CheckBox x:Name="ShowPeelCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Peel"
                                           ToolTip="List of enemies who attacked you recently (attacker + hit count) — who's trying to peel you." />
-                                <CheckBox x:Name="ShowWorldCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show World Timers"
-                                          ToolTip="Siege weapon timers, relic countdown, release timer and the generic /timer — read from the client's own adapter widgets (needs stats memory read)." />
-                                <CheckBox x:Name="ShowBuffsCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Buffs/Pet"
+                                <CheckBox x:Name="ShowWorldCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Session/RA"
+                                          ToolTip="Session stats (uptime, K/D, hits taken) and realm-ability cooldowns — driven by chat events, no memory read needed." />
+                                <CheckBox x:Name="ShowBuffsCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Buffs/Pet" Visibility="Collapsed"
                                           ToolTip="Your buff list (concentration orange, regular cyan) and pet name/HP — adapter data, needs stats memory read." />
                                 <CheckBox x:Name="ShowChatCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Chat"
                                           ToolTip="Rolling overlay of the last chat lines — handy when the game chat window is hidden or scrolled away." />
@@ -138,7 +140,7 @@
                                             </StackPanel>
                                         </Button>
                                     </WrapPanel>
-                                    <WrapPanel Margin="0,0,0,8">
+                                    <WrapPanel Margin="0,0,0,8" Visibility="Collapsed">
                                         <TextBox Width="90" x:Name="OverlayGroupXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Group X" />
                                         <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayGroupYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Group Y" />
                                         <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickGroupOverlayPosition_Click" ToolTip="Drag the group frames position">
@@ -178,7 +180,7 @@
                                             </StackPanel>
                                         </Button>
                                     </WrapPanel>
-                                    <WrapPanel Margin="0,0,0,8">
+                                    <WrapPanel Margin="0,0,0,8" Visibility="Collapsed">
                                         <TextBox Width="90" x:Name="OverlayBuffXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Buffs X" />
                                         <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayBuffYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Buffs Y" />
                                         <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickBuffOverlayPosition_Click" ToolTip="Drag the buff list position">
@@ -231,7 +233,7 @@
                                             </StackPanel>
                                         </Button>
                                     </WrapPanel>
-                                    <WrapPanel Margin="0,8,0,0">
+                                    <WrapPanel Margin="0,8,0,0" Visibility="Collapsed">
                                         <TextBlock Width="140" VerticalAlignment="Center" Foreground="{DynamicResource VsMutedTextBrush}" Text="Group (timer font)" />
                                         <TextBox Width="60" x:Name="OverlayGroupSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Size" />
                                     </WrapPanel>
@@ -247,7 +249,7 @@
                                         <TextBlock Width="140" VerticalAlignment="Center" Foreground="{DynamicResource VsMutedTextBrush}" Text="World (timer font)" />
                                         <TextBox Width="60" x:Name="OverlayWorldSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Size" />
                                     </WrapPanel>
-                                    <WrapPanel Margin="0,8,0,0">
+                                    <WrapPanel Margin="0,8,0,0" Visibility="Collapsed">
                                         <TextBlock Width="140" VerticalAlignment="Center" Foreground="{DynamicResource VsMutedTextBrush}" Text="Buffs (timer font)" />
                                         <TextBox Width="60" x:Name="OverlayBuffSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Size" />
                                     </WrapPanel>

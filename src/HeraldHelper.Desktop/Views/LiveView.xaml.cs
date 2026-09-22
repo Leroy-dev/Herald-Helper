@@ -184,7 +184,14 @@ public partial class LiveView : System.Windows.Controls.UserControl
                 : new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE8, 0x8A, 0x8A));
         }
 
-        PlayerVitalsText.Text = $"HP {V(values, "stats_hitpoints") ?? "—"}    End {V(values, "summary_player_end") ?? "—"}    Pow {V(values, "summary_player_power") ?? "—"}    Conc {V(values, "concentration") ?? "—"}";
+        // stats_hitpoints is the character-sheet MAX — current health is the
+        // summary bar's percent (summary_player_hits), so show cur/max.
+        var hitsPct = N(values, "summary_player_hits");
+        var maxHp = N(values, "stats_hitpoints");
+        var hpText = hitsPct is { } pct && maxHp is { } max && max > 0
+            ? $"{(int)Math.Round(pct * max / 100)}/{(int)max}"
+            : hitsPct is { } p ? $"{p:0}%" : "—";
+        PlayerVitalsText.Text = $"HP {hpText}    End {V(values, "summary_player_end") ?? "—"}    Pow {V(values, "summary_player_power") ?? "—"}    Conc {V(values, "concentration") ?? "—"}";
 
         PlayerWeaponText.Text = $"Dmg {V(values, "stats_weapon_damage") ?? "—"}    Skill {V(values, "stats_weapon_skill") ?? "—"}    AF {V(values, "stats_armor_factor") ?? "—"}    BP {V(values, "bounty_points") ?? "—"}";
 
@@ -203,6 +210,12 @@ public partial class LiveView : System.Windows.Controls.UserControl
 
     private static string? V(IReadOnlyDictionary<string, string> values, string key) =>
         values.TryGetValue(key, out var v) && !string.IsNullOrWhiteSpace(v) ? v : null;
+
+    private static double? N(IReadOnlyDictionary<string, string> values, string key) =>
+        V(values, key) is { } raw &&
+        double.TryParse(raw.Trim().TrimEnd('%'), System.Globalization.CultureInfo.InvariantCulture, out var n)
+            ? n
+            : null;
 
     /// <summary>Client con colors arrive as RRGGBB (no '#').</summary>
     private static System.Windows.Media.Color? ParseHexColor(string raw)
