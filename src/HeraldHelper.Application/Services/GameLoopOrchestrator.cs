@@ -35,6 +35,15 @@ public sealed class GameLoopOrchestrator : IDisposable
     // next cast. One missing frame is enough to allow the same cast again.
     private readonly VisibleEventTracker _castEventTracker = new(missingFramesBeforeReset: 1);
     private readonly VisibleEventTracker _abilityEventTracker = new();
+    private readonly VisibleEventTracker _selfCcTracker = new();
+    private readonly VisibleEventTracker _incomingAttackTracker = new();
+    private readonly VisibleEventTracker _lifeEventTracker = new();
+    private readonly VisibleEventTracker _realmAbilityTracker = new();
+    private SelfCcState? _selfCc;
+    private readonly Dictionary<string, PeelEntry> _attackers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<RealmAbilityActivation> _realmAbilityUses = [];
+    private int _kills;
+    private int _deaths;
     private readonly object _targetLock = new();
     private readonly string? _activeCharacterClass;
     private readonly int? _activeCharacterLevel;
@@ -123,6 +132,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         ApplyCompletedTargetLookup(nowUtc);
         TrackTargetEvents(parseResult, shardType, nowUtc, cancellationToken);
         TrackAbilityHits(parseResult, resistPercent, nowUtc);
+        TrackCombatEvents(parseResult, nowUtc);
         await RenderFrameAsync(frame.OcrText, nowUtc, cancellationToken);
         tickStopwatch.Stop();
         _diagnostics?.Log($"[Timing] tick: {tickStopwatch.ElapsedMilliseconds} ms");
@@ -338,6 +348,61 @@ public sealed class GameLoopOrchestrator : IDisposable
         }
     }
 
+    /// <summary>Self-CC, incoming attacks, kills/deaths, and realm-ability
+    /// activations — deduped like the other chat events so a line that stays
+    /// on screen doesn't re-fire every tick.</summary>
+    private void TrackCombatEvents(ChatParseResult parseResult, DateTimeOffset nowUtc)
+    {
+        foreach (var cc in _selfCcTracker.ObserveFrame(
+                     parseResult.SelfCcEvents ?? [],
+                     static x => x.Effect.ToString(),
+                     static x => x.OccurrenceOrdinal))
+        {
+            _selfCc = new SelfCcState(cc.Effect, nowUtc);
+            _diagnostics?.Log($"[SelfCC] {cc.Effect}");
+        }
+
+        foreach (var attack in _incomingAttackTracker.ObserveFrame(
+                     parseResult.IncomingAttacks ?? [],
+                     static x => x.Attacker,
+                     static x => x.OccurrenceOrdinal))
+        {
+            _attackers.TryGetValue(attack.Attacker, out var entry);
+            _attackers[attack.Attacker] = new PeelEntry(
+                attack.Attacker, (entry?.HitCount ?? 0) + 1, nowUtc);
+            _diagnostics?.Log($"[Combat] {attack.Attacker} hit you" +
+                              (attack.Damage is { } dmg ? $" for {dmg}" : "") +
+                              (attack.IsCritical ? " (crit)" : "") +
+                              (attack.Missed ? " (missed)" : ""));
+        }
+
+        foreach (var life in _lifeEventTracker.ObserveFrame(
+                     parseResult.LifeEvents ?? [],
+                     static x => $"{x.Kind}|{x.OtherName}",
+                     static x => x.OccurrenceOrdinal))
+        {
+            if (life.Kind == CombatLifeKind.Kill)
+            {
+                _kills++;
+                _diagnostics?.Log($"[Combat] you killed {life.OtherName}");
+            }
+            else
+            {
+                _deaths++;
+                _diagnostics?.Log($"[Combat] you died" + (life.OtherName is { } killer ? $" to {killer}" : ""));
+            }
+        }
+
+        foreach (var ra in _realmAbilityTracker.ObserveFrame(
+                     parseResult.RealmAbilityEvents ?? [],
+                     static x => x.AbilityName,
+                     static x => x.OccurrenceOrdinal))
+        {
+            _realmAbilityUses.Add(new RealmAbilityActivation(ra.AbilityName, nowUtc));
+            _diagnostics?.Log($"[RA] {ra.AbilityName}");
+        }
+    }
+
     private async Task RenderFrameAsync(string ocrText, DateTimeOffset nowUtc, CancellationToken cancellationToken)
     {
         var timers = _ccImmunityTracker.GetActiveTimers(nowUtc);
@@ -346,8 +411,33 @@ public sealed class GameLoopOrchestrator : IDisposable
             _activeCast = null;
         }
 
+        // Self-CC: no duration in chat — keep the banner for the longest
+        // realistic CC (~90s), then drop it. Attackers fade after 10s.
+        if (_selfCc is not null && nowUtc - _selfCc.StartedUtc > TimeSpan.FromSeconds(90))
+        {
+            _selfCc = null;
+        }
+        foreach (var stale in _attackers
+                     .Where(x => nowUtc - x.Value.LastSeenUtc > TimeSpan.FromSeconds(10))
+                     .Select(x => x.Key).ToList())
+        {
+            _attackers.Remove(stale);
+        }
+        _realmAbilityUses.RemoveAll(x => nowUtc - x.UsedUtc > TimeSpan.FromMinutes(30));
+
+        var snapshot = new OverlaySnapshot(
+            GetLastTarget(),
+            timers,
+            _activeCast,
+            ocrText,
+            _selfCc,
+            _attackers.Values.OrderByDescending(x => x.LastSeenUtc).Take(6).ToList(),
+            _realmAbilityUses.OrderByDescending(x => x.UsedUtc).Take(12).ToList(),
+            ClientStateExtractor.Extract(_adapterValueSource?.LatestAdapterValues),
+            (_kills > 0 || _deaths > 0) ? new SessionCombatStats(_kills, _deaths) : null);
+
         var renderStopwatch = Stopwatch.StartNew();
-        await _overlayRenderer.RenderAsync(new OverlaySnapshot(GetLastTarget(), timers, _activeCast, ocrText), cancellationToken);
+        await _overlayRenderer.RenderAsync(snapshot, cancellationToken);
         renderStopwatch.Stop();
         _diagnostics?.Log($"[Timing] render: {renderStopwatch.ElapsedMilliseconds} ms");
     }

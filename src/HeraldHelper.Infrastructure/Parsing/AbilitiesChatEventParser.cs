@@ -29,6 +29,39 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
     private static readonly Regex NonMemberExamineRegex = new(
         @"you\s+exam\w*.*?(?:\bis\s+not\s+a\s+member\b|\b(?:aggressive|friendly|neutral)\s+towards\s+you\b)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+    private static readonly Regex IncomingMeleeRegex = new(
+        @"(?<name>[A-Z][A-Za-z'\-]+)\s+(?<verb>attacks?|hits?|shoots|slashes|slices|stabs|crushes|smites|criticals?|critical\s+hits?)\s+you(?:\s+for\s+(?<dmg>\d+)\s+\w*?\s*damage)?",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex IncomingMissRegex = new(
+        @"(?<name>[A-Z][A-Za-z'\-]+)\s+(?:misses|fails?\s+to\s+hit|cannot\s+hit)\s+you",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex IncomingSpellRegex = new(
+        @"(?<name>[A-Z][A-Za-z'\-]+)\s+casts?\s+a\s+spell\s+on\s+you",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex KillRegex = new(
+        @"you\s+(?:have\s+)?(?:slain|killed|slay)\s+(?<name>[A-Z][A-Za-z'\-]+)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex DeathKillerRegex = new(
+        @"(?:you\s+have\s+been\s+killed\s+by\s+(?<name>[A-Z][A-Za-z'\-]+)|(?<name>[A-Z][A-Za-z'\-]+)\s+(?:has\s+just\s+)?kills?\s+you)\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex DeathPlainRegex = new(
+        @"you\s+die\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex RealmAbilityUseRegex = new(
+        @"you\s+(?:use|activate)\s+(?<name>[A-Z][A-Za-z'\- ]{2,40}?)(?=\s*(?:[\.\!]|$|\s+on\b|\s+at\b))",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly (string Marker, ControlEffectType Effect)[] SelfCcMarkers =
+    [
+        ("you are stunned", ControlEffectType.Stun),
+        ("you are mesmerized", ControlEffectType.Mezz),
+        ("you are put to sleep", ControlEffectType.Mezz),
+        ("you fall into a deep sleep", ControlEffectType.Mezz),
+        ("you are rooted", ControlEffectType.Root),
+        ("you are snared", ControlEffectType.Root),
+        ("you cannot move", ControlEffectType.Stun),
+        ("you are entangled", ControlEffectType.Root),
+        ("you are paralyzed", ControlEffectType.Stun)
+    ];
     private static readonly string[] CastInterruptedMarkers =
     [
         "you move and interrupt your spellcast",
@@ -120,7 +153,123 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
                 mention.Ability.Icon));
         }
 
-        return new ChatParseResult(targetEvent, hits, castEvent, visibleTargetEvents, visibleCastEvents);
+        return new ChatParseResult(
+            targetEvent,
+            hits,
+            castEvent,
+            visibleTargetEvents,
+            visibleCastEvents,
+            ParseSelfCcEvents(normalizedOcrText),
+            ParseIncomingAttacks(normalizedOcrText),
+            ParseLifeEvents(normalizedOcrText),
+            ParseRealmAbilityEvents(normalizedOcrText));
+    }
+
+    private static IReadOnlyList<SelfCcEvent> ParseSelfCcEvents(string ocrText)
+    {
+        var lowered = ocrText.ToLowerInvariant();
+        var events = new List<SelfCcEvent>();
+        foreach (var (marker, effect) in SelfCcMarkers)
+        {
+            var count = 0;
+            var startIndex = 0;
+            while ((startIndex = lowered.IndexOf(marker, startIndex, StringComparison.Ordinal)) >= 0)
+            {
+                count++;
+                startIndex += marker.Length;
+            }
+
+            if (count > 0)
+            {
+                events.Add(new SelfCcEvent(effect, count));
+            }
+        }
+
+        return events;
+    }
+
+    private static IReadOnlyList<IncomingAttackEvent> ParseIncomingAttacks(string ocrText)
+    {
+        var events = new List<(int Index, IncomingAttackEvent Event)>();
+        var ordinals = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (Match match in IncomingMeleeRegex.Matches(ocrText))
+        {
+            var name = CleanupName(match.Groups["name"].Value);
+            var verb = match.Groups["verb"].Value;
+            var critical = verb.StartsWith("critical", StringComparison.OrdinalIgnoreCase);
+            var damage = match.Groups["dmg"].Success &&
+                         int.TryParse(match.Groups["dmg"].Value, out var dmg)
+                ? dmg
+                : (int?)null;
+            ordinals.TryGetValue(name, out var ord);
+            ordinals[name] = ++ord;
+            events.Add((match.Index, new IncomingAttackEvent(name, damage, critical, false, false, ord)));
+        }
+
+        foreach (Match match in IncomingMissRegex.Matches(ocrText))
+        {
+            var name = CleanupName(match.Groups["name"].Value);
+            ordinals.TryGetValue(name, out var ord);
+            ordinals[name] = ++ord;
+            events.Add((match.Index, new IncomingAttackEvent(name, null, false, true, false, ord)));
+        }
+
+        foreach (Match match in IncomingSpellRegex.Matches(ocrText))
+        {
+            var name = CleanupName(match.Groups["name"].Value);
+            ordinals.TryGetValue(name, out var ord);
+            ordinals[name] = ++ord;
+            events.Add((match.Index, new IncomingAttackEvent(name, null, false, false, true, ord)));
+        }
+
+        return events.OrderBy(x => x.Index).Select(x => x.Event).ToList();
+    }
+
+    private static IReadOnlyList<CombatLifeEvent> ParseLifeEvents(string ocrText)
+    {
+        var events = new List<(int Index, CombatLifeEvent Event)>();
+        var killOrd = 0;
+        var deathOrd = 0;
+
+        foreach (Match match in KillRegex.Matches(ocrText))
+        {
+            events.Add((match.Index, new CombatLifeEvent(
+                CombatLifeKind.Kill, CleanupName(match.Groups["name"].Value), ++killOrd)));
+        }
+
+        foreach (Match match in DeathKillerRegex.Matches(ocrText))
+        {
+            var name = match.Groups["name"].Success ? CleanupName(match.Groups["name"].Value) : null;
+            events.Add((match.Index, new CombatLifeEvent(CombatLifeKind.Death, name, ++deathOrd)));
+        }
+
+        foreach (Match match in DeathPlainRegex.Matches(ocrText))
+        {
+            events.Add((match.Index, new CombatLifeEvent(CombatLifeKind.Death, null, ++deathOrd)));
+        }
+
+        return events.OrderBy(x => x.Index).Select(x => x.Event).ToList();
+    }
+
+    private static IReadOnlyList<RealmAbilityEvent> ParseRealmAbilityEvents(string ocrText)
+    {
+        var events = new List<(int Index, RealmAbilityEvent Event)>();
+        var ordinals = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (Match match in RealmAbilityUseRegex.Matches(ocrText))
+        {
+            var name = CleanupName(match.Groups["name"].Value);
+            if (name.Length < 3)
+            {
+                continue;
+            }
+
+            ordinals.TryGetValue(name, out var ord);
+            ordinals[name] = ++ord;
+            events.Add((match.Index, new RealmAbilityEvent(name, ord)));
+        }
+
+        return events.OrderBy(x => x.Index).Select(x => x.Event).ToList();
     }
 
     private static IReadOnlyList<CastEvent> ParseCastEvents(string ocrText)
