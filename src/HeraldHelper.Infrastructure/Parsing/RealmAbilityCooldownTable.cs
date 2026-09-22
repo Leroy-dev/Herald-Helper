@@ -21,9 +21,10 @@ public static partial class RealmAbilityCooldownTable
 
         var catalog = shard == ShardType.Eden ? "eden-charplan" : "blackthorn-charplan";
         var slug = NonAlnumRegex().Replace(className.Trim().ToLowerInvariant(), "_");
-        var root = dataRoot ?? Path.Combine(AppContext.BaseDirectory, "data");
-        var path = Path.Combine(root, catalog, "generated", "classes", $"{slug}.json");
-        if (!File.Exists(path))
+        var path = dataRoot is not null
+            ? Path.Combine(dataRoot, catalog, "generated", "classes", $"{slug}.json")
+            : FindClassFile(catalog, slug);
+        if (path is null || !File.Exists(path))
         {
             return null;
         }
@@ -61,6 +62,26 @@ public static partial class RealmAbilityCooldownTable
         {
             return null;
         }
+    }
+
+    /// <summary>Walk up from the output dir like AbilityProfileCatalog does —
+    /// dev builds run from bin/… while data/ sits at the repo root.</summary>
+    private static string? FindClassFile(string catalog, string slug)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(
+                current.FullName, "data", catalog, "generated", "classes", $"{slug}.json");
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        return null;
     }
 
     /// <summary>"Can use every: 20:00 min" / "05:00 min" / "90 sec".</summary>
