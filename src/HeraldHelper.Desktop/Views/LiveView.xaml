@@ -127,10 +127,19 @@
                                Margin="0,1,0,0"
                                FontSize="12"
                                FontFamily="Consolas" />
+                    <TextBlock x:Name="PlayerStatsText"
+                               Margin="0,1,0,0"
+                               FontSize="12"
+                               FontFamily="Consolas" />
                     <TextBlock x:Name="PlayerResistsText"
                                Margin="0,2,0,0"
                                FontSize="12"
                                FontFamily="Consolas" />
+                    <TextBlock x:Name="PlayerBuffsText"
+                               Margin="0,3,0,0"
+                               FontSize="12"
+                               FontFamily="Consolas"
+                               TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
             </StackPanel>

@@ -372,7 +372,7 @@ public partial class MainWindow : Window
                 _demoSnapshot = null;
             }
             DiagnosticsBox.Text = tick.DiagnosticsText;
-            LiveView?.UpdateClientState(tick.AdapterValues);
+            LiveView?.UpdateClientState(tick.AdapterValues, tick.Snapshot);
         }
         catch (Exception ex)
         {

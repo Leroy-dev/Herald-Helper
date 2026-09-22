@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using HeraldHelper.Application.Services;
 using HeraldHelper.Desktop.Models;
 using HeraldHelper.Domain.Models;
 
@@ -144,8 +145,10 @@ public partial class LiveView : System.Windows.Controls.UserControl
     /// <summary>
     /// Renders the client's own live adapter values (read from process memory)
     /// below the mirror — the player's vitals/resists, not the target's.
+    /// The snapshot supplies chat-tracked buffs (cast lines + durations) on
+    /// top of whatever buffs the adapters report.
     /// </summary>
-    public void UpdateClientState(IReadOnlyDictionary<string, string>? values)
+    public void UpdateClientState(IReadOnlyDictionary<string, string>? values, OverlaySnapshot? snapshot = null)
     {
         if (values is null || values.Count == 0)
         {
@@ -195,6 +198,17 @@ public partial class LiveView : System.Windows.Controls.UserControl
 
         PlayerWeaponText.Text = $"Dmg {V(values, "stats_weapon_damage") ?? "—"}    Skill {V(values, "stats_weapon_skill") ?? "—"}    AF {V(values, "stats_armor_factor") ?? "—"}    BP {V(values, "bounty_points") ?? "—"}";
 
+        var stats = new[]
+        {
+            ("Str", V(values, "stats_strength")), ("Con", V(values, "stats_constitution")),
+            ("Dex", V(values, "stats_dexterity")), ("Qui", V(values, "stats_quickness")),
+            ("Int", V(values, "stats_intelligence")), ("Pie", V(values, "stats_piety")),
+            ("Emp", V(values, "stats_empathy")), ("Cha", V(values, "stats_charisma")),
+        };
+        PlayerStatsText.Text = stats.Any(s => s.Item2 is not null)
+            ? string.Join("   ", stats.Select(s => $"{s.Item1} {s.Item2 ?? "—"}"))
+            : string.Empty;
+
         var resists = new[]
         {
             ("Thrust", V(values, "stats_thrust")), ("Crush", V(values, "stats_crush")),
@@ -206,6 +220,28 @@ public partial class LiveView : System.Windows.Controls.UserControl
         PlayerResistsText.Text = resists.Any(r => r.Item2 is not null)
             ? string.Join("   ", resists.Select(r => $"{r.Item1} {r.Item2 ?? "—"}"))
             : "Resists: —";
+
+        // Same source list the overlay buff window renders — chat-tracked
+        // casts first, then adapter-reported conc/buff names + pet vitals.
+        var buffLines = DesktopOverlayRenderer.BuildBuffLines(
+            ClientStateExtractor.Extract(values), snapshot?.TrackedBuffs);
+        PlayerBuffsText.Inlines.Clear();
+        if (buffLines is { Count: > 0 })
+        {
+            for (var i = 0; i < buffLines.Count; i++)
+            {
+                if (i > 0)
+                {
+                    PlayerBuffsText.Inlines.Add(new Run("   "));
+                }
+                AppendOverlayLine(PlayerBuffsText, buffLines[i], 11);
+            }
+            PlayerBuffsText.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            PlayerBuffsText.Visibility = Visibility.Collapsed;
+        }
     }
 
     private static string? V(IReadOnlyDictionary<string, string> values, string key) =>
