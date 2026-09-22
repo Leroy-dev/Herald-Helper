@@ -26,8 +26,15 @@ public sealed record AppRuntimeSettings(
     bool ChatMemReadEnabled = false,
     string? ChatMemProcess = null,
     int? ChatMemRva = null,
-    bool StatsMemReadEnabled = false)
+    bool StatsMemReadEnabled = false,
+    bool ConservativeMode = false)
 {
+    /// <summary>Raw flag AND not suppressed by conservative mode.</summary>
+    public bool EffectiveChatMemReadEnabled => ChatMemReadEnabled && !ConservativeMode;
+
+    /// <summary>Raw flag AND not suppressed by conservative mode.</summary>
+    public bool EffectiveStatsMemReadEnabled => StatsMemReadEnabled && !ConservativeMode;
+
     public static AppRuntimeSettings LoadFromCfg(string cfgPath)
     {
         if (!File.Exists(cfgPath))
@@ -101,7 +108,8 @@ public sealed record AppRuntimeSettings(
             btRelayEnabled, chatMemReadEnabled, chatMemProcess, chatMemRva,
             // Stats memory read piggybacks on chatMemReadEnabled by default —
             // same process access, same elevation requirement.
-            ReadBool(map, "statsMemReadEnabled", chatMemReadEnabled));
+            ReadBool(map, "statsMemReadEnabled", chatMemReadEnabled),
+            ReadBool(map, "conservativeMode", false));
     }
 
     private static bool ReadBool(IReadOnlyDictionary<string, string> map, string key, bool fallback)

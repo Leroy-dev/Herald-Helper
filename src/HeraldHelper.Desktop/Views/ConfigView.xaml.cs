@@ -50,4 +50,8 @@ public partial class ConfigView : System.Windows.Controls.UserControl
     {
         Main?.SaveShardAuth_Click(sender, e);
     }
+    private void ConservativeMode_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.ConservativeMode_Click(sender, e);
+    }
 }

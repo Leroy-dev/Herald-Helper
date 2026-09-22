@@ -68,10 +68,18 @@ public static class AppComposition
                 diagnostics: diagnostics);
         }
 
+        // Conservative mode suppresses every process-memory source: chat
+        // still flows via OCR / chat.log / BT relay, nothing attaches to
+        // the game process.
+        if (settings.ConservativeMode && (settings.ChatMemReadEnabled || settings.StatsMemReadEnabled))
+        {
+            diagnostics?.Log("[Capture] conservative mode — memory sources disabled");
+        }
+
         // Highest-precedence source when enabled: read the client's chat.log
         // CRT buffer straight out of process memory. Requires elevation; the
         // FILE* RVA is auto-derived from the module image (chatMemRva overrides).
-        if (settings.ChatMemReadEnabled)
+        if (settings.EffectiveChatMemReadEnabled)
         {
             windowAwareCapture = new DaocMemoryChatSource(
                 windowAwareCapture,
@@ -94,7 +102,7 @@ public static class AppComposition
         // Live stats/adapters from process memory: walks the client's adapter
         // registry map (name -> value record) — resists, stats, HP, group info.
         // Passthrough for chat; merges its IAdapterValueSource over the chain.
-        if (settings.StatsMemReadEnabled)
+        if (settings.EffectiveStatsMemReadEnabled)
         {
             windowAwareCapture = new DaocMemoryStatsSource(
                 windowAwareCapture,

@@ -63,6 +63,10 @@ internal sealed class RuntimeSession : IRuntimeSession
         var chatSource = (CaptureChain as IChatCaptureSourceTelemetry)?.LastChatSource
             ?? (RuntimeSettings.ChatLogCaptureEnabled ? "chat.log" : "OCR");
         sb.AppendLine($"Chat source: {chatSource}");
+        if (RuntimeSettings.ConservativeMode)
+        {
+            sb.AppendLine("Mode: conservative — process memory untouched");
+        }
         // When scrollback is outermost but not serving, show why — "not
         // elevated" vs "no chat text yet" read identically as 'OCR' otherwise.
         if (CaptureChain is DaocScrollbackChatSource scrollback &&

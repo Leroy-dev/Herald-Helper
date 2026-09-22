@@ -61,7 +61,7 @@ internal sealed class RuntimeLoop : IDisposable
         var input = _input();
         // A non-OCR chat source (memory read, chat.log tail, BT relay) covers
         // chat without a dragged region — don't block the loop for it.
-        var nonOcrChat = _session.RuntimeSettings.ChatMemReadEnabled
+        var nonOcrChat = _session.RuntimeSettings.EffectiveChatMemReadEnabled
             || _session.RuntimeSettings.ChatLogCaptureEnabled
             || _session.RuntimeSettings.BlackthornRelayEnabled;
         if (input.ChatRegion is null && _session.RuntimeSettings.OcrWatchRegions.Count == 0 && !nonOcrChat)

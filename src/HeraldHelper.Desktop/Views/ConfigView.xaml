@@ -39,6 +39,11 @@
                                     <TextBlock Text="Import JSON" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
+                            <CheckBox x:Name="ConservativeModeCheckbox" x:FieldModifier="public"
+                                      Margin="14,0,0,0" VerticalAlignment="Center"
+                                      Content="Conservative mode — never touch the game process"
+                                      ToolTip="Master switch for process memory access. When on, memory chat read, scrollback chat, and live stats/adapters are all disabled — chat still flows via OCR, chat.log, and the Blackthorn relay. Takes effect immediately."
+                                      Click="ConservativeMode_Click" />
                         </WrapPanel>
                         <GroupBox Grid.Row="2" Header="Custom UI package (bitmap font OCR)">
                             <StackPanel Orientation="Horizontal">

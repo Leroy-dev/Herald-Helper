@@ -395,6 +395,14 @@ public partial class MainWindow : Window
             ConfigView.CustomUiFolderText.Text = ReadCustomUiFolder() ?? string.Empty;
         }
 
+        if (ConfigView?.ConservativeModeCheckbox is not null)
+        {
+            var map = _settingsController.LoadMap();
+            ConfigView.ConservativeModeCheckbox.IsChecked =
+                map.TryGetValue("conservativeMode", out var cm) &&
+                cm.Equals("true", StringComparison.OrdinalIgnoreCase);
+        }
+
         RefreshDaocCharacterSelectors();
     }
 

@@ -278,6 +278,23 @@ public partial class MainWindow : Window
         OutputBox.Text = "Shard auth settings saved.";
     }
 
+    internal void ConservativeMode_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isBindingControls || ConfigView?.ConservativeModeCheckbox is not { } checkbox)
+        {
+            return;
+        }
+
+        var enabled = checkbox.IsChecked == true;
+        _settingsController.Save([
+            new ConfigEntry { Key = "conservativeMode", Value = enabled ? "true" : "false" }
+        ]);
+        RebuildRuntimeFromFiles();
+        OutputBox.Text = enabled
+            ? "Conservative mode on — memory chat read, scrollback and live stats disabled."
+            : "Conservative mode off — memory sources honored again.";
+    }
+
     internal void ConfigFilter_TextChanged(object sender, TextChangedEventArgs e)
     {
         _configView?.Refresh();
