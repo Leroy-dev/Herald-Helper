@@ -89,15 +89,17 @@ public static class AppComposition
                 settings.ChatLogRegions,
                 diagnostics);
 
-            // Scrollback tail sits outermost: reads chat lines from the
-            // client's object registry — no /chatlog needed at all. Falls
-            // through to the FILE*-buffer reader (and file/relay/OCR) when
-            // the registry can't be bound.
-            windowAwareCapture = new DaocScrollbackChatSource(
-                windowAwareCapture,
-                settings.ChatMemProcess,
-                settings.ChatLogRegions,
-                diagnostics);
+            // Scrollback arena diff is opt-in (scrollbackChatEnabled): it
+            // needs no /chatlog, but wraps/merges lines under chat spam.
+            // chatMemReadEnabled alone only gets the FILE*-buffer reader.
+            if (settings.ScrollbackChatEnabled)
+            {
+                windowAwareCapture = new DaocScrollbackChatSource(
+                    windowAwareCapture,
+                    settings.ChatMemProcess,
+                    settings.ChatLogRegions,
+                    diagnostics);
+            }
         }
 
         // Live stats/adapters from process memory: walks the client's adapter

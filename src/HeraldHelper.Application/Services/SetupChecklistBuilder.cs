@@ -57,7 +57,7 @@ public static class SetupChecklistBuilder
                 "Memory chat source",
                 input.ChatMemReadEnabled,
                 input.ChatMemReadEnabled
-                    ? "Reading chat from process memory (scrollback/chat.log buffer)."
+                    ? "Reading chat from the client's chat.log memory buffer (scrollback reader is opt-in)."
                     : "Enable 'chat memory read' in Config or rely on OCR/chat.log."));
             items.Add(new SetupCheckItem(
                 "Live stats / adapters",

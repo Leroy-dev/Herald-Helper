@@ -27,7 +27,8 @@ public sealed record AppRuntimeSettings(
     string? ChatMemProcess = null,
     int? ChatMemRva = null,
     bool StatsMemReadEnabled = false,
-    bool ConservativeMode = false)
+    bool ConservativeMode = false,
+    bool ScrollbackChatEnabled = false)
 {
     /// <summary>Raw flag AND not suppressed by conservative mode.</summary>
     public bool EffectiveChatMemReadEnabled => ChatMemReadEnabled && !ConservativeMode;
@@ -109,7 +110,10 @@ public sealed record AppRuntimeSettings(
             // Stats memory read piggybacks on chatMemReadEnabled by default —
             // same process access, same elevation requirement.
             ReadBool(map, "statsMemReadEnabled", chatMemReadEnabled),
-            ReadBool(map, "conservativeMode", false));
+            ReadBool(map, "conservativeMode", false),
+            // Scrollback arena diff mangles lines under chat spam — opt-in
+            // only, never auto-activated by chatMemReadEnabled.
+            ReadBool(map, "scrollbackChatEnabled", false));
     }
 
     private static bool ReadBool(IReadOnlyDictionary<string, string> map, string key, bool fallback)

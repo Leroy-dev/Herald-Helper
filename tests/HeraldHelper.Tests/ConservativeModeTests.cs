@@ -27,7 +27,26 @@ public sealed class ConservativeModeTests
             }
             node = GetFallback(node);
         }
-        Assert.Equal(3, memoryNodes);
+        // chat.log buffer + stats — scrollback needs its own opt-in flag.
+        Assert.Equal(2, memoryNodes);
+    }
+
+    [Fact]
+    public void ScrollbackChat_IsOptInOnTopOfMemRead()
+    {
+        var map = new Dictionary<string, string>(MemFlags, StringComparer.OrdinalIgnoreCase)
+        {
+            ["scrollbackChatEnabled"] = "true"
+        };
+        var (_, _, _, _, chain) = AppComposition.Build(map, []);
+
+        var found = false;
+        for (IWindowAwareChatCaptureService? node = chain; node is not null;)
+        {
+            found |= node is DaocScrollbackChatSource;
+            node = GetFallback(node);
+        }
+        Assert.True(found);
     }
 
     [Fact]
