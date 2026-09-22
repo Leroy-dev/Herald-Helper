@@ -19,6 +19,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private readonly GroupOverlayWindow _groupWindow;
     private readonly OverlayTextWindow _selfCcWindow;
     private readonly OverlayTextWindow _peelWindow;
+    private readonly OverlayTextWindow _worldWindow;
     private int? _previewTargetX;
     private int? _previewTargetY;
     private int? _previewTimerX;
@@ -34,6 +35,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private int? _previewSelfCcY;
     private int? _previewPeelX;
     private int? _previewPeelY;
+    private int? _previewWorldX;
+    private int? _previewWorldY;
     private MediaColor? _previewTargetColor;
     private MediaColor? _previewTimerColor;
     private MediaColor? _previewOutlineColor;
@@ -52,6 +55,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _groupWindow = new GroupOverlayWindow();
         _selfCcWindow = new OverlayTextWindow();
         _peelWindow = new OverlayTextWindow();
+        _worldWindow = new OverlayTextWindow();
     }
 
     public Task RenderAsync(OverlaySnapshot snapshot, CancellationToken cancellationToken)
@@ -115,6 +119,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             var scy = _previewSelfCcY ?? overlay.SelfCcY;
             var px = _previewPeelX ?? overlay.PeelX;
             var py = _previewPeelY ?? overlay.PeelY;
+            var wx = _previewWorldX ?? overlay.WorldX;
+            var wy = _previewWorldY ?? overlay.WorldY;
 
             var f1 = overlay.FontSize;
             var f2 = overlay.TimerSize;
@@ -196,6 +202,11 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             _peelWindow.Update(
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)peelLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 px, py, overlay.PeelSize, overlay.TimerFontFamily, outlineColor);
+
+            var worldLines = overlay.ShowWorld ? BuildWorldTimerLines(snapshot.ClientState) : null;
+            _worldWindow.Update(
+                (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)worldLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
+                wx, wy, overlay.WorldSize, overlay.TimerFontFamily, outlineColor);
             Rendered?.Invoke(this, new OverlayViewState(
                 targetText,
                 timerText,
@@ -283,6 +294,12 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewPeelY = y;
     }
 
+    public void SetPreviewWorldPosition(int x, int y)
+    {
+        _previewWorldX = x;
+        _previewWorldY = y;
+    }
+
     public void ClearPreview()
     {
         _previewTargetX = null;
@@ -305,6 +322,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewSelfCcY = null;
         _previewPeelX = null;
         _previewPeelY = null;
+        _previewWorldX = null;
+        _previewWorldY = null;
     }
 
     public void Dispose()
@@ -409,6 +428,57 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             .Take(6)
             .Select(a => ($"{a.Attacker}  ×{a.HitCount}", peelColor, (IconSpriteRef?)null))
             .ToList();
+    }
+
+    /// <summary>Siege/relic/release/world timers straight out of the adapter
+    /// map — the client's own widgets, flattened to text lines.</summary>
+    internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildWorldTimerLines(
+        ClientStateSnapshot? state)
+    {
+        if (state is null)
+        {
+            return null;
+        }
+
+        var lines = new List<(string, MediaColor, IconSpriteRef?)>();
+        var siegeColor = MediaColor.FromRgb(0xE7, 0xA9, 0x3A);
+        var relicColor = MediaColor.FromRgb(0x4A, 0x9F, 0xE7);
+        var neutral = MediaColor.FromRgb(0xDC, 0xDC, 0xDC);
+
+        if (state.Siege is { } siege)
+        {
+            if (siege.TimerSeconds is { } t)
+            {
+                lines.Add(($"Siege {t:0}s", siegeColor, null));
+            }
+            if (siege.Moving)
+            {
+                lines.Add(("Siege moving!", siegeColor, null));
+            }
+            if (siege.Hits is { } hits)
+            {
+                lines.Add(($"Siege ×{hits} hits", siegeColor, null));
+            }
+            if (siege.HelperTimerSeconds is { } h)
+            {
+                lines.Add(($"Helper {h:0}s", siegeColor, null));
+            }
+        }
+
+        if (state.RelicTimePercent is { } relic)
+        {
+            lines.Add(($"Relic {relic:0}%", relicColor, null));
+        }
+        if (state.ReleaseTimerSeconds is { } release)
+        {
+            lines.Add(($"Release {release:0}s", neutral, null));
+        }
+        if (state.TimerSeconds is { } timer)
+        {
+            lines.Add(($"Timer {timer:0}s", neutral, null));
+        }
+
+        return lines.Count == 0 ? null : lines;
     }
 
     private static MediaColor VerdictColor(DamageVerdict verdict) =>
@@ -593,5 +663,6 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _groupWindow.Close();
         _selfCcWindow.Close();
         _peelWindow.Close();
+        _worldWindow.Close();
     }
 }

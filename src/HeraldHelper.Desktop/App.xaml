@@ -18,6 +18,8 @@
             <SolidColorBrush x:Key="VsMutedTextBrush" Color="#9DA1A6" />
             <SolidColorBrush x:Key="VsAccentBrush" Color="#007ACC" />
             <local:HexToBrushConverter x:Key="HexToBrush" />
+            <local:ChecklistGlyphConverter x:Key="ChecklistGlyph" />
+            <local:ChecklistGlyphColorConverter x:Key="ChecklistGlyphColor" />
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource VsTextBrush}" />
         </Style>

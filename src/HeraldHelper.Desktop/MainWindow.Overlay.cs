@@ -59,6 +59,11 @@ public partial class MainWindow : Window
         PickPeelOverlayPosition();
     }
 
+    internal void PickWorldOverlayPosition_Click(object sender, RoutedEventArgs e)
+    {
+        PickWorldOverlayPosition();
+    }
+
     internal void PickTargetSize_Click(object sender, RoutedEventArgs e)
     {
         PickSizeLive(OverlayFontSizeText, "Target", size => _liveOverlay?.SetPreviewFontSize(false, size));
@@ -107,7 +112,9 @@ public partial class MainWindow : Window
                     new GroupMemberState(1, "Bowslap", "Hunter", 64, 30, 71, 50, "Emain Macha", null, null, null, []),
                     new GroupMemberState(2, "Tankguy", "Armsman", 22, 8, 96, 50, "Hadrian's Wall", null, null, null, [])
                 ],
-                [], [], null, null, true, 90, 7963728, 1548245, null, null, null));
+                [], [], null,
+                new SiegeState(42, true, 7, null),
+                true, 90, 7963728, 1548245, 75, null, 90));
     }
 
     internal void ReloadOverlaySettings_Click(object sender, RoutedEventArgs e)
@@ -137,6 +144,9 @@ public partial class MainWindow : Window
             PeelX = NormalizeIntText(OverlayPeelXText.Text, 1580),
             PeelY = NormalizeIntText(OverlayPeelYText.Text, 700),
             PeelSize = NormalizeIntText(OverlayPeelSizeText.Text, 16),
+            WorldX = NormalizeIntText(OverlayWorldXText.Text, 1580),
+            WorldY = NormalizeIntText(OverlayWorldYText.Text, 480),
+            WorldSize = NormalizeIntText(OverlayWorldSizeText.Text, 16),
             FontSize = NormalizeIntText(OverlayFontSizeText.Text, 20),
             TimerSize = NormalizeIntText(OverlayTimerSizeText.Text, 20),
             ResistsSize = NormalizeIntText(OverlayResistsSizeText.Text, 20),
@@ -151,6 +161,7 @@ public partial class MainWindow : Window
             ShowGroup = ShowGroupCheckbox?.IsChecked ?? false,
             ShowSelfCc = ShowSelfCcCheckbox?.IsChecked ?? true,
             ShowPeel = ShowPeelCheckbox?.IsChecked ?? true,
+            ShowWorld = ShowWorldCheckbox?.IsChecked ?? true,
             ShowGuild = ShowGuildCheckbox?.IsChecked ?? true,
             ShowClass = ShowClassCheckbox?.IsChecked ?? true,
             ShowLevel = ShowLevelCheckbox?.IsChecked ?? true,

@@ -9,6 +9,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <GroupBox Grid.Row="0" Header="DAoC Characters">
@@ -76,7 +77,23 @@
                                 </Button>
                             </StackPanel>
                         </GroupBox>
-                        <GroupBox Grid.Row="3" Header="Shard auth (auto-refresh)"
+                        <GroupBox Grid.Row="3" Header="Setup checklist"
+                                  ToolTip="Live sanity check of everything the helper needs — sources, elevation, UI package, catalogs.">
+                            <ItemsControl x:Name="SetupChecklistList" x:FieldModifier="public" Margin="8,2,8,4">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Margin="0,1">
+                                            <TextBlock Width="18" VerticalAlignment="Top" FontWeight="Bold"
+                                                       Foreground="{Binding Ok, Converter={StaticResource ChecklistGlyphColor}}"
+                                                       Text="{Binding Ok, Converter={StaticResource ChecklistGlyph}}"/>
+                                            <TextBlock Width="190" VerticalAlignment="Top" FontWeight="SemiBold" Text="{Binding Name}"/>
+                                            <TextBlock Foreground="{DynamicResource VsMutedTextBrush}" Text="{Binding Hint}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </GroupBox>
+                        <GroupBox Grid.Row="4" Header="Shard auth (auto-refresh)"
                                   ToolTip="Per-shard login settings. Enable a shard and set its hub URL to let the Auth button and the auto-refresh timer harvest cookies. The refresh itself runs headless — use the Login toolbar button to sign in once.">
                             <StackPanel>
                                 <DataGrid x:Name="ShardAuthGrid" x:FieldModifier="public"
@@ -111,7 +128,7 @@
                                 </Button>
                             </StackPanel>
                         </GroupBox>
-                        <Expander Grid.Row="4"
+                        <Expander Grid.Row="5"
                                   Header="Advanced raw configuration"
                                   IsExpanded="False"
                                   Foreground="{DynamicResource VsTextBrush}"

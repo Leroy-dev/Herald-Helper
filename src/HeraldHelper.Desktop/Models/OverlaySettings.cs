@@ -21,6 +21,9 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private int _peelX = 1580;
     private int _peelY = 700;
     private int _peelSize = 16;
+    private int _worldX = 1580;
+    private int _worldY = 480;
+    private int _worldSize = 16;
     private int _fontSize = 20;
     private int _timerSize = 20;
     private int _resistsSize = 20;
@@ -35,6 +38,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private bool _showGroup;
     private bool _showSelfCc = true;
     private bool _showPeel = true;
+    private bool _showWorld = true;
     private bool _showGuild = true;
     private bool _showClass = true;
     private bool _showLevel = true;
@@ -64,6 +68,9 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public int PeelX { get => _peelX; set { _peelX = value; OnPropertyChanged(nameof(PeelX)); } }
     public int PeelY { get => _peelY; set { _peelY = value; OnPropertyChanged(nameof(PeelY)); } }
     public int PeelSize { get => _peelSize; set { _peelSize = value; OnPropertyChanged(nameof(PeelSize)); } }
+    public int WorldX { get => _worldX; set { _worldX = value; OnPropertyChanged(nameof(WorldX)); } }
+    public int WorldY { get => _worldY; set { _worldY = value; OnPropertyChanged(nameof(WorldY)); } }
+    public int WorldSize { get => _worldSize; set { _worldSize = value; OnPropertyChanged(nameof(WorldSize)); } }
     public int FontSize { get => _fontSize; set { _fontSize = value; OnPropertyChanged(nameof(FontSize)); } }
     public int TimerSize { get => _timerSize; set { _timerSize = value; OnPropertyChanged(nameof(TimerSize)); } }
     public int ResistsSize { get => _resistsSize; set { _resistsSize = value; OnPropertyChanged(nameof(ResistsSize)); } }
@@ -78,6 +85,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public bool ShowGroup { get => _showGroup; set { _showGroup = value; OnPropertyChanged(nameof(ShowGroup)); } }
     public bool ShowSelfCc { get => _showSelfCc; set { _showSelfCc = value; OnPropertyChanged(nameof(ShowSelfCc)); } }
     public bool ShowPeel { get => _showPeel; set { _showPeel = value; OnPropertyChanged(nameof(ShowPeel)); } }
+    public bool ShowWorld { get => _showWorld; set { _showWorld = value; OnPropertyChanged(nameof(ShowWorld)); } }
     public bool ShowGuild { get => _showGuild; set { _showGuild = value; OnPropertyChanged(nameof(ShowGuild)); } }
     public bool ShowClass { get => _showClass; set { _showClass = value; OnPropertyChanged(nameof(ShowClass)); } }
     public bool ShowLevel { get => _showLevel; set { _showLevel = value; OnPropertyChanged(nameof(ShowLevel)); } }

@@ -106,6 +106,7 @@ public partial class MainWindow : Window
         RebuildRuntimeFromFiles();
         ReloadOverlaySettingsFromStore();
         _authController.ConfigureTimer();
+        RefreshSetupChecklist();
         OutputBox.Text = "Config reloaded.";
     }
 
@@ -116,6 +117,7 @@ public partial class MainWindow : Window
         RebuildRuntimeFromFiles();
         ReloadOverlaySettingsFromStore();
         _authController.ConfigureTimer();
+        RefreshSetupChecklist();
         OutputBox.Text = "Config saved to database and runtime refreshed.";
     }
 
@@ -290,9 +292,100 @@ public partial class MainWindow : Window
             new ConfigEntry { Key = "conservativeMode", Value = enabled ? "true" : "false" }
         ]);
         RebuildRuntimeFromFiles();
+        RefreshSetupChecklist();
         OutputBox.Text = enabled
             ? "Conservative mode on — memory chat read, scrollback and live stats disabled."
             : "Conservative mode off — memory sources honored again.";
+    }
+
+    /// <summary>Re-runs the setup checklist — called on view switch, reload,
+    /// save and conservative-mode toggles so the ✓/✗ states stay honest.</summary>
+    internal void RefreshSetupChecklist()
+    {
+        if (ConfigView?.SetupChecklistList is null)
+        {
+            return;
+        }
+
+        var map = _settingsController.LoadMap();
+        var runtime = AppRuntimeSettings.FromMap(map);
+        var overlay = _overlaySettingsController.Load();
+        var overlayElements = new[]
+        {
+            overlay.ShowTarget, overlay.ShowTimers, overlay.ShowCastBar, overlay.ShowResists,
+            overlay.ShowGroup, overlay.ShowSelfCc, overlay.ShowPeel, overlay.ShowWorld
+        }.Count(x => x);
+
+        var catalogRoot = runtime.ShardType switch
+        {
+            ShardType.Eden => "eden-charplan",
+            ShardType.Blackthorn => "blackthorn-charplan",
+            _ => null
+        };
+
+        ConfigView.SetupChecklistList.ItemsSource = SetupChecklistBuilder.Build(new SetupChecklistInput(
+            ConservativeMode: runtime.ConservativeMode,
+            ChatMemReadEnabled: runtime.ChatMemReadEnabled,
+            StatsMemReadEnabled: runtime.StatsMemReadEnabled,
+            IsElevated: IsElevated(),
+            HasChatRegion: runtime.ChatRegion is not null,
+            HasWatchRegions: runtime.OcrWatchRegions.Count > 0,
+            ChatLogAvailable: runtime.ChatLogCaptureEnabled,
+            RelayAvailable: runtime.BlackthornRelayEnabled,
+            CustomUiFolderResolved: CustomUiFolderResolved(runtime),
+            CatalogsPresent: catalogRoot is not null &&
+                             File.Exists(Path.Combine(AppContext.BaseDirectory, "data", catalogRoot, "generated", "manifest.json")),
+            CharacterSelected: map.TryGetValue(CharacterSettingsKeys.SelectedCharacter(runtime.ShardType), out var character) &&
+                               !string.IsNullOrWhiteSpace(character),
+            OcrEngineAvailable: ProbeWindowsOcr(),
+            OverlayElementsEnabled: overlayElements));
+    }
+
+    private static bool IsElevated()
+    {
+        try
+        {
+            using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+            return new System.Security.Principal.WindowsPrincipal(identity)
+                .IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool ProbeWindowsOcr()
+    {
+        try
+        {
+            return Windows.Media.Ocr.OcrEngine.TryCreateFromUserProfileLanguages() is not null;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Explicit folder → must resolve to a real package; empty → the
+    /// launcher for the current shard must have left its marker.</summary>
+    private static bool CustomUiFolderResolved(AppRuntimeSettings runtime)
+    {
+        if (!string.IsNullOrWhiteSpace(runtime.CustomUiFolder))
+        {
+            return !DescribeCustomUiPath(runtime.CustomUiFolder).Contains("warning", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return runtime.ShardType switch
+        {
+            ShardType.Eden => File.Exists(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "eden-launcher", "config.json")),
+            ShardType.Blackthorn => File.Exists(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "com.blackthorn", "logs", "Blackthorn Launcher.log")),
+            _ => false
+        };
     }
 
     internal void ConfigFilter_TextChanged(object sender, TextChangedEventArgs e)
@@ -349,6 +442,7 @@ public partial class MainWindow : Window
         RebuildRuntimeFromFiles();
         ReloadOverlaySettingsFromStore();
         _authController.ConfigureTimer();
+        RefreshSetupChecklist();
         OutputBox.Text = "Backup imported and runtime refreshed.";
     }
 
