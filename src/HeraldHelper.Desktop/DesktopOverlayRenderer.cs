@@ -20,6 +20,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private readonly OverlayTextWindow _selfCcWindow;
     private readonly OverlayTextWindow _peelWindow;
     private readonly OverlayTextWindow _worldWindow;
+    private readonly OverlayTextWindow _buffWindow;
+    private readonly OverlayTextWindow _chatWindow;
     private int? _previewTargetX;
     private int? _previewTargetY;
     private int? _previewTimerX;
@@ -37,6 +39,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private int? _previewPeelY;
     private int? _previewWorldX;
     private int? _previewWorldY;
+    private int? _previewBuffX;
+    private int? _previewBuffY;
+    private int? _previewChatX;
+    private int? _previewChatY;
     private MediaColor? _previewTargetColor;
     private MediaColor? _previewTimerColor;
     private MediaColor? _previewOutlineColor;
@@ -56,6 +62,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _selfCcWindow = new OverlayTextWindow();
         _peelWindow = new OverlayTextWindow();
         _worldWindow = new OverlayTextWindow();
+        _buffWindow = new OverlayTextWindow();
+        _chatWindow = new OverlayTextWindow();
     }
 
     public Task RenderAsync(OverlaySnapshot snapshot, CancellationToken cancellationToken)
@@ -83,6 +91,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             _selfCcWindow.Opacity = opacity;
             _peelWindow.Opacity = opacity;
             _worldWindow.Opacity = opacity;
+            _buffWindow.Opacity = opacity;
+            _chatWindow.Opacity = opacity;
 
             var ox = overlay.X;
             var oy = overlay.Y;
@@ -131,6 +141,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             var py = _previewPeelY ?? overlay.PeelY;
             var wx = _previewWorldX ?? overlay.WorldX;
             var wy = _previewWorldY ?? overlay.WorldY;
+            var bx = _previewBuffX ?? overlay.BuffX;
+            var by = _previewBuffY ?? overlay.BuffY;
+            var chx = _previewChatX ?? overlay.ChatX;
+            var chy = _previewChatY ?? overlay.ChatY;
 
             var f1 = overlay.FontSize;
             var f2 = overlay.TimerSize;
@@ -213,10 +227,20 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)peelLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 px, py, overlay.PeelSize, overlay.TimerFontFamily, outlineColor);
 
-            var worldLines = overlay.ShowWorld ? BuildWorldTimerLines(snapshot.ClientState, snapshot.RecentRealmAbilityUses) : null;
+            var worldLines = overlay.ShowWorld ? BuildWorldTimerLines(snapshot.ClientState, snapshot.RecentRealmAbilityUses, snapshot.CombatStats) : null;
             _worldWindow.Update(
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)worldLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 wx, wy, overlay.WorldSize, overlay.TimerFontFamily, outlineColor);
+
+            var buffLines = overlay.ShowBuffs ? BuildBuffLines(snapshot.ClientState) : null;
+            _buffWindow.Update(
+                (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)buffLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
+                bx, by, overlay.BuffSize, overlay.TimerFontFamily, outlineColor);
+
+            var chatLines = overlay.ShowChat ? BuildChatLines(snapshot.RawOcrText) : null;
+            _chatWindow.Update(
+                (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)chatLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
+                chx, chy, overlay.ChatSize, overlay.TimerFontFamily, outlineColor);
             Rendered?.Invoke(this, new OverlayViewState(
                 targetText,
                 timerText,
@@ -310,6 +334,18 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewWorldY = y;
     }
 
+    public void SetPreviewBuffPosition(int x, int y)
+    {
+        _previewBuffX = x;
+        _previewBuffY = y;
+    }
+
+    public void SetPreviewChatPosition(int x, int y)
+    {
+        _previewChatX = x;
+        _previewChatY = y;
+    }
+
     public void ClearPreview()
     {
         _previewTargetX = null;
@@ -334,6 +370,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewPeelY = null;
         _previewWorldX = null;
         _previewWorldY = null;
+        _previewBuffX = null;
+        _previewBuffY = null;
+        _previewChatX = null;
+        _previewChatY = null;
     }
 
     public void Dispose()
@@ -444,14 +484,24 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     /// map — the client's own widgets, flattened to text lines.</summary>
     internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildWorldTimerLines(
         ClientStateSnapshot? state,
-        IReadOnlyCollection<RealmAbilityActivation>? raUses = null)
+        IReadOnlyCollection<RealmAbilityActivation>? raUses = null,
+        SessionCombatStats? stats = null)
     {
         var lines = new List<(string, MediaColor, IconSpriteRef?)>();
         var siegeColor = MediaColor.FromRgb(0xE7, 0xA9, 0x3A);
         var relicColor = MediaColor.FromRgb(0x4A, 0x9F, 0xE7);
         var neutral = MediaColor.FromRgb(0xDC, 0xDC, 0xDC);
         var raColor = MediaColor.FromRgb(0x9C, 0x6E, 0xE8);
+        var statColor = MediaColor.FromRgb(0x8E, 0x9E, 0xB0);
         var now = DateTimeOffset.UtcNow;
+
+        if (stats is not null)
+        {
+            var up = now - stats.StartedUtc;
+            lines.Add((
+                $"{up.TotalMinutes:0}m  K{stats.Kills} D{stats.Deaths}  hits {stats.HitsTaken}  RA {stats.RealmAbilityUses}",
+                statColor, null));
+        }
 
         if (raUses is not null)
         {
@@ -508,6 +558,58 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             lines.Add(($"Timer {timer:0}s", neutral, null));
         }
 
+        return lines.Count == 0 ? null : lines;
+    }
+
+    /// <summary>Buff list + pet vitals — concentration buffs orange, normal
+    /// buffs cyan, pet green. Data is whatever the adapter feed reports.</summary>
+    internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildBuffLines(
+        ClientStateSnapshot? state)
+    {
+        if (state is null)
+        {
+            return null;
+        }
+
+        var lines = new List<(string, MediaColor, IconSpriteRef?)>();
+        var concColor = MediaColor.FromRgb(0xE7, 0xA9, 0x3A);
+        var buffColor = MediaColor.FromRgb(0x4A, 0xC5, 0xE7);
+        var petColor = MediaColor.FromRgb(0x45, 0xB9, 0x7C);
+
+        if (state.Pet is { Title: { Length: > 0 } title } pet)
+        {
+            var life = pet.LifePercent is { } hp ? $" {hp}%" : string.Empty;
+            lines.Add(($"Pet {title}{life}", petColor, null));
+        }
+
+        lines.AddRange(state.ConcentrationBuffs
+            .Where(b => !string.IsNullOrWhiteSpace(b))
+            .Select(b => (b, concColor, (IconSpriteRef?)null)));
+        lines.AddRange(state.Buffs
+            .Where(b => !string.IsNullOrWhiteSpace(b))
+            .Select(b => (b, buffColor, (IconSpriteRef?)null)));
+
+        return lines.Count == 0 ? null : lines;
+    }
+
+    /// <summary>Rolling chat feed — last lines of whatever the capture chain
+    /// produced (mem/chat.log/relay = real chat; OCR = the dragged region).</summary>
+    internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildChatLines(
+        string? rawText, int maxLines = 8)
+    {
+        if (string.IsNullOrWhiteSpace(rawText))
+        {
+            return null;
+        }
+
+        var neutral = MediaColor.FromRgb(0xC8, 0xC8, 0xC8);
+        var lines = rawText
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.TrimEnd('\r', ' '))
+            .Where(x => x.Length > 0)
+            .TakeLast(maxLines)
+            .Select(x => (x, neutral, (IconSpriteRef?)null))
+            .ToList();
         return lines.Count == 0 ? null : lines;
     }
 
@@ -705,5 +807,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _selfCcWindow.Close();
         _peelWindow.Close();
         _worldWindow.Close();
+        _buffWindow.Close();
+        _chatWindow.Close();
     }
 }

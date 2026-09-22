@@ -64,6 +64,16 @@ public partial class MainWindow : Window
         PickWorldOverlayPosition();
     }
 
+    internal void PickBuffOverlayPosition_Click(object sender, RoutedEventArgs e)
+    {
+        PickBuffOverlayPosition();
+    }
+
+    internal void PickChatOverlayPosition_Click(object sender, RoutedEventArgs e)
+    {
+        PickChatOverlayPosition();
+    }
+
     internal void PickTargetSize_Click(object sender, RoutedEventArgs e)
     {
         PickSizeLive(OverlayFontSizeText, "Target", size => _liveOverlay?.SetPreviewFontSize(false, size));
@@ -99,7 +109,7 @@ public partial class MainWindow : Window
                 new CcTimerEntry("Preview Player", ControlEffectType.Root, now.AddSeconds(21), TargetClass: "Minstrel")
             ],
             new CastBarState("Greater Heal", 2.4, now, now.AddSeconds(1.6), null),
-            string.Empty,
+            "[Guild] Leroy: inc emain bridge\n[Region] Guard Voldar reports sightings near the tower\nXmlbeastie hits you for 142 damage.",
             new SelfCcState(ControlEffectType.Stun, now.AddSeconds(-4.2)),
             [
                 new PeelEntry("Xmlbeastie", 3, now.AddSeconds(-2)),
@@ -115,7 +125,12 @@ public partial class MainWindow : Window
                     new GroupMemberState(1, "Bowslap", "Hunter", 64, 30, 71, 50, "Emain Macha", null, null, null, []),
                     new GroupMemberState(2, "Tankguy", "Armsman", 22, 8, 96, 50, "Hadrian's Wall", null, null, null, [])
                 ],
-                [], [], null,
+                [
+                    "Toughness III", "Endurance II", "Regrowth", "Spec af",
+                    "Damnation", "Serenity", "Acuity III"
+                ],
+                ["Powermastery", "Clarity", "Alacrity"],
+                new PetState("Greater forest wolf", 82, [0], [0]),
                 new SiegeState(42, true, 7, null),
                 true, 90, 7963728, 1548245, 75, null, 90));
     }
@@ -150,6 +165,12 @@ public partial class MainWindow : Window
             WorldX = NormalizeIntText(OverlayWorldXText.Text, 1580),
             WorldY = NormalizeIntText(OverlayWorldYText.Text, 480),
             WorldSize = NormalizeIntText(OverlayWorldSizeText.Text, 16),
+            BuffX = NormalizeIntText(OverlayBuffXText.Text, 40),
+            BuffY = NormalizeIntText(OverlayBuffYText.Text, 700),
+            BuffSize = NormalizeIntText(OverlayBuffSizeText.Text, 14),
+            ChatX = NormalizeIntText(OverlayChatXText.Text, 40),
+            ChatY = NormalizeIntText(OverlayChatYText.Text, 900),
+            ChatSize = NormalizeIntText(OverlayChatSizeText.Text, 15),
             OverlayOpacity = NormalizeIntText(OverlayOpacityText.Text, 100) / 100.0,
             SoundsEnabled = SoundsEnabledCheckbox?.IsChecked ?? false,
             SoundSelfCc = SoundSelfCcCheckbox?.IsChecked ?? true,
@@ -170,6 +191,8 @@ public partial class MainWindow : Window
             ShowSelfCc = ShowSelfCcCheckbox?.IsChecked ?? true,
             ShowPeel = ShowPeelCheckbox?.IsChecked ?? true,
             ShowWorld = ShowWorldCheckbox?.IsChecked ?? true,
+            ShowBuffs = ShowBuffsCheckbox?.IsChecked ?? true,
+            ShowChat = ShowChatCheckbox?.IsChecked ?? false,
             ShowGuild = ShowGuildCheckbox?.IsChecked ?? true,
             ShowClass = ShowClassCheckbox?.IsChecked ?? true,
             ShowLevel = ShowLevelCheckbox?.IsChecked ?? true,

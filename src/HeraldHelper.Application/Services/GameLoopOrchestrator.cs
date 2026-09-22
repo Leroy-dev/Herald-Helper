@@ -44,6 +44,9 @@ public sealed class GameLoopOrchestrator : IDisposable
     private readonly List<RealmAbilityActivation> _realmAbilityUses = [];
     private int _kills;
     private int _deaths;
+    private int _hitsTaken;
+    private int _raUseCount;
+    private readonly DateTimeOffset _sessionStartedUtc = DateTimeOffset.UtcNow;
     private DateTimeOffset? _castInterruptedUntil;
     private readonly object _targetLock = new();
     private readonly string? _activeCharacterClass;
@@ -378,6 +381,7 @@ public sealed class GameLoopOrchestrator : IDisposable
             _attackers.TryGetValue(attack.Attacker, out var entry);
             _attackers[attack.Attacker] = new PeelEntry(
                 attack.Attacker, (entry?.HitCount ?? 0) + 1, nowUtc);
+            _hitsTaken++;
             if (entry is null)
             {
                 // First sighting of this attacker — that's the alert moment,
@@ -415,6 +419,7 @@ public sealed class GameLoopOrchestrator : IDisposable
             _realmAbilityUses.Add(new RealmAbilityActivation(
                 ra.AbilityName, nowUtc,
                 _realmAbilityCooldowns.TryGetValue(ra.AbilityName, out var cooldown) ? cooldown : null));
+            _raUseCount++;
             _diagnostics?.Log($"[RA] {ra.AbilityName}");
         }
     }
@@ -453,7 +458,9 @@ public sealed class GameLoopOrchestrator : IDisposable
             _attackers.Values.OrderByDescending(x => x.LastSeenUtc).Take(6).ToList(),
             _realmAbilityUses.OrderByDescending(x => x.UsedUtc).Take(12).ToList(),
             ClientStateExtractor.Extract(_adapterValueSource?.LatestAdapterValues),
-            (_kills > 0 || _deaths > 0) ? new SessionCombatStats(_kills, _deaths) : null,
+            (_kills > 0 || _deaths > 0 || _hitsTaken > 0)
+                ? new SessionCombatStats(_kills, _deaths, _hitsTaken, _raUseCount, _sessionStartedUtc)
+                : null,
             _castInterruptedUntil > nowUtc ? _castInterruptedUntil : null);
 
         var renderStopwatch = Stopwatch.StartNew();

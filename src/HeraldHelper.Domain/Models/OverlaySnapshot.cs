@@ -22,4 +22,9 @@ public sealed record SelfCcState(ControlEffectType Effect, DateTimeOffset Starte
 public sealed record PeelEntry(string Attacker, int HitCount, DateTimeOffset LastSeenUtc);
 
 /// <summary>Session kill/death counters from parsed combat lines.</summary>
-public sealed record SessionCombatStats(int Kills, int Deaths);
+public sealed record SessionCombatStats(
+    int Kills,
+    int Deaths,
+    int HitsTaken,
+    int RealmAbilityUses,
+    DateTimeOffset StartedUtc);
