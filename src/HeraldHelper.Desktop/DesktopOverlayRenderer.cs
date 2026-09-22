@@ -462,6 +462,20 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             lines.Add(($"Pet {title}{life}", petColor, null));
         }
 
+        // mini_pet_effect ids are the client's own icon ids — resolve to the
+        // charplan sprite when we can; icon ids are shared across buff families
+        // so no name, just the icon (unresolvable ones keep the raw id).
+        if (state.Pet is not null)
+        {
+            foreach (var iconId in state.Pet.EffectIconIds)
+            {
+                var sprite = IconCatalog.FindBestForSpell(iconId);
+                lines.Add(sprite is not null
+                    ? (string.Empty, petColor, sprite)
+                    : ($"pet fx {iconId}", MediaColor.FromRgb(0x8E, 0x9B, 0xB0), null));
+            }
+        }
+
         lines.AddRange(state.Buffs
             .Where(b => !string.IsNullOrWhiteSpace(b))
             .Select(b => (b, buffColor, (IconSpriteRef?)null)));

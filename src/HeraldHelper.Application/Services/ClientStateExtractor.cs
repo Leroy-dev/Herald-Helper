@@ -87,7 +87,24 @@ public static class ClientStateExtractor
             values.TryGetValue("mini_pet_title", out var title) ? title.Trim() : null,
             ReadInt(values, "mini_pet_life"),
             ExtractIndexList(values, "mini_pet_combat"),
-            ExtractIndexList(values, "mini_pet_movement"));
+            ExtractIndexList(values, "mini_pet_movement"),
+            ExtractPetEffectIcons(values));
+    }
+
+    /// <summary>mini_pet_effectN = iconId of each effect currently on the pet —
+    /// the same ids the charplan icon configs use. -1 = empty slot.</summary>
+    private static IReadOnlyList<int> ExtractPetEffectIcons(IReadOnlyDictionary<string, string> values)
+    {
+        var icons = new List<int>();
+        for (var i = 0; i < MaxPetSlots; i++)
+        {
+            if (ReadInt(values, $"mini_pet_effect{i}") is int iconId and > 0)
+            {
+                icons.Add(iconId);
+            }
+        }
+
+        return icons;
     }
 
     private static List<int> ExtractIndexList(IReadOnlyDictionary<string, string> values, string prefix)

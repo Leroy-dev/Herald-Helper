@@ -120,7 +120,7 @@ public partial class MainWindow : Window
                     "Toughness III", "Endurance II", "Regrowth", "Spec af",
                     "Damnation", "Serenity", "Acuity III"
                 ],
-                new PetState("Greater forest wolf", 82, [0], [0]),
+                new PetState("Greater forest wolf", 82, [0], [0], []),
                 new SiegeState(42, true, 7, null),
                 true, 90, 7963728, 1548245, 75, null, 90));
     }

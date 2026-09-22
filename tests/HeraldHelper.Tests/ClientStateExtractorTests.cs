@@ -69,13 +69,17 @@ public sealed class ClientStateExtractorTests
             ("mini_pet_title", "Abomination"),
             ("mini_pet_life", "75"),
             ("mini_pet_combat2", "1"),
-            ("mini_pet_movement0", "1")));
+            ("mini_pet_movement0", "1"),
+            ("mini_pet_effect0", "913"),
+            ("mini_pet_effect1", "-1"),
+            ("mini_pet_effect2", "2343")));
 
         var pet = Assert.IsType<HeraldHelper.Domain.Models.PetState>(state.Pet);
         Assert.Equal("Abomination", pet.Title);
         Assert.Equal(75, pet.LifePercent);
         Assert.Equal([2], pet.CombatPetIndices);
         Assert.Equal([0], pet.MovingPetIndices);
+        Assert.Equal([913, 2343], pet.EffectIconIds);
     }
 
     [Fact]

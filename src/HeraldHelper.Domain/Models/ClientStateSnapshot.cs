@@ -40,7 +40,8 @@ public sealed record PetState(
     string? Title,
     int? LifePercent,
     IReadOnlyList<int> CombatPetIndices,
-    IReadOnlyList<int> MovingPetIndices);
+    IReadOnlyList<int> MovingPetIndices,
+    IReadOnlyList<int> EffectIconIds);
 
 public sealed record SiegeState(
     double? TimerSeconds,
