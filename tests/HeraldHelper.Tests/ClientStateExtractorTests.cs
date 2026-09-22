@@ -52,10 +52,15 @@ public sealed class ClientStateExtractorTests
     public void BracketLists_ParseNamesAndStripCounts()
     {
         var state = ClientStateExtractor.Extract(Map(
-            ("stats_abil", "[Sprint]\\[Speed of Sound I]\\[Glacial Movement]"),
+            ("summary_icon_desc00", "Enhanced Strength\n+20 Str"),
+            ("summary_icon_desc12", "Speed of Sound"),
+            ("summary_icon_desc99", "  "),
+            // stats_abil is the passive-abilities page, not active buffs —
+            // it must NOT feed the buff list.
+            ("stats_abil", "[Sprint]\\[Evade II]"),
             ("conc_list", "[Abomination]\\[Abomination|4]")));
 
-        Assert.Equal(["Sprint", "Speed of Sound I", "Glacial Movement"], state.Buffs);
+        Assert.Equal(["Enhanced Strength", "Speed of Sound"], state.Buffs);
         Assert.Equal(["Abomination", "Abomination"], state.ConcentrationBuffs);
     }
 

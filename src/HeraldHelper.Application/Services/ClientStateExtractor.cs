@@ -26,7 +26,7 @@ public static class ClientStateExtractor
 
         return new ClientStateSnapshot(
             GroupMembers: ExtractGroupMembers(values),
-            Buffs: ExtractList(values, "stats_abil"),
+            Buffs: ExtractSummaryIconDescriptions(values),
             ConcentrationBuffs: ExtractList(values, "conc_list"),
             Pet: ExtractPet(values),
             Siege: ExtractSiege(values),
@@ -115,6 +115,27 @@ public static class ClientStateExtractor
         return timer is null && hits is null && helper is null && !moving
             ? null
             : new SiegeState(timer, moving, hits, helper);
+    }
+
+    /// <summary>Active buff/debuff names live in the summary window's icon
+    /// grid: summary_icon_desc{row}{col} (two digits each). stats_abil is the
+    /// passive-abilities page — NOT buffs — so it is deliberately not used.</summary>
+    private static IReadOnlyList<string> ExtractSummaryIconDescriptions(IReadOnlyDictionary<string, string> values)
+    {
+        var buffs = new List<string>();
+        for (var row = 0; row < 10; row++)
+        {
+            for (var col = 0; col < 10; col++)
+            {
+                if (values.TryGetValue($"summary_icon_desc{row}{col}", out var desc) &&
+                    !string.IsNullOrWhiteSpace(desc))
+                {
+                    buffs.Add(desc.Split('\n')[0].Trim());
+                }
+            }
+        }
+
+        return buffs;
     }
 
     /// <summary>"[Sprint]\[Speed of Sound I|5]\[Glacial Movement]" → names.</summary>
