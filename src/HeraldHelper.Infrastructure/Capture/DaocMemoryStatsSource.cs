@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using HeraldHelper.Application.Contracts;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
@@ -43,6 +44,10 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
     private Dictionary<string, long> _records = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _values = new(StringComparer.OrdinalIgnoreCase);
     private string? _bindError;
+    // The client's own active-effects array: "EFFECTS\0" marker, then fixed
+    // 0x5C records — name[44] at +0x04, iconId u32 around +0x44. Live-verified
+    // on Eden: names + icon ids of every buff currently on the player.
+    private long _effectsBase = -1;
 
     public DaocMemoryStatsSource(
         IWindowAwareChatCaptureService inner,
@@ -167,6 +172,71 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
             {
                 _diagnostics?.Log($"[MemStats] poll: {_values.Count} values ({updated} changed)");
             }
+
+            PollEffects();
+        }
+    }
+
+    private const int EffectRecordStride = 0x5C;
+    private const int EffectNameOffset = 0x04;
+    private const int EffectNameLength = 44;
+    private const int EffectIconOffset = 0x44;
+    private const int MaxEffects = 32;
+    private static readonly byte[] EffectsMarker = "EFFECTS\0"u8.ToArray();
+
+    /// <summary>Re-read the self-effects array and publish synthetic
+    /// self_effectN / self_effect_iconN adapter keys.</summary>
+    private void PollEffects()
+    {
+        if (_effectsBase < 0)
+        {
+            return;
+        }
+
+        var buf = ReadBytes(_effectsBase + EffectNameOffset, MaxEffects * EffectRecordStride);
+        if (buf is null)
+        {
+            _effectsBase = -1; // list moved — re-scan next bind
+            _mapBound = false;
+            return;
+        }
+
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var slot = 0;
+        for (var i = 0; i < MaxEffects; i++)
+        {
+            var nameStart = i * EffectRecordStride;
+            if (nameStart + EffectNameLength > buf.Length)
+            {
+                break;
+            }
+            var span = buf.AsSpan(nameStart, EffectNameLength);
+            var nul = span.IndexOf((byte)0);
+            var name = Encoding.ASCII.GetString(span[..(nul < 0 ? EffectNameLength : nul)]).Trim();
+            if (name.Length < 3 || name.Any(c => c is < ' ' or > '~') || !seen.Add(name))
+            {
+                continue;
+            }
+
+            _values[$"self_effect{slot}"] = name;
+            // Icon id sits near record+0x44 but jitters ±4 — first plausible
+            // u16 in the record tail wins.
+            var tail = nameStart - EffectNameOffset + 0x3E;
+            for (var o = tail; o >= 0 && o + 2 <= nameStart - EffectNameOffset + EffectRecordStride; o += 2)
+            {
+                var iconId = BitConverter.ToUInt16(buf, o);
+                if (iconId is > 0 and < 10000)
+                {
+                    _values[$"self_effect_icon{slot}"] = iconId.ToString();
+                    break;
+                }
+            }
+            slot++;
+        }
+
+        // Clear stale slots beyond what we just saw.
+        for (var i = slot; _values.Remove($"self_effect{i}") | _values.Remove($"self_effect_icon{i}"); i++)
+        {
         }
     }
 
@@ -239,11 +309,65 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
             _records = merged;
             _mapBound = true;
             _bindError = null;
-            _diagnostics?.Log($"[MemStats] bound: {merged.Count} adapters across {mapsFound} registry map(s)");
+            _effectsBase = TryLocateEffectsArray();
+            _diagnostics?.Log($"[MemStats] bound: {merged.Count} adapters across {mapsFound} registry map(s)" +
+                              (_effectsBase >= 0 ? $", effects array @0x{_effectsBase:X}" : ", no effects array"));
             return true;
         }
         _bindError = "adapter map not found";
         return false;
+    }
+
+    /// <summary>Find the "EFFECTS\0" marker and return the array base.
+    /// Validated by checking the first record's name field reads as ASCII.</summary>
+    private long TryLocateEffectsArray()
+    {
+        long addr = 0;
+        while (true)
+        {
+            if (VirtualQueryEx(_process, new IntPtr(addr), out var mbi, Marshal.SizeOf<MemoryBasicInformation>()) == 0)
+            {
+                break;
+            }
+            addr = mbi.BaseAddress + mbi.RegionSize;
+            if (mbi.State != 0x1000 || (mbi.Protect & 0xEE) == 0 || (mbi.Protect & 0x100) != 0 ||
+                mbi.Type == 0x1000000 || mbi.RegionSize <= 0 || mbi.RegionSize > 64 << 20)
+            {
+                continue;
+            }
+            var buf = new byte[mbi.RegionSize];
+            if (!ReadProcessMemory(_process, new IntPtr(mbi.BaseAddress), buf, buf.Length, out var got))
+            {
+                continue;
+            }
+            for (var i = 0; i + EffectsMarker.Length <= got; i++)
+            {
+                var eq = true;
+                for (var j = 0; j < EffectsMarker.Length; j++)
+                {
+                    if (buf[i + j] != EffectsMarker[j]) { eq = false; break; }
+                }
+                if (!eq)
+                {
+                    continue;
+                }
+
+                var baseAddr = mbi.BaseAddress + i + EffectsMarker.Length;
+                // records start ~0x34 after the marker; first name must read
+                // as printable ASCII — rejects stray "EFFECTS" literals.
+                var probe = ReadBytes(baseAddr + 0x38, EffectNameLength);
+                if (probe is not null)
+                {
+                    var nul = Array.IndexOf(probe, (byte)0);
+                    var candidate = Encoding.ASCII.GetString(probe[..(nul < 0 ? EffectNameLength : nul)]).Trim();
+                    if (candidate.Length >= 3 && candidate.All(c => c is >= ' ' and <= '~'))
+                    {
+                        return baseAddr + 0x34;
+                    }
+                }
+            }
+        }
+        return -1;
     }
 
     private bool EnsureBound()

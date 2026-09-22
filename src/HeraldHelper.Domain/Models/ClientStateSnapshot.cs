@@ -8,6 +8,7 @@ namespace HeraldHelper.Domain.Models;
 public sealed record ClientStateSnapshot(
     IReadOnlyList<GroupMemberState> GroupMembers,
     IReadOnlyList<string> Buffs,
+    IReadOnlyList<SelfEffect> SelfEffects,
     PetState? Pet,
     SiegeState? Siege,
     bool InCombat,
@@ -19,8 +20,12 @@ public sealed record ClientStateSnapshot(
     double? TimerSeconds)
 {
     public static readonly ClientStateSnapshot Empty = new(
-        [], [], null, null, false, null, null, null, null, null, null);
+        [], [], [], null, null, false, null, null, null, null, null, null);
 }
+
+/// <summary>One active effect on the player, read from the client's
+/// "EFFECTS" array — real name + iconId, live from memory.</summary>
+public sealed record SelfEffect(string Name, int IconId);
 
 public sealed record GroupMemberState(
     int Index,

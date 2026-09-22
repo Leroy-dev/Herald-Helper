@@ -476,6 +476,14 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             }
         }
 
+        // Live self-effects from the client's EFFECTS array — real names +
+        // icons, the same data the top-of-screen buff bar draws.
+        foreach (var effect in state.SelfEffects)
+        {
+            lines.Add((effect.Name, buffColor,
+                effect.IconId > 0 ? IconCatalog.FindBestForSpell(effect.IconId) : null));
+        }
+
         lines.AddRange(state.Buffs
             .Where(b => !string.IsNullOrWhiteSpace(b))
             .Select(b => (b, buffColor, (IconSpriteRef?)null)));

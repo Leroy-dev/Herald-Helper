@@ -26,6 +26,7 @@ public static class ClientStateExtractor
         return new ClientStateSnapshot(
             GroupMembers: ExtractGroupMembers(values),
             Buffs: ExtractSummaryIconDescriptions(values),
+            SelfEffects: ExtractSelfEffects(values),
             Pet: ExtractPet(values),
             Siege: ExtractSiege(values),
             InCombat: ReadInt(values, "combat_mode") == 1,
@@ -89,6 +90,24 @@ public static class ClientStateExtractor
             ExtractIndexList(values, "mini_pet_combat"),
             ExtractIndexList(values, "mini_pet_movement"),
             ExtractPetEffectIcons(values));
+    }
+
+    /// <summary>self_effectN / self_effect_iconN — synthetic keys the stats
+    /// memory source publishes from the client's EFFECTS array (real buff
+    /// names + iconIds on the player).</summary>
+    private static IReadOnlyList<SelfEffect> ExtractSelfEffects(IReadOnlyDictionary<string, string> values)
+    {
+        var effects = new List<SelfEffect>();
+        for (var i = 0; i < 32; i++)
+        {
+            if (!values.TryGetValue($"self_effect{i}", out var name) || string.IsNullOrWhiteSpace(name))
+            {
+                break;
+            }
+            effects.Add(new SelfEffect(name.Trim(), ReadInt(values, $"self_effect_icon{i}") ?? 0));
+        }
+
+        return effects;
     }
 
     /// <summary>mini_pet_effectN = iconId of each effect currently on the pet —
