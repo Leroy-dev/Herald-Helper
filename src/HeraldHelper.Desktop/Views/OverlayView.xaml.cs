@@ -26,6 +26,14 @@ public partial class OverlayView : System.Windows.Controls.UserControl
     {
         Main?.PickGroupOverlayPosition_Click(sender, e);
     }
+    private void PickSelfCcOverlayPosition_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.PickSelfCcOverlayPosition_Click(sender, e);
+    }
+    private void PickPeelOverlayPosition_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.PickPeelOverlayPosition_Click(sender, e);
+    }
     private void PickResistsSize_Click(object sender, RoutedEventArgs e)
     {
         Main?.PickResistsSize_Click(sender, e);

@@ -44,6 +44,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     private readonly List<RealmAbilityActivation> _realmAbilityUses = [];
     private int _kills;
     private int _deaths;
+    private DateTimeOffset? _castInterruptedUntil;
     private readonly object _targetLock = new();
     private readonly string? _activeCharacterClass;
     private readonly int? _activeCharacterLevel;
@@ -434,7 +435,8 @@ public sealed class GameLoopOrchestrator : IDisposable
             _attackers.Values.OrderByDescending(x => x.LastSeenUtc).Take(6).ToList(),
             _realmAbilityUses.OrderByDescending(x => x.UsedUtc).Take(12).ToList(),
             ClientStateExtractor.Extract(_adapterValueSource?.LatestAdapterValues),
-            (_kills > 0 || _deaths > 0) ? new SessionCombatStats(_kills, _deaths) : null);
+            (_kills > 0 || _deaths > 0) ? new SessionCombatStats(_kills, _deaths) : null,
+            _castInterruptedUntil > nowUtc ? _castInterruptedUntil : null);
 
         var renderStopwatch = Stopwatch.StartNew();
         await _overlayRenderer.RenderAsync(snapshot, cancellationToken);
@@ -469,6 +471,8 @@ public sealed class GameLoopOrchestrator : IDisposable
         if (castEvent.EventType == CastEventType.Interrupted)
         {
             _activeCast = null;
+            _castInterruptedUntil = nowUtc.AddSeconds(1.4);
+            _diagnostics?.Log("[Cast] interrupted");
             return;
         }
 

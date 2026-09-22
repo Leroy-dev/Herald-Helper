@@ -49,6 +49,16 @@ public partial class MainWindow : Window
         PickGroupOverlayPosition();
     }
 
+    internal void PickSelfCcOverlayPosition_Click(object sender, RoutedEventArgs e)
+    {
+        PickSelfCcOverlayPosition();
+    }
+
+    internal void PickPeelOverlayPosition_Click(object sender, RoutedEventArgs e)
+    {
+        PickPeelOverlayPosition();
+    }
+
     internal void PickTargetSize_Click(object sender, RoutedEventArgs e)
     {
         PickSizeLive(OverlayFontSizeText, "Target", size => _liveOverlay?.SetPreviewFontSize(false, size));
@@ -85,7 +95,12 @@ public partial class MainWindow : Window
             ],
             new CastBarState("Greater Heal", 2.4, now, now.AddSeconds(1.6), null),
             string.Empty,
-            null, null, null,
+            new SelfCcState(ControlEffectType.Stun, now.AddSeconds(-4.2)),
+            [
+                new PeelEntry("Xmlbeastie", 3, now.AddSeconds(-2)),
+                new PeelEntry("Moolish", 1, now.AddSeconds(-6))
+            ],
+            null,
             new ClientStateSnapshot(
                 [
                     new GroupMemberState(0, "Leroy", "Cleric", 100, 87, 55, 50, "Emain Macha", null, null, null, []),
@@ -116,6 +131,12 @@ public partial class MainWindow : Window
             GroupX = NormalizeIntText(OverlayGroupXText.Text, 40),
             GroupY = NormalizeIntText(OverlayGroupYText.Text, 300),
             GroupSize = NormalizeIntText(OverlayGroupSizeText.Text, 14),
+            SelfCcX = NormalizeIntText(OverlaySelfCcXText.Text, 1200),
+            SelfCcY = NormalizeIntText(OverlaySelfCcYText.Text, 740),
+            SelfCcSize = NormalizeIntText(OverlaySelfCcSizeText.Text, 32),
+            PeelX = NormalizeIntText(OverlayPeelXText.Text, 1580),
+            PeelY = NormalizeIntText(OverlayPeelYText.Text, 700),
+            PeelSize = NormalizeIntText(OverlayPeelSizeText.Text, 16),
             FontSize = NormalizeIntText(OverlayFontSizeText.Text, 20),
             TimerSize = NormalizeIntText(OverlayTimerSizeText.Text, 20),
             ResistsSize = NormalizeIntText(OverlayResistsSizeText.Text, 20),
@@ -128,6 +149,8 @@ public partial class MainWindow : Window
             ShowCastBar = ShowCastBarCheckbox?.IsChecked ?? true,
             ShowResists = ShowResistsCheckbox?.IsChecked ?? false,
             ShowGroup = ShowGroupCheckbox?.IsChecked ?? false,
+            ShowSelfCc = ShowSelfCcCheckbox?.IsChecked ?? true,
+            ShowPeel = ShowPeelCheckbox?.IsChecked ?? true,
             ShowGuild = ShowGuildCheckbox?.IsChecked ?? true,
             ShowClass = ShowClassCheckbox?.IsChecked ?? true,
             ShowLevel = ShowLevelCheckbox?.IsChecked ?? true,

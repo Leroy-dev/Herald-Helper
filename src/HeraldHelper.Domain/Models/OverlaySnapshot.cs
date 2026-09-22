@@ -11,7 +11,8 @@ public sealed record OverlaySnapshot(
     IReadOnlyCollection<PeelEntry>? RecentAttackers = null,
     IReadOnlyCollection<RealmAbilityActivation>? RecentRealmAbilityUses = null,
     ClientStateSnapshot? ClientState = null,
-    SessionCombatStats? CombatStats = null);
+    SessionCombatStats? CombatStats = null,
+    DateTimeOffset? CastInterruptedUntil = null);
 
 /// <summary>You are currently crowd-controlled — started when the chat line
 /// fired; incoming CC has no duration so the overlay shows elapsed time.</summary>

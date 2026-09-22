@@ -97,6 +97,14 @@ public partial class MainWindow : Window
     private System.Windows.Controls.TextBox OverlayGroupXText => OverlayView!.OverlayGroupXText;
     private System.Windows.Controls.TextBox OverlayGroupYText => OverlayView!.OverlayGroupYText;
     private System.Windows.Controls.TextBox OverlayGroupSizeText => OverlayView!.OverlayGroupSizeText;
+    private System.Windows.Controls.CheckBox ShowSelfCcCheckbox => OverlayView!.ShowSelfCcCheckbox;
+    private System.Windows.Controls.CheckBox ShowPeelCheckbox => OverlayView!.ShowPeelCheckbox;
+    private System.Windows.Controls.TextBox OverlaySelfCcXText => OverlayView!.OverlaySelfCcXText;
+    private System.Windows.Controls.TextBox OverlaySelfCcYText => OverlayView!.OverlaySelfCcYText;
+    private System.Windows.Controls.TextBox OverlaySelfCcSizeText => OverlayView!.OverlaySelfCcSizeText;
+    private System.Windows.Controls.TextBox OverlayPeelXText => OverlayView!.OverlayPeelXText;
+    private System.Windows.Controls.TextBox OverlayPeelYText => OverlayView!.OverlayPeelYText;
+    private System.Windows.Controls.TextBox OverlayPeelSizeText => OverlayView!.OverlayPeelSizeText;
     private System.Windows.Controls.TextBox TargetColorText => OverlayView!.TargetColorText;
     private System.Windows.Controls.CheckBox UseRealmColorsCheckbox => OverlayView!.UseRealmColorsCheckbox;
     private System.Windows.Controls.TextBox TimerColorText => OverlayView!.TimerColorText;
@@ -1063,6 +1071,60 @@ public partial class MainWindow : Window
         SaveOverlaySettings_Click(this, new RoutedEventArgs());
     }
 
+    private void PickSelfCcOverlayPosition()
+    {
+        var originalX = OverlaySelfCcXText.Text;
+        var originalY = OverlaySelfCcYText.Text;
+
+        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
+        {
+            OverlaySelfCcXText.Text = x.ToString();
+            OverlaySelfCcYText.Text = y.ToString();
+            _liveOverlay?.SetPreviewSelfCcPosition(x, y);
+            RenderLiveOverlayPreview();
+        });
+
+        if (selected is null)
+        {
+            OverlaySelfCcXText.Text = originalX;
+            OverlaySelfCcYText.Text = originalY;
+            _liveOverlay?.ClearPreview();
+            RenderLiveOverlayPreview();
+            return;
+        }
+
+        OverlaySelfCcXText.Text = selected.Value.X.ToString();
+        OverlaySelfCcYText.Text = selected.Value.Y.ToString();
+        SaveOverlaySettings_Click(this, new RoutedEventArgs());
+    }
+
+    private void PickPeelOverlayPosition()
+    {
+        var originalX = OverlayPeelXText.Text;
+        var originalY = OverlayPeelYText.Text;
+
+        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
+        {
+            OverlayPeelXText.Text = x.ToString();
+            OverlayPeelYText.Text = y.ToString();
+            _liveOverlay?.SetPreviewPeelPosition(x, y);
+            RenderLiveOverlayPreview();
+        });
+
+        if (selected is null)
+        {
+            OverlayPeelXText.Text = originalX;
+            OverlayPeelYText.Text = originalY;
+            _liveOverlay?.ClearPreview();
+            RenderLiveOverlayPreview();
+            return;
+        }
+
+        OverlayPeelXText.Text = selected.Value.X.ToString();
+        OverlayPeelYText.Text = selected.Value.Y.ToString();
+        SaveOverlaySettings_Click(this, new RoutedEventArgs());
+    }
+
     private void PickSizeLive(System.Windows.Controls.TextBox targetBox, string label, Action<int> previewSetter)
     {
         var original = NormalizeIntText(targetBox.Text, 20);
@@ -1115,12 +1177,20 @@ public partial class MainWindow : Window
         OverlayGroupXText.Text = settings.GroupX.ToString();
         OverlayGroupYText.Text = settings.GroupY.ToString();
         OverlayGroupSizeText.Text = settings.GroupSize.ToString();
+        OverlaySelfCcXText.Text = settings.SelfCcX.ToString();
+        OverlaySelfCcYText.Text = settings.SelfCcY.ToString();
+        OverlaySelfCcSizeText.Text = settings.SelfCcSize.ToString();
+        OverlayPeelXText.Text = settings.PeelX.ToString();
+        OverlayPeelYText.Text = settings.PeelY.ToString();
+        OverlayPeelSizeText.Text = settings.PeelSize.ToString();
 
         BindToggle(ShowTargetCheckbox, settings.ShowTarget, OverlayVisibilityChanged);
         BindToggle(ShowTimersCheckbox, settings.ShowTimers, OverlayVisibilityChanged);
         BindToggle(ShowCastBarCheckbox, settings.ShowCastBar, OverlayVisibilityChanged);
         BindToggle(ShowResistsCheckbox, settings.ShowResists, OverlayVisibilityChanged);
         BindToggle(ShowGroupCheckbox, settings.ShowGroup, OverlayVisibilityChanged);
+        BindToggle(ShowSelfCcCheckbox, settings.ShowSelfCc, OverlayVisibilityChanged);
+        BindToggle(ShowPeelCheckbox, settings.ShowPeel, OverlayVisibilityChanged);
         BindToggle(ShowGuildCheckbox, settings.ShowGuild, OverlayVisibilityChanged);
         BindToggle(ShowClassCheckbox, settings.ShowClass, OverlayVisibilityChanged);
         BindToggle(ShowLevelCheckbox, settings.ShowLevel, OverlayVisibilityChanged);

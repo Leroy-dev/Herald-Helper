@@ -40,6 +40,10 @@
                                           ToolTip="Show Thrust/Slash/Crush for the target's armor class — green = weak to it, red = resists it." />
                                 <CheckBox x:Name="ShowGroupCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Group Frames"
                                           ToolTip="Show group member frames (name, class, HP/End/Pow bars) — data comes from the client's group adapters, so it needs process-memory stats enabled (or a shard that feeds the adapter map). Not available in conservative mode." />
+                                <CheckBox x:Name="ShowSelfCcCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Self-CC"
+                                          ToolTip="Big banner when you get stunned/mesmerized/rooted — shows elapsed time since the CC landed." />
+                                <CheckBox x:Name="ShowPeelCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Peel"
+                                          ToolTip="List of enemies who attacked you recently (attacker + hit count) — who's trying to peel you." />
                                 <CheckBox x:Name="DynamicCastSpeedCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Dynamic Cast Speed"
                                           ToolTip="Adjust the catalog cast time using the OCR-read Dexterity and the configured casting-speed bonus." />
                                 <CheckBox x:Name="EstimatedSpellDamageCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Estimated Spell Damage"
@@ -123,6 +127,26 @@
                                             </StackPanel>
                                         </Button>
                                     </WrapPanel>
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <TextBox Width="90" x:Name="OverlaySelfCcXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Self-CC X" />
+                                        <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlaySelfCcYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Self-CC Y" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickSelfCcOverlayPosition_Click" ToolTip="Drag the self-CC banner position">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="CursorMove" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Drag" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <TextBox Width="90" x:Name="OverlayPeelXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Peel X" />
+                                        <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayPeelYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Peel Y" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickPeelOverlayPosition_Click" ToolTip="Drag the peel list position">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="CursorMove" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Drag" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </WrapPanel>
                                     <WrapPanel>
                                         <ComboBox Width="140" x:Name="OverlayTargetFontCombo" x:FieldModifier="public" Style="{StaticResource CompactInputComboBoxStyle}" materialDesign:HintAssist.Hint="Target Font" />
                                         <TextBox Margin="8,0,0,0" Width="60" x:Name="OverlayFontSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Size" />
@@ -159,6 +183,14 @@
                                     <WrapPanel Margin="0,8,0,0">
                                         <TextBlock Width="140" VerticalAlignment="Center" Foreground="{DynamicResource VsMutedTextBrush}" Text="Group (timer font)" />
                                         <TextBox Width="60" x:Name="OverlayGroupSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Size" />
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,8,0,0">
+                                        <TextBlock Width="140" VerticalAlignment="Center" Foreground="{DynamicResource VsMutedTextBrush}" Text="Self-CC (target font)" />
+                                        <TextBox Width="60" x:Name="OverlaySelfCcSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Size" />
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,8,0,0">
+                                        <TextBlock Width="140" VerticalAlignment="Center" Foreground="{DynamicResource VsMutedTextBrush}" Text="Peel (timer font)" />
+                                        <TextBox Width="60" x:Name="OverlayPeelSizeText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Size" />
                                     </WrapPanel>
                                 </StackPanel>
                             </Border>

@@ -17,6 +17,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private readonly OverlayTextWindow _resistsWindow;
     private readonly CastBarWindow _castBarWindow;
     private readonly GroupOverlayWindow _groupWindow;
+    private readonly OverlayTextWindow _selfCcWindow;
+    private readonly OverlayTextWindow _peelWindow;
     private int? _previewTargetX;
     private int? _previewTargetY;
     private int? _previewTimerX;
@@ -28,6 +30,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private int? _previewResistsFontSize;
     private int? _previewGroupX;
     private int? _previewGroupY;
+    private int? _previewSelfCcX;
+    private int? _previewSelfCcY;
+    private int? _previewPeelX;
+    private int? _previewPeelY;
     private MediaColor? _previewTargetColor;
     private MediaColor? _previewTimerColor;
     private MediaColor? _previewOutlineColor;
@@ -44,6 +50,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _resistsWindow = new OverlayTextWindow();
         _castBarWindow = new CastBarWindow();
         _groupWindow = new GroupOverlayWindow();
+        _selfCcWindow = new OverlayTextWindow();
+        _peelWindow = new OverlayTextWindow();
     }
 
     public Task RenderAsync(OverlaySnapshot snapshot, CancellationToken cancellationToken)
@@ -103,6 +111,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             var ry = _previewResistsY ?? overlay.ResistsY;
             var gx = _previewGroupX ?? overlay.GroupX;
             var gy = _previewGroupY ?? overlay.GroupY;
+            var scx = _previewSelfCcX ?? overlay.SelfCcX;
+            var scy = _previewSelfCcY ?? overlay.SelfCcY;
+            var px = _previewPeelX ?? overlay.PeelX;
+            var py = _previewPeelY ?? overlay.PeelY;
 
             var f1 = overlay.FontSize;
             var f2 = overlay.TimerSize;
@@ -166,10 +178,24 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 rx, ry,
                 f3, overlay.TargetFontFamily, outlineColor);
             var cast = overlay.ShowCastBar ? snapshot.ActiveCast : null;
-            _castBarWindow.Update(cast, cx, cy, castbarColor, timerColor, outlineColor, overlay.CastbarFontFamily);
+            _castBarWindow.Update(cast, cx, cy, castbarColor, timerColor, outlineColor, overlay.CastbarFontFamily,
+                snapshot.CastInterruptedUntil);
             _groupWindow.Update(
                 overlay.ShowGroup ? snapshot.ClientState?.GroupMembers : null,
                 gx, gy, overlay.GroupSize, overlay.TimerFontFamily, outlineColor);
+
+            _selfCcWindow.Update(
+                overlay.ShowSelfCc && snapshot.SelfCc is not null
+                    ? BuildSelfCcText(snapshot.SelfCc)
+                    : string.Empty,
+                scx, scy, overlay.SelfCcSize, overlay.TargetFontFamily,
+                snapshot.SelfCc is { } cc ? EffectTypeColor(cc.Effect, Colors.White) : Colors.White,
+                outlineColor, FontWeights.Bold);
+
+            var peelLines = overlay.ShowPeel ? BuildPeelLines(snapshot.RecentAttackers) : null;
+            _peelWindow.Update(
+                (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)peelLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
+                px, py, overlay.PeelSize, overlay.TimerFontFamily, outlineColor);
             Rendered?.Invoke(this, new OverlayViewState(
                 targetText,
                 timerText,
@@ -245,6 +271,18 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewGroupY = y;
     }
 
+    public void SetPreviewSelfCcPosition(int x, int y)
+    {
+        _previewSelfCcX = x;
+        _previewSelfCcY = y;
+    }
+
+    public void SetPreviewPeelPosition(int x, int y)
+    {
+        _previewPeelX = x;
+        _previewPeelY = y;
+    }
+
     public void ClearPreview()
     {
         _previewTargetX = null;
@@ -263,6 +301,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewResistsFontSize = null;
         _previewGroupX = null;
         _previewGroupY = null;
+        _previewSelfCcX = null;
+        _previewSelfCcY = null;
+        _previewPeelX = null;
+        _previewPeelY = null;
     }
 
     public void Dispose()
@@ -334,6 +376,39 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             ("Slash", VerdictColor(slash), (IconSpriteRef?)null),
             ("Crush", VerdictColor(crush), (IconSpriteRef?)null),
         ];
+    }
+
+    /// <summary>Self-CC banner — the chat line has no duration, so the banner
+    /// shows elapsed time ("STUNNED 4.2s") in the effect's color.</summary>
+    internal static string BuildSelfCcText(SelfCcState selfCc)
+    {
+        var elapsed = Math.Max(0, (DateTimeOffset.UtcNow - selfCc.StartedUtc).TotalSeconds);
+        var label = selfCc.Effect switch
+        {
+            ControlEffectType.Stun => "STUNNED",
+            ControlEffectType.Mezz => "MESMERIZED",
+            ControlEffectType.Root => "ROOTED",
+            _ => "CC'd"
+        };
+        return $"{label}  {elapsed:0.0}s";
+    }
+
+    /// <summary>Peel list — who's been hitting you lately, hit count
+    /// included ("Foo ×3"). Red like the danger it is.</summary>
+    internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildPeelLines(
+        IReadOnlyCollection<PeelEntry>? attackers)
+    {
+        if (attackers is null || attackers.Count == 0)
+        {
+            return null;
+        }
+
+        var peelColor = MediaColor.FromRgb(0xE0, 0x5D, 0x65);
+        return attackers
+            .OrderByDescending(a => a.LastSeenUtc)
+            .Take(6)
+            .Select(a => ($"{a.Attacker}  ×{a.HitCount}", peelColor, (IconSpriteRef?)null))
+            .ToList();
     }
 
     private static MediaColor VerdictColor(DamageVerdict verdict) =>
@@ -516,5 +591,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _resistsWindow.Close();
         _castBarWindow.Close();
         _groupWindow.Close();
+        _selfCcWindow.Close();
+        _peelWindow.Close();
     }
 }

@@ -15,6 +15,12 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private int _groupX = 40;
     private int _groupY = 300;
     private int _groupSize = 14;
+    private int _selfCcX = 1200;
+    private int _selfCcY = 740;
+    private int _selfCcSize = 32;
+    private int _peelX = 1580;
+    private int _peelY = 700;
+    private int _peelSize = 16;
     private int _fontSize = 20;
     private int _timerSize = 20;
     private int _resistsSize = 20;
@@ -27,6 +33,8 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private bool _showCastBar = true;
     private bool _showResists;
     private bool _showGroup;
+    private bool _showSelfCc = true;
+    private bool _showPeel = true;
     private bool _showGuild = true;
     private bool _showClass = true;
     private bool _showLevel = true;
@@ -50,6 +58,12 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public int GroupX { get => _groupX; set { _groupX = value; OnPropertyChanged(nameof(GroupX)); } }
     public int GroupY { get => _groupY; set { _groupY = value; OnPropertyChanged(nameof(GroupY)); } }
     public int GroupSize { get => _groupSize; set { _groupSize = value; OnPropertyChanged(nameof(GroupSize)); } }
+    public int SelfCcX { get => _selfCcX; set { _selfCcX = value; OnPropertyChanged(nameof(SelfCcX)); } }
+    public int SelfCcY { get => _selfCcY; set { _selfCcY = value; OnPropertyChanged(nameof(SelfCcY)); } }
+    public int SelfCcSize { get => _selfCcSize; set { _selfCcSize = value; OnPropertyChanged(nameof(SelfCcSize)); } }
+    public int PeelX { get => _peelX; set { _peelX = value; OnPropertyChanged(nameof(PeelX)); } }
+    public int PeelY { get => _peelY; set { _peelY = value; OnPropertyChanged(nameof(PeelY)); } }
+    public int PeelSize { get => _peelSize; set { _peelSize = value; OnPropertyChanged(nameof(PeelSize)); } }
     public int FontSize { get => _fontSize; set { _fontSize = value; OnPropertyChanged(nameof(FontSize)); } }
     public int TimerSize { get => _timerSize; set { _timerSize = value; OnPropertyChanged(nameof(TimerSize)); } }
     public int ResistsSize { get => _resistsSize; set { _resistsSize = value; OnPropertyChanged(nameof(ResistsSize)); } }
@@ -62,6 +76,8 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public bool ShowCastBar { get => _showCastBar; set { _showCastBar = value; OnPropertyChanged(nameof(ShowCastBar)); } }
     public bool ShowResists { get => _showResists; set { _showResists = value; OnPropertyChanged(nameof(ShowResists)); } }
     public bool ShowGroup { get => _showGroup; set { _showGroup = value; OnPropertyChanged(nameof(ShowGroup)); } }
+    public bool ShowSelfCc { get => _showSelfCc; set { _showSelfCc = value; OnPropertyChanged(nameof(ShowSelfCc)); } }
+    public bool ShowPeel { get => _showPeel; set { _showPeel = value; OnPropertyChanged(nameof(ShowPeel)); } }
     public bool ShowGuild { get => _showGuild; set { _showGuild = value; OnPropertyChanged(nameof(ShowGuild)); } }
     public bool ShowClass { get => _showClass; set { _showClass = value; OnPropertyChanged(nameof(ShowClass)); } }
     public bool ShowLevel { get => _showLevel; set { _showLevel = value; OnPropertyChanged(nameof(ShowLevel)); } }

@@ -26,6 +26,7 @@ public sealed class CastBarWindow : Window
     private readonly Border _border;
     private readonly DispatcherTimer _timer;
     private CastBarState? _state;
+    private DateTimeOffset? _interruptUntil;
     private MediaColor _targetColor = Colors.White;
     private MediaColor _timerColor = MediaColor.FromRgb(255, 233, 178);
     private MediaColor _outlineColor = Colors.Black;
@@ -143,9 +144,10 @@ public sealed class CastBarWindow : Window
         OverlayTextWindowInterop.SetWindowLongPtr(hwnd, new IntPtr(exStyle));
     }
 
-    public void Update(CastBarState? state, double x, double y, MediaColor targetColor, MediaColor timerColor, MediaColor outlineColor, string fontFamily)
+    public void Update(CastBarState? state, double x, double y, MediaColor targetColor, MediaColor timerColor, MediaColor outlineColor, string fontFamily, DateTimeOffset? interruptUntil = null)
     {
         _state = state;
+        _interruptUntil = interruptUntil;
         // Clamp into the virtual screen so a saved position can't hide the bar.
         Left = Math.Clamp(x,
             SystemParameters.VirtualScreenLeft,
@@ -187,7 +189,35 @@ public sealed class CastBarWindow : Window
 
     private void Refresh()
     {
-        if (_state is null || !_state.IsActive(DateTimeOffset.UtcNow))
+        var nowUtc = DateTimeOffset.UtcNow;
+
+        // Interrupt flash: the cast is dead, so render a short red
+        // "Interrupted!" bar instead of just vanishing.
+        if (_interruptUntil is { } until && nowUtc < until)
+        {
+            _spellNameText.Text = "Interrupted!";
+            _spellNameText.Foreground = new SolidColorBrush(MediaColor.FromRgb(0xE0, 0x5D, 0x65));
+            _secondsText.Text = string.Empty;
+            var barWidth = _progressBarContainer.ActualWidth;
+            _progressBarFill.Background = new SolidColorBrush(MediaColor.FromRgb(0xE0, 0x5D, 0x65));
+            _progressBarFill.Width = barWidth > 0 ? barWidth : 0;
+            _iconImage.Source = null;
+            _iconImage.Visibility = Visibility.Collapsed;
+            if (!IsVisible)
+            {
+                Show();
+            }
+            if (!_timer.IsEnabled)
+            {
+                _timer.Start();
+            }
+            return;
+        }
+
+        _spellNameText.Foreground = new SolidColorBrush(_targetColor);
+        _progressBarFill.Background = new SolidColorBrush(_timerColor);
+
+        if (_state is null || !_state.IsActive(nowUtc))
         {
             _timer.Stop();
             if (IsVisible)
@@ -197,7 +227,6 @@ public sealed class CastBarWindow : Window
             return;
         }
 
-        var nowUtc = DateTimeOffset.UtcNow;
         _spellNameText.Text = _state.SpellName;
         var damage = _state.EstimatedDamage is > 0
             ? $" · ~{_state.EstimatedDamage:0} dmg"
