@@ -21,6 +21,7 @@ public static class ShardAuthProfileResolver
         var requiredCsv = Get(settings, $"auth.{key}.requiredCookies", defaultProfile is null ? null : string.Join(",", defaultProfile.RequiredCookieNames ?? []));
         var validateUrl = Get(settings, $"auth.{key}.validateUrl", defaultProfile?.ValidateUrl);
         var validateDenyRaw = Get(settings, $"auth.{key}.validateDeny", defaultProfile is null ? null : string.Join("|", defaultProfile.ValidateDenyPhrases ?? []));
+        var hubDenyRaw = Get(settings, $"auth.{key}.hubDeny", defaultProfile is null ? null : string.Join("|", defaultProfile.HubDenyPhrases ?? []));
 
         if (string.IsNullOrWhiteSpace(hub) || string.IsNullOrWhiteSpace(domain))
         {
@@ -36,8 +37,11 @@ public static class ShardAuthProfileResolver
         var deny = (validateDenyRaw ?? string.Empty)
             .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToList();
+        var hubDeny = (hubDenyRaw ?? string.Empty)
+            .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
 
-        return new ShardAuthProfile(shard, hub, domain, names, required, validateUrl, deny);
+        return new ShardAuthProfile(shard, hub, domain, names, required, validateUrl, deny, hubDeny);
     }
 
     public static IEnumerable<ConfigEntry> DefaultSettings()
@@ -49,6 +53,7 @@ public static class ShardAuthProfileResolver
         yield return new ConfigEntry { Key = "auth.eden.requiredCookies", Value = "eden_daoc_u,eden_daoc_sid" };
         yield return new ConfigEntry { Key = "auth.eden.validateUrl", Value = "https://eden-daoc.net/herald" };
         yield return new ConfigEntry { Key = "auth.eden.validateDeny", Value = "The requested page|is not available" };
+        yield return new ConfigEntry { Key = "auth.eden.hubDeny", Value = "LOGIN" };
         yield return new ConfigEntry { Key = "auth.eden.cookieHeader", Value = "" };
         yield return new ConfigEntry { Key = "auth.eden.userAgent", Value = "" };
         yield return new ConfigEntry { Key = "auth.phoenix.enabled", Value = "false" };
@@ -68,7 +73,8 @@ public static class ShardAuthProfileResolver
                 ["eden_daoc_u", "eden_daoc_k", "eden_daoc_sid"],
                 ["eden_daoc_u", "eden_daoc_sid"],
                 "https://eden-daoc.net/herald",
-                ["The requested page", "is not available"]),
+                ["The requested page", "is not available"],
+                ["LOGIN"]),
             _ => null
         };
     }

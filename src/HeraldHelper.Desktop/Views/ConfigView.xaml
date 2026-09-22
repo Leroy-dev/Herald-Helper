@@ -119,6 +119,11 @@
                                         <DataGridTextColumn Header="Cookies" Binding="{Binding CookieNames, UpdateSourceTrigger=PropertyChanged}" Width="180" />
                                         <DataGridTextColumn Header="Required" Binding="{Binding RequiredCookies, UpdateSourceTrigger=PropertyChanged}" Width="140" />
                                         <DataGridTextColumn Header="Validate URL" Binding="{Binding ValidateUrl, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                                        <DataGridTextColumn Binding="{Binding HubDeny, UpdateSourceTrigger=PropertyChanged}" Width="110">
+                                            <DataGridTextColumn.Header>
+                                                <TextBlock Text="Hub deny" ToolTip="|-separated phrases in the hub page's visible text that mean 'not logged in' — e.g. Eden's LOGIN nav button. Cookies are only captured once the page stops showing them."/>
+                                            </DataGridTextColumn.Header>
+                                        </DataGridTextColumn>
                                         <DataGridTextColumn Header="Session" Binding="{Binding Session}" Width="120" IsReadOnly="True" />
                                     </DataGrid.Columns>
                                 </DataGrid>

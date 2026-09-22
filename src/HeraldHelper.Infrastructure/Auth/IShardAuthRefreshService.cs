@@ -9,8 +9,11 @@ public interface IShardAuthRefreshService
     /// longer valid — in that case the user must log in via OpenBrowserAsync.</summary>
     Task<ShardAuthBundle?> RefreshAsync(ShardType shard, CancellationToken cancellationToken);
 
-    /// <summary>Opens a headed Chromium window for interactive login. Polls
-    /// until a valid cookie set appears, then closes the window and returns
-    /// the harvested bundle (also reported via the OnRefreshed callback).</summary>
+    /// <summary>Opens a headed Chromium window for interactive login. The
+    /// window stays open until the USER closes it (or a 10-minute cap);
+    /// the last cookie snapshot is then validated — required cookies plus the
+    /// hub page no longer showing login affordances — and returned (also
+    /// reported via the OnRefreshed callback). Null when nothing valid was
+    /// captured.</summary>
     Task<ShardAuthBundle?> OpenBrowserAsync(ShardType shard, CancellationToken cancellationToken);
 }

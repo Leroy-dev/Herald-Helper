@@ -121,32 +121,48 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
             closeTcs.TrySetCanceled(cancellationToken);
         });
 
-        var cookieTask = WaitForCookieHeaderAsync(
-            browser, profile, page, TimeSpan.FromMinutes(3), cancellationToken);
-        var completed = await Task.WhenAny(cookieTask, closeTcs.Task);
-        if (completed == closeTcs.Task)
+        // The browser is never closed by us: the user logs in, then closes the
+        // window — cookies + page state snapshotted every poll decide whether
+        // anything was captured. Cookie presence alone is not proof (Eden sets
+        // session cookies for anonymous visitors and stale ones persist in the
+        // user-data dir), so the live page must also stop showing the hub's
+        // login indicators before the snapshot counts as authenticated.
+        string? latestCookieHeader = null;
+        string? latestUserAgent = null;
+        var pageDenied = true;
+        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(10);
+        while (!closeTcs.Task.IsCompleted && DateTimeOffset.UtcNow < deadline)
         {
-            closeTcs.Task.GetAwaiter().GetResult(); // surface cancellation if that is what completed it
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var cookies = await browser.CookiesAsync([profile.HubUrl]);
+                var header = BuildCookieHeader(cookies, profile);
+                if (!string.IsNullOrWhiteSpace(header))
+                {
+                    latestCookieHeader = header;
+                }
+
+                latestUserAgent = await TryReadUserAgentAsync(page, cancellationToken) ?? latestUserAgent;
+                pageDenied = await PageShowsDenyAsync(page, profile.HubDenyPhrases, cancellationToken);
+            }
+            catch (PlaywrightException)
+            {
+                break; // browser torn down mid-poll — last snapshot stands
+            }
+
+            await Task.Delay(750, cancellationToken);
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        if (pageDenied || string.IsNullOrWhiteSpace(latestCookieHeader) ||
+            !await IsLoginValidatedAsync(profile, latestCookieHeader, latestUserAgent, CancellationToken.None))
+        {
             return null;
         }
 
-        if (!cookieTask.IsCompletedSuccessfully || string.IsNullOrWhiteSpace(cookieTask.Result))
-        {
-            // Login wait timed out or was cancelled.
-            return null;
-        }
-
-        var userAgent = await TryReadUserAgentAsync(page, cancellationToken);
-        var bundle = new ShardAuthBundle(cookieTask.Result, userAgent);
+        var bundle = new ShardAuthBundle(latestCookieHeader, latestUserAgent);
         _onRefreshed(shard, bundle);
-        try
-        {
-            await browser.CloseAsync();
-        }
-        catch
-        {
-            // Already closing/closed by the user.
-        }
         return bundle;
     }
 
@@ -217,7 +233,9 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
             var cookies = await browser.CookiesAsync([profile.HubUrl]);
             var cookieHeader = BuildCookieHeader(cookies, profile);
             var userAgent = await TryReadUserAgentAsync(page, cancellationToken);
-            if (!string.IsNullOrWhiteSpace(cookieHeader) &&
+            var pageDenied = await PageShowsDenyAsync(page, profile.HubDenyPhrases, cancellationToken);
+            if (!pageDenied &&
+                !string.IsNullOrWhiteSpace(cookieHeader) &&
                 await IsLoginValidatedAsync(profile, cookieHeader, userAgent, cancellationToken))
             {
                 return cookieHeader;
@@ -227,6 +245,35 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
         }
 
         return string.Empty;
+    }
+
+    /// <summary>True when the live hub page still shows an anonymous-login
+    /// affordance (profile HubDenyPhrases — Eden's "LOGIN" nav button). A
+    /// failed evaluate (mid-navigation, closed tab) counts as denied.</summary>
+    private static async Task<bool> PageShowsDenyAsync(
+        IPage page, IReadOnlyList<string>? phrases, CancellationToken cancellationToken)
+    {
+        if (phrases is null || phrases.Count == 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            var text = await page.EvaluateAsync<string>(
+                "() => document.body ? document.body.innerText : ''");
+            return ContainsAnyDenyPhrase(text, phrases);
+        }
+        catch (PlaywrightException)
+        {
+            return true;
+        }
+    }
+
+    internal static bool ContainsAnyDenyPhrase(string? text, IReadOnlyList<string>? phrases)
+    {
+        return phrases is { Count: > 0 } &&
+               phrases.Any(p => text?.Contains(p, StringComparison.OrdinalIgnoreCase) == true);
     }
 
     /// <summary>Profile-driven validation: every cookie in RequiredCookieNames

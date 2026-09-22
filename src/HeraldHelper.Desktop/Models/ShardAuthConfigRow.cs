@@ -12,5 +12,6 @@ public sealed class ShardAuthConfigRow
     public string CookieNames { get; set; } = string.Empty;
     public string RequiredCookies { get; set; } = string.Empty;
     public string ValidateUrl { get; set; } = string.Empty;
+    public string HubDeny { get; set; } = string.Empty;
     public string Session { get; set; } = string.Empty;
 }

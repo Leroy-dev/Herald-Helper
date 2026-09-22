@@ -709,7 +709,7 @@ public partial class MainWindow : Window
         try
         {
             var shard = _shardType;
-            OutputBox.Text = $"Opening {shard} login browser...";
+            OutputBox.Text = $"Opening {shard} login browser — sign in, then close the browser window to capture.";
             var bundle = await _authRefreshService.OpenBrowserAsync(shard, CancellationToken.None);
             OutputBox.Text = bundle is not null
                 ? $"Signed in — {shard} auth captured."

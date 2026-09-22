@@ -9,4 +9,8 @@ public sealed record ShardAuthProfile(
     IReadOnlyList<string> PreferredCookieNames,
     IReadOnlyList<string>? RequiredCookieNames = null,
     string? ValidateUrl = null,
-    IReadOnlyList<string>? ValidateDenyPhrases = null);
+    IReadOnlyList<string>? ValidateDenyPhrases = null,
+    /// <summary>Phrases in the live hub page's visible text that mean the
+    /// session is anonymous (e.g. Eden's "LOGIN" nav button). Interactive
+    /// capture only trusts cookies once the page no longer shows them.</summary>
+    IReadOnlyList<string>? HubDenyPhrases = null);

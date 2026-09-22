@@ -253,6 +253,7 @@ public partial class MainWindow : Window
                 CookieNames = Read($"auth.{key}.cookieNames"),
                 RequiredCookies = Read($"auth.{key}.requiredCookies"),
                 ValidateUrl = Read($"auth.{key}.validateUrl"),
+                HubDeny = Read($"auth.{key}.hubDeny"),
                 Session = string.IsNullOrWhiteSpace(Read($"auth.{key}.cookieHeader"))
                     ? "no session"
                     : "cookies stored"
@@ -272,6 +273,7 @@ public partial class MainWindow : Window
             updates.Add(new ConfigEntry { Key = $"auth.{key}.cookieNames", Value = row.CookieNames.Trim() });
             updates.Add(new ConfigEntry { Key = $"auth.{key}.requiredCookies", Value = row.RequiredCookies.Trim() });
             updates.Add(new ConfigEntry { Key = $"auth.{key}.validateUrl", Value = row.ValidateUrl.Trim() });
+            updates.Add(new ConfigEntry { Key = $"auth.{key}.hubDeny", Value = row.HubDeny.Trim() });
         }
 
         _settingsController.Save(updates);
