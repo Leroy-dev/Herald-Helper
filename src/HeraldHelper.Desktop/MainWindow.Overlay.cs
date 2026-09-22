@@ -44,6 +44,11 @@ public partial class MainWindow : Window
         PickResistsOverlayPosition();
     }
 
+    internal void PickGroupOverlayPosition_Click(object sender, RoutedEventArgs e)
+    {
+        PickGroupOverlayPosition();
+    }
+
     internal void PickTargetSize_Click(object sender, RoutedEventArgs e)
     {
         PickSizeLive(OverlayFontSizeText, "Target", size => _liveOverlay?.SetPreviewFontSize(false, size));
@@ -79,8 +84,17 @@ public partial class MainWindow : Window
                 new CcTimerEntry("Preview Player", ControlEffectType.Root, now.AddSeconds(21), TargetClass: "Minstrel")
             ],
             new CastBarState("Greater Heal", 2.4, now, now.AddSeconds(1.6), null),
-            string.Empty);
+            string.Empty,
+            null, null, null,
+            new ClientStateSnapshot(
+                [
+                    new GroupMemberState(0, "Leroy", "Cleric", 100, 87, 55, 50, "Emain Macha", null, null, null, []),
+                    new GroupMemberState(1, "Bowslap", "Hunter", 64, 30, 71, 50, "Emain Macha", null, null, null, []),
+                    new GroupMemberState(2, "Tankguy", "Armsman", 22, 8, 96, 50, "Hadrian's Wall", null, null, null, [])
+                ],
+                [], [], null, null, true, 90, 7963728, 1548245, null, null, null));
     }
+
     internal void ReloadOverlaySettings_Click(object sender, RoutedEventArgs e)
     {
         ReloadOverlaySettingsFromStore();
@@ -99,6 +113,9 @@ public partial class MainWindow : Window
             CastY = NormalizeIntText(OverlayCastYText.Text, 986),
             ResistsX = NormalizeIntText(OverlayResistsXText.Text, 1200),
             ResistsY = NormalizeIntText(OverlayResistsYText.Text, 830),
+            GroupX = NormalizeIntText(OverlayGroupXText.Text, 40),
+            GroupY = NormalizeIntText(OverlayGroupYText.Text, 300),
+            GroupSize = NormalizeIntText(OverlayGroupSizeText.Text, 14),
             FontSize = NormalizeIntText(OverlayFontSizeText.Text, 20),
             TimerSize = NormalizeIntText(OverlayTimerSizeText.Text, 20),
             ResistsSize = NormalizeIntText(OverlayResistsSizeText.Text, 20),
@@ -110,6 +127,7 @@ public partial class MainWindow : Window
             ShowTimers = ShowTimersCheckbox?.IsChecked ?? true,
             ShowCastBar = ShowCastBarCheckbox?.IsChecked ?? true,
             ShowResists = ShowResistsCheckbox?.IsChecked ?? false,
+            ShowGroup = ShowGroupCheckbox?.IsChecked ?? false,
             ShowGuild = ShowGuildCheckbox?.IsChecked ?? true,
             ShowClass = ShowClassCheckbox?.IsChecked ?? true,
             ShowLevel = ShowLevelCheckbox?.IsChecked ?? true,

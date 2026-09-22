@@ -12,6 +12,9 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private int _castY = 986;
     private int _resistsX = 1200;
     private int _resistsY = 830;
+    private int _groupX = 40;
+    private int _groupY = 300;
+    private int _groupSize = 14;
     private int _fontSize = 20;
     private int _timerSize = 20;
     private int _resistsSize = 20;
@@ -23,6 +26,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private bool _showTimers = true;
     private bool _showCastBar = true;
     private bool _showResists;
+    private bool _showGroup;
     private bool _showGuild = true;
     private bool _showClass = true;
     private bool _showLevel = true;
@@ -43,6 +47,9 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public int CastY { get => _castY; set { _castY = value; OnPropertyChanged(nameof(CastY)); } }
     public int ResistsX { get => _resistsX; set { _resistsX = value; OnPropertyChanged(nameof(ResistsX)); } }
     public int ResistsY { get => _resistsY; set { _resistsY = value; OnPropertyChanged(nameof(ResistsY)); } }
+    public int GroupX { get => _groupX; set { _groupX = value; OnPropertyChanged(nameof(GroupX)); } }
+    public int GroupY { get => _groupY; set { _groupY = value; OnPropertyChanged(nameof(GroupY)); } }
+    public int GroupSize { get => _groupSize; set { _groupSize = value; OnPropertyChanged(nameof(GroupSize)); } }
     public int FontSize { get => _fontSize; set { _fontSize = value; OnPropertyChanged(nameof(FontSize)); } }
     public int TimerSize { get => _timerSize; set { _timerSize = value; OnPropertyChanged(nameof(TimerSize)); } }
     public int ResistsSize { get => _resistsSize; set { _resistsSize = value; OnPropertyChanged(nameof(ResistsSize)); } }
@@ -54,6 +61,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public bool ShowTimers { get => _showTimers; set { _showTimers = value; OnPropertyChanged(nameof(ShowTimers)); } }
     public bool ShowCastBar { get => _showCastBar; set { _showCastBar = value; OnPropertyChanged(nameof(ShowCastBar)); } }
     public bool ShowResists { get => _showResists; set { _showResists = value; OnPropertyChanged(nameof(ShowResists)); } }
+    public bool ShowGroup { get => _showGroup; set { _showGroup = value; OnPropertyChanged(nameof(ShowGroup)); } }
     public bool ShowGuild { get => _showGuild; set { _showGuild = value; OnPropertyChanged(nameof(ShowGuild)); } }
     public bool ShowClass { get => _showClass; set { _showClass = value; OnPropertyChanged(nameof(ShowClass)); } }
     public bool ShowLevel { get => _showLevel; set { _showLevel = value; OnPropertyChanged(nameof(ShowLevel)); } }

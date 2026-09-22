@@ -16,6 +16,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private readonly OverlayTextWindow _timerWindow;
     private readonly OverlayTextWindow _resistsWindow;
     private readonly CastBarWindow _castBarWindow;
+    private readonly GroupOverlayWindow _groupWindow;
     private int? _previewTargetX;
     private int? _previewTargetY;
     private int? _previewTimerX;
@@ -25,6 +26,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private int? _previewResistsX;
     private int? _previewResistsY;
     private int? _previewResistsFontSize;
+    private int? _previewGroupX;
+    private int? _previewGroupY;
     private MediaColor? _previewTargetColor;
     private MediaColor? _previewTimerColor;
     private MediaColor? _previewOutlineColor;
@@ -40,6 +43,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _timerWindow = new OverlayTextWindow();
         _resistsWindow = new OverlayTextWindow();
         _castBarWindow = new CastBarWindow();
+        _groupWindow = new GroupOverlayWindow();
     }
 
     public Task RenderAsync(OverlaySnapshot snapshot, CancellationToken cancellationToken)
@@ -97,6 +101,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
 
             var rx = _previewResistsX ?? overlay.ResistsX;
             var ry = _previewResistsY ?? overlay.ResistsY;
+            var gx = _previewGroupX ?? overlay.GroupX;
+            var gy = _previewGroupY ?? overlay.GroupY;
 
             var f1 = overlay.FontSize;
             var f2 = overlay.TimerSize;
@@ -161,6 +167,9 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 f3, overlay.TargetFontFamily, outlineColor);
             var cast = overlay.ShowCastBar ? snapshot.ActiveCast : null;
             _castBarWindow.Update(cast, cx, cy, castbarColor, timerColor, outlineColor, overlay.CastbarFontFamily);
+            _groupWindow.Update(
+                overlay.ShowGroup ? snapshot.ClientState?.GroupMembers : null,
+                gx, gy, overlay.GroupSize, overlay.TimerFontFamily, outlineColor);
             Rendered?.Invoke(this, new OverlayViewState(
                 targetText,
                 timerText,
@@ -230,6 +239,12 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewResistsFontSize = Math.Clamp(size, 10, 72);
     }
 
+    public void SetPreviewGroupPosition(int x, int y)
+    {
+        _previewGroupX = x;
+        _previewGroupY = y;
+    }
+
     public void ClearPreview()
     {
         _previewTargetX = null;
@@ -246,6 +261,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewResistsX = null;
         _previewResistsY = null;
         _previewResistsFontSize = null;
+        _previewGroupX = null;
+        _previewGroupY = null;
     }
 
     public void Dispose()
@@ -498,5 +515,6 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _timerWindow.Close();
         _resistsWindow.Close();
         _castBarWindow.Close();
+        _groupWindow.Close();
     }
 }

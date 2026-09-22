@@ -93,6 +93,10 @@ public partial class MainWindow : Window
     private System.Windows.Controls.TextBox OverlayResistsXText => OverlayView!.OverlayResistsXText;
     private System.Windows.Controls.TextBox OverlayResistsYText => OverlayView!.OverlayResistsYText;
     private System.Windows.Controls.TextBox OverlayResistsSizeText => OverlayView!.OverlayResistsSizeText;
+    private System.Windows.Controls.CheckBox ShowGroupCheckbox => OverlayView!.ShowGroupCheckbox;
+    private System.Windows.Controls.TextBox OverlayGroupXText => OverlayView!.OverlayGroupXText;
+    private System.Windows.Controls.TextBox OverlayGroupYText => OverlayView!.OverlayGroupYText;
+    private System.Windows.Controls.TextBox OverlayGroupSizeText => OverlayView!.OverlayGroupSizeText;
     private System.Windows.Controls.TextBox TargetColorText => OverlayView!.TargetColorText;
     private System.Windows.Controls.CheckBox UseRealmColorsCheckbox => OverlayView!.UseRealmColorsCheckbox;
     private System.Windows.Controls.TextBox TimerColorText => OverlayView!.TimerColorText;
@@ -1032,6 +1036,33 @@ public partial class MainWindow : Window
         SaveOverlaySettings_Click(this, new RoutedEventArgs());
     }
 
+    private void PickGroupOverlayPosition()
+    {
+        var originalX = OverlayGroupXText.Text;
+        var originalY = OverlayGroupYText.Text;
+
+        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
+        {
+            OverlayGroupXText.Text = x.ToString();
+            OverlayGroupYText.Text = y.ToString();
+            _liveOverlay?.SetPreviewGroupPosition(x, y);
+            RenderLiveOverlayPreview();
+        });
+
+        if (selected is null)
+        {
+            OverlayGroupXText.Text = originalX;
+            OverlayGroupYText.Text = originalY;
+            _liveOverlay?.ClearPreview();
+            RenderLiveOverlayPreview();
+            return;
+        }
+
+        OverlayGroupXText.Text = selected.Value.X.ToString();
+        OverlayGroupYText.Text = selected.Value.Y.ToString();
+        SaveOverlaySettings_Click(this, new RoutedEventArgs());
+    }
+
     private void PickSizeLive(System.Windows.Controls.TextBox targetBox, string label, Action<int> previewSetter)
     {
         var original = NormalizeIntText(targetBox.Text, 20);
@@ -1081,11 +1112,15 @@ public partial class MainWindow : Window
         OverlayResistsXText.Text = settings.ResistsX.ToString();
         OverlayResistsYText.Text = settings.ResistsY.ToString();
         OverlayResistsSizeText.Text = settings.ResistsSize.ToString();
+        OverlayGroupXText.Text = settings.GroupX.ToString();
+        OverlayGroupYText.Text = settings.GroupY.ToString();
+        OverlayGroupSizeText.Text = settings.GroupSize.ToString();
 
         BindToggle(ShowTargetCheckbox, settings.ShowTarget, OverlayVisibilityChanged);
         BindToggle(ShowTimersCheckbox, settings.ShowTimers, OverlayVisibilityChanged);
         BindToggle(ShowCastBarCheckbox, settings.ShowCastBar, OverlayVisibilityChanged);
         BindToggle(ShowResistsCheckbox, settings.ShowResists, OverlayVisibilityChanged);
+        BindToggle(ShowGroupCheckbox, settings.ShowGroup, OverlayVisibilityChanged);
         BindToggle(ShowGuildCheckbox, settings.ShowGuild, OverlayVisibilityChanged);
         BindToggle(ShowClassCheckbox, settings.ShowClass, OverlayVisibilityChanged);
         BindToggle(ShowLevelCheckbox, settings.ShowLevel, OverlayVisibilityChanged);
