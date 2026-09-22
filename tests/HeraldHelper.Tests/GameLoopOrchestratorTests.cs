@@ -1173,6 +1173,45 @@ public sealed class GameLoopOrchestratorTests
         Assert.Empty(overlay.LastSnapshot!.TrackedBuffs!);
     }
 
+    [Fact]
+    public async Task TickAsync_AdapterDexterityDrivesCastSpeed()
+    {
+        // stats_dexterity from the memory adapter merges into the stats
+        // snapshot — no OCR stats window needed for dynamic cast time.
+        // dex 200 → (200-60)/600 = 23.3% reduction → 3s * 0.767 = 2.3s.
+        var now = DateTimeOffset.UtcNow;
+        var adapters = new FakeAdapterValueSource
+        {
+            LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["stats_dexterity"] = "200",
+                ["stats_name"] = "Rooy"
+            }
+        };
+        var castEvent = new CastEvent(CastEventType.Started, "Fireball", 1);
+        var parser = new FakeChatEventParser(new ChatParseResult(
+            null, [], castEvent, VisibleCastEvents: [castEvent]));
+        var savedStats = new List<CharacterStatsSnapshot>();
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            new FakeChatCaptureService("ignored"),
+            parser,
+            new FakeCastSpellCatalog(new CastSpellInfo("Fireball", 3, null)),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(),
+            overlay,
+            adapterValueSource: adapters,
+            saveCharacterStats: savedStats.Add,
+            dynamicCastSpeed: true);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+
+        Assert.NotNull(overlay.LastSnapshot!.ActiveCast);
+        Assert.Equal(2.3, overlay.LastSnapshot.ActiveCast!.TotalSeconds);
+        var saved = Assert.Single(savedStats);
+        Assert.Equal(200, saved.Dexterity);
+    }
+
     private sealed class FakeChatCaptureService : IChatCaptureService
     {
         private readonly string _text;

@@ -134,6 +134,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         var tickStopwatch = Stopwatch.StartNew();
         var frame = await CaptureFrameAsync(region, shardType, cancellationToken);
         ObserveCharacterStats(frame.OcrText, shardType, nowUtc);
+        MergeAdapterStats(shardType, nowUtc);
         var parseResult = ParseFrame(frame, shardType, nowUtc);
         TrackCastEvents(parseResult, nowUtc);
         ApplyCompletedTargetLookup(nowUtc);
@@ -175,6 +176,63 @@ public sealed class GameLoopOrchestrator : IDisposable
         {
             _seenChatLines.Remove(_seenChatLinesQueue.Dequeue());
         }
+    }
+
+    /// <summary>When stats memory read is live, the stats_* adapters carry the
+    /// real (buffed) character-sheet numbers — merge them into the stats
+    /// snapshot so dynamic cast speed and damage estimation don't depend on
+    /// the character-stats OCR window ever having been open. The configured
+    /// casting-speed/spell-damage bonuses ride along untouched.</summary>
+    private void MergeAdapterStats(ShardType shardType, DateTimeOffset nowUtc)
+    {
+        var values = _adapterValueSource?.LatestAdapterValues;
+        if (values is null
+            || !int.TryParse(
+                values.GetValueOrDefault("stats_dexterity")?.Trim(),
+                System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture, out var dex))
+        {
+            return; // stats window never rendered — adapters stay empty
+        }
+
+        int? Num(string key) =>
+            values.TryGetValue(key, out var raw) &&
+            int.TryParse(raw.Trim(), System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture, out var n)
+                ? n
+                : null;
+
+        var current = _activeCharacterStats;
+        var name = values.TryGetValue("stats_name", out var rawName) &&
+                   !string.IsNullOrWhiteSpace(rawName)
+            ? rawName.Trim()
+            : current?.CharacterName ?? _activeCharacterName;
+        var merged = (current ?? new CharacterStatsSnapshot(
+                shardType, name, null, null, null, null, null, null, null, null, 0, 0, nowUtc)) with
+        {
+            Shard = shardType,
+            CharacterName = name,
+            Strength = Num("stats_strength") ?? current?.Strength,
+            Constitution = Num("stats_constitution") ?? current?.Constitution,
+            Dexterity = dex,
+            Quickness = Num("stats_quickness") ?? current?.Quickness,
+            Intelligence = Num("stats_intelligence") ?? current?.Intelligence,
+            Piety = Num("stats_piety") ?? current?.Piety,
+            Empathy = Num("stats_empathy") ?? current?.Empathy,
+            Charisma = Num("stats_charisma") ?? current?.Charisma
+        };
+
+        // Records compare by value — same stats, same timestamp → no save.
+        if (merged == current)
+        {
+            return;
+        }
+
+        _activeCharacterStats = merged with { UpdatedUtc = nowUtc };
+        _saveCharacterStats?.Invoke(_activeCharacterStats);
+        _diagnostics?.Log(
+            $"[Stats] adapters | dex={dex} str={merged.Strength?.ToString() ?? "-"} " +
+            $"con={merged.Constitution?.ToString() ?? "-"} qui={merged.Quickness?.ToString() ?? "-"}");
     }
 
     private readonly HashSet<string> _seenChatLines = new(StringComparer.Ordinal);
