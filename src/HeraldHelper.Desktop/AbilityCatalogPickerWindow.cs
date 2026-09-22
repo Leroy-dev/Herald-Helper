@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using WpfApplication = System.Windows.Application;
@@ -6,10 +6,10 @@ using WpfBinding = System.Windows.Data.Binding;
 using WpfBrush = System.Windows.Media.Brush;
 using WpfButton = System.Windows.Controls.Button;
 using WpfDataGrid = System.Windows.Controls.DataGrid;
+using WpfDataGridHeadersVisibility = System.Windows.Controls.DataGridHeadersVisibility;
 using WpfDataGridLength = System.Windows.Controls.DataGridLength;
 using WpfDataGridLengthUnitType = System.Windows.Controls.DataGridLengthUnitType;
 using WpfDataGridSelectionMode = System.Windows.Controls.DataGridSelectionMode;
-using WpfDataGridHeadersVisibility = System.Windows.Controls.DataGridHeadersVisibility;
 using WpfDataGridTemplateColumn = System.Windows.Controls.DataGridTemplateColumn;
 using WpfDataGridTextColumn = System.Windows.Controls.DataGridTextColumn;
 using WpfImage = System.Windows.Controls.Image;
