@@ -105,23 +105,15 @@ public partial class MainWindow : Window
     private System.Windows.Controls.TextBox OverlayPeelXText => OverlayView!.OverlayPeelXText;
     private System.Windows.Controls.TextBox OverlayPeelYText => OverlayView!.OverlayPeelYText;
     private System.Windows.Controls.TextBox OverlayPeelSizeText => OverlayView!.OverlayPeelSizeText;
-    private System.Windows.Controls.CheckBox ShowWorldCheckbox => OverlayView!.ShowWorldCheckbox;
-    private System.Windows.Controls.TextBox OverlayWorldXText => OverlayView!.OverlayWorldXText;
-    private System.Windows.Controls.TextBox OverlayWorldYText => OverlayView!.OverlayWorldYText;
-    private System.Windows.Controls.TextBox OverlayWorldSizeText => OverlayView!.OverlayWorldSizeText;
     private System.Windows.Controls.CheckBox SoundsEnabledCheckbox => OverlayView!.SoundsEnabledCheckbox;
     private System.Windows.Controls.CheckBox SoundSelfCcCheckbox => OverlayView!.SoundSelfCcCheckbox;
     private System.Windows.Controls.CheckBox SoundPeelCheckbox => OverlayView!.SoundPeelCheckbox;
     private System.Windows.Controls.CheckBox SoundInterruptCheckbox => OverlayView!.SoundInterruptCheckbox;
     private System.Windows.Controls.TextBox OverlayOpacityText => OverlayView!.OverlayOpacityText;
     private System.Windows.Controls.CheckBox ShowBuffsCheckbox => OverlayView!.ShowBuffsCheckbox;
-    private System.Windows.Controls.CheckBox ShowChatCheckbox => OverlayView!.ShowChatCheckbox;
     private System.Windows.Controls.TextBox OverlayBuffXText => OverlayView!.OverlayBuffXText;
     private System.Windows.Controls.TextBox OverlayBuffYText => OverlayView!.OverlayBuffYText;
     private System.Windows.Controls.TextBox OverlayBuffSizeText => OverlayView!.OverlayBuffSizeText;
-    private System.Windows.Controls.TextBox OverlayChatXText => OverlayView!.OverlayChatXText;
-    private System.Windows.Controls.TextBox OverlayChatYText => OverlayView!.OverlayChatYText;
-    private System.Windows.Controls.TextBox OverlayChatSizeText => OverlayView!.OverlayChatSizeText;
     private System.Windows.Controls.TextBox TargetColorText => OverlayView!.TargetColorText;
     private System.Windows.Controls.CheckBox UseRealmColorsCheckbox => OverlayView!.UseRealmColorsCheckbox;
     private System.Windows.Controls.TextBox TimerColorText => OverlayView!.TimerColorText;
@@ -1146,33 +1138,6 @@ public partial class MainWindow : Window
         SaveOverlaySettings_Click(this, new RoutedEventArgs());
     }
 
-    private void PickWorldOverlayPosition()
-    {
-        var originalX = OverlayWorldXText.Text;
-        var originalY = OverlayWorldYText.Text;
-
-        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
-        {
-            OverlayWorldXText.Text = x.ToString();
-            OverlayWorldYText.Text = y.ToString();
-            _liveOverlay?.SetPreviewWorldPosition(x, y);
-            RenderLiveOverlayPreview();
-        });
-
-        if (selected is null)
-        {
-            OverlayWorldXText.Text = originalX;
-            OverlayWorldYText.Text = originalY;
-            _liveOverlay?.ClearPreview();
-            RenderLiveOverlayPreview();
-            return;
-        }
-
-        OverlayWorldXText.Text = selected.Value.X.ToString();
-        OverlayWorldYText.Text = selected.Value.Y.ToString();
-        SaveOverlaySettings_Click(this, new RoutedEventArgs());
-    }
-
     private void PickBuffOverlayPosition()
     {
         var originalX = OverlayBuffXText.Text;
@@ -1200,32 +1165,6 @@ public partial class MainWindow : Window
         SaveOverlaySettings_Click(this, new RoutedEventArgs());
     }
 
-    private void PickChatOverlayPosition()
-    {
-        var originalX = OverlayChatXText.Text;
-        var originalY = OverlayChatYText.Text;
-
-        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
-        {
-            OverlayChatXText.Text = x.ToString();
-            OverlayChatYText.Text = y.ToString();
-            _liveOverlay?.SetPreviewChatPosition(x, y);
-            RenderLiveOverlayPreview();
-        });
-
-        if (selected is null)
-        {
-            OverlayChatXText.Text = originalX;
-            OverlayChatYText.Text = originalY;
-            _liveOverlay?.ClearPreview();
-            RenderLiveOverlayPreview();
-            return;
-        }
-
-        OverlayChatXText.Text = selected.Value.X.ToString();
-        OverlayChatYText.Text = selected.Value.Y.ToString();
-        SaveOverlaySettings_Click(this, new RoutedEventArgs());
-    }
 
     private void PickSizeLive(System.Windows.Controls.TextBox targetBox, string label, Action<int> previewSetter)
     {
@@ -1285,16 +1224,10 @@ public partial class MainWindow : Window
         OverlayPeelXText.Text = settings.PeelX.ToString();
         OverlayPeelYText.Text = settings.PeelY.ToString();
         OverlayPeelSizeText.Text = settings.PeelSize.ToString();
-        OverlayWorldXText.Text = settings.WorldX.ToString();
-        OverlayWorldYText.Text = settings.WorldY.ToString();
-        OverlayWorldSizeText.Text = settings.WorldSize.ToString();
         OverlayOpacityText.Text = ((int)Math.Round(settings.OverlayOpacity * 100)).ToString();
         OverlayBuffXText.Text = settings.BuffX.ToString();
         OverlayBuffYText.Text = settings.BuffY.ToString();
         OverlayBuffSizeText.Text = settings.BuffSize.ToString();
-        OverlayChatXText.Text = settings.ChatX.ToString();
-        OverlayChatYText.Text = settings.ChatY.ToString();
-        OverlayChatSizeText.Text = settings.ChatSize.ToString();
 
         BindToggle(ShowTargetCheckbox, settings.ShowTarget, OverlayVisibilityChanged);
         BindToggle(ShowTimersCheckbox, settings.ShowTimers, OverlayVisibilityChanged);
@@ -1303,9 +1236,7 @@ public partial class MainWindow : Window
         BindToggle(ShowGroupCheckbox, settings.ShowGroup, OverlayVisibilityChanged);
         BindToggle(ShowSelfCcCheckbox, settings.ShowSelfCc, OverlayVisibilityChanged);
         BindToggle(ShowPeelCheckbox, settings.ShowPeel, OverlayVisibilityChanged);
-        BindToggle(ShowWorldCheckbox, settings.ShowWorld, OverlayVisibilityChanged);
         BindToggle(ShowBuffsCheckbox, settings.ShowBuffs, OverlayVisibilityChanged);
-        BindToggle(ShowChatCheckbox, settings.ShowChat, OverlayVisibilityChanged);
         BindToggle(SoundsEnabledCheckbox, settings.SoundsEnabled, OverlayVisibilityChanged);
         BindToggle(SoundSelfCcCheckbox, settings.SoundSelfCc, OverlayVisibilityChanged);
         BindToggle(SoundPeelCheckbox, settings.SoundPeel, OverlayVisibilityChanged);

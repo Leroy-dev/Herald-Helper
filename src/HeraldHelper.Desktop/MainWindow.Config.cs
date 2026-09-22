@@ -315,7 +315,7 @@ public partial class MainWindow : Window
         var overlayElements = new[]
         {
             overlay.ShowTarget, overlay.ShowTimers, overlay.ShowCastBar, overlay.ShowResists,
-            overlay.ShowGroup, overlay.ShowSelfCc, overlay.ShowPeel, overlay.ShowWorld
+            overlay.ShowGroup, overlay.ShowSelfCc, overlay.ShowPeel, overlay.ShowBuffs
         }.Count(x => x);
 
         var catalogRoot = runtime.ShardType switch

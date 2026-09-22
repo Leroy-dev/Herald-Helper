@@ -1002,6 +1002,177 @@ public sealed class GameLoopOrchestratorTests
         Assert.NotEqual(firstStartedAt, overlay.LastSnapshot.ActiveCast.StartedAtUtc);
     }
 
+    [Fact]
+    public async Task TickAsync_BareProfileForNonPlayer_KeepsLastResolvedPlayer()
+    {
+        // Eden's proxy answers 200 + JSON even for mob names — a name-only
+        // profile must not wipe the last resolved player.
+        var now = DateTimeOffset.UtcNow;
+        var parser = new SequenceChatEventParser(
+        [
+            new ChatParseResult(new TargetEvent("TargetA", TargetMembership.Member), []),
+            new ChatParseResult(new TargetEvent("grimwood willow", TargetMembership.Unknown), [])
+        ]);
+        var heraldClient = new NamedHeraldClient(new Dictionary<string, TargetProfile?>
+        {
+            ["TargetA"] = new TargetProfile("TargetA", "Guild", "Hero", 50, "RR1L0", 0),
+            ["grimwood willow"] = new TargetProfile("grimwood willow", null, null, null, null, null)
+        });
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            new FakeChatCaptureService("ignored"),
+            parser,
+            new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(heraldClient),
+            new RecordingCcImmunityTracker(),
+            overlay);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+        Assert.Equal("TargetA", overlay.LastSnapshot!.Target?.Name);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now.AddSeconds(1), CancellationToken.None);
+        Assert.Equal("TargetA", overlay.LastSnapshot!.Target?.Name);
+        Assert.Equal("Hero", overlay.LastSnapshot.Target?.Class);
+    }
+
+    [Fact]
+    public async Task TickAsync_CompletedCastWithRecast_AddsCooldown()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var castEvent = new CastEvent(CastEventType.Completed, "Cacophony", 1);
+        var parser = new FakeChatEventParser(new ChatParseResult(
+            null, [], castEvent, VisibleCastEvents: [castEvent]));
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            new FakeChatCaptureService("ignored"),
+            parser,
+            new FakeCastSpellCatalog(new CastSpellInfo("Cacophony", 2, null, RecastSeconds: 15)),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(),
+            overlay);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+
+        var cooldown = Assert.Single(overlay.LastSnapshot!.Cooldowns!);
+        Assert.Equal("Cacophony", cooldown.Name);
+        Assert.True(cooldown.ReadyUtc > now.AddSeconds(10));
+    }
+
+    [Fact]
+    public async Task TickAsync_RealmAbilityCastLine_PromotesToCooldown()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var castEvent = new CastEvent(CastEventType.Completed, "Purge", 1);
+        var parser = new FakeChatEventParser(new ChatParseResult(
+            null, [], castEvent, VisibleCastEvents: [castEvent]));
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            new FakeChatCaptureService("ignored"),
+            parser,
+            new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(),
+            overlay,
+            realmAbilityCooldowns: new Dictionary<string, int> { ["Purge"] = 600 });
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+
+        var cooldown = Assert.Single(overlay.LastSnapshot!.Cooldowns!);
+        Assert.Equal("Purge", cooldown.Name);
+        Assert.True(cooldown.ReadyUtc > now.AddMinutes(5));
+    }
+
+    [Fact]
+    public async Task TickAsync_BuffCastOnSelf_TrackedWithExpiry()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var castEvent = new CastEvent(CastEventType.Completed, "Enhanced Strength", 1);
+        var parser = new FakeChatEventParser(new ChatParseResult(
+            null, [], castEvent, VisibleCastEvents: [castEvent]));
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            new FakeChatCaptureService("ignored"),
+            parser,
+            new FakeCastSpellCatalog(new CastSpellInfo(
+                "Enhanced Strength", 2, null, DurationSeconds: 1200, SpellType: "StrengthBuff")),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(),
+            overlay);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+
+        var buff = Assert.Single(overlay.LastSnapshot!.TrackedBuffs!);
+        Assert.Equal("Enhanced Strength", buff.Name);
+        Assert.False(buff.OnPet);
+        Assert.True(buff.ExpiresAtUtc > now.AddMinutes(10));
+    }
+
+    [Fact]
+    public async Task TickAsync_PetTargetedBuffCast_MarkedOnPet()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var adapters = new FakeAdapterValueSource
+        {
+            LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["mini_pet_title"] = "grimwood willow",
+                ["mini_pet_life"] = "75",
+                ["summary_target"] = "grimwood willow"
+            }
+        };
+        var castEvent = new CastEvent(CastEventType.Completed, "Strength of the Dead", 1);
+        var parser = new FakeChatEventParser(new ChatParseResult(
+            null, [], castEvent, VisibleCastEvents: [castEvent]));
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            new FakeChatCaptureService("ignored"),
+            parser,
+            new FakeCastSpellCatalog(new CastSpellInfo(
+                "Strength of the Dead", 2, null, SpellType: "PetSpell", CastTarget: "Realm")),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(),
+            overlay,
+            adapterValueSource: adapters);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+
+        var buff = Assert.Single(overlay.LastSnapshot!.TrackedBuffs!);
+        Assert.Equal("Strength of the Dead", buff.Name);
+        Assert.True(buff.OnPet);
+    }
+
+    [Fact]
+    public async Task TickAsync_BuffWearsOff_RemovesFromSnapshot()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var castEvent = new CastEvent(CastEventType.Completed, "Enhanced Strength", 1);
+        var capture = new SequenceChatCaptureService(
+        [
+            "You cast the Enhanced Strength spell!",
+            "The Enhanced Strength wears off."
+        ]);
+        var parser = new SequenceChatEventParser(
+        [
+            new ChatParseResult(null, [], castEvent, VisibleCastEvents: [castEvent]),
+            new ChatParseResult(null, [])
+        ]);
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            capture,
+            parser,
+            new FakeCastSpellCatalog(new CastSpellInfo(
+                "Enhanced Strength", 2, null, DurationSeconds: 1200, SpellType: "StrengthBuff")),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(),
+            overlay);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+        Assert.Single(overlay.LastSnapshot!.TrackedBuffs!);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now.AddSeconds(1), CancellationToken.None);
+        Assert.Empty(overlay.LastSnapshot!.TrackedBuffs!);
+    }
+
     private sealed class FakeChatCaptureService : IChatCaptureService
     {
         private readonly string _text;

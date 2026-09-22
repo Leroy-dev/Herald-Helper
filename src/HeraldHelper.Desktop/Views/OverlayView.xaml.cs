@@ -34,17 +34,9 @@ public partial class OverlayView : System.Windows.Controls.UserControl
     {
         Main?.PickPeelOverlayPosition_Click(sender, e);
     }
-    private void PickWorldOverlayPosition_Click(object sender, RoutedEventArgs e)
-    {
-        Main?.PickWorldOverlayPosition_Click(sender, e);
-    }
     private void PickBuffOverlayPosition_Click(object sender, RoutedEventArgs e)
     {
         Main?.PickBuffOverlayPosition_Click(sender, e);
-    }
-    private void PickChatOverlayPosition_Click(object sender, RoutedEventArgs e)
-    {
-        Main?.PickChatOverlayPosition_Click(sender, e);
     }
     private void PickResistsSize_Click(object sender, RoutedEventArgs e)
     {

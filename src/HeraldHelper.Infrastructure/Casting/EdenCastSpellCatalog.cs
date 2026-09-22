@@ -211,7 +211,12 @@ public sealed class EdenCastSpellCatalog : ICastSpellCatalog
             ReadEdenTextAttribute(element, "Damage Type"),
             className,
             ReadNullableInt(element, "level"),
-            HasFixedCastTime(element));
+            HasFixedCastTime(element),
+            TryReadEdenAttribute(element, "Recast Delay", out var recast) ? ParseDurationSecondsValue(recast) : null,
+            TryReadEdenAttribute(element, "Duration", out var duration) ? ParseDurationSecondsValue(duration) : null,
+            ReadEdenTextAttribute(element, "Type"),
+            ReadEdenTextAttribute(element, "Target"),
+            TryReadEdenAttribute(element, "Concentration", out _));
         var normalizedName = NormalizeName(name);
         if (!result.TryGetValue(normalizedName, out var entries))
         {
@@ -432,7 +437,20 @@ public sealed class EdenCastSpellCatalog : ICastSpellCatalog
 
     private static double? ParseDurationSecondsValue(string raw)
     {
+        // "20:00 min" — mm:ss form used by the delve duration attribute.
+        var minuteMatch = System.Text.RegularExpressions.Regex.Match(
+            raw, @"(?<mm>\d+):(?<ss>\d+)\s*min", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (minuteMatch.Success)
+        {
+            return int.Parse(minuteMatch.Groups["mm"].Value) * 60
+                   + int.Parse(minuteMatch.Groups["ss"].Value);
+        }
+
         var normalized = raw
+            .Replace("minutes", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("minute", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("mins", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("min", string.Empty, StringComparison.OrdinalIgnoreCase)
             .Replace("seconds", string.Empty, StringComparison.OrdinalIgnoreCase)
             .Replace("second", string.Empty, StringComparison.OrdinalIgnoreCase)
             .Replace("secs", string.Empty, StringComparison.OrdinalIgnoreCase)
@@ -440,9 +458,12 @@ public sealed class EdenCastSpellCatalog : ICastSpellCatalog
             .Replace("s", string.Empty, StringComparison.OrdinalIgnoreCase)
             .Trim();
 
-        return double.TryParse(normalized, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value)
-            ? value
-            : null;
+        if (!double.TryParse(normalized, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value))
+        {
+            return null;
+        }
+
+        return raw.Contains("min", StringComparison.OrdinalIgnoreCase) ? value * 60 : value;
     }
 
     private static int ReadInt(JsonElement element, string propertyName)

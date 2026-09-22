@@ -42,11 +42,8 @@ public sealed class GameLoopOrchestrator : IDisposable
     private SelfCcState? _selfCc;
     private readonly Dictionary<string, PeelEntry> _attackers = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<RealmAbilityActivation> _realmAbilityUses = [];
-    private int _kills;
-    private int _deaths;
-    private int _hitsTaken;
-    private int _raUseCount;
-    private readonly DateTimeOffset _sessionStartedUtc = DateTimeOffset.UtcNow;
+    private readonly Dictionary<string, CooldownEntry> _spellCooldowns = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, TrackedBuff> _activeBuffs = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset? _castInterruptedUntil;
     private readonly object _targetLock = new();
     private readonly string? _activeCharacterClass;
@@ -302,7 +299,98 @@ public sealed class GameLoopOrchestrator : IDisposable
             visibleCastEvents,
             BuildCastEventKey,
             static x => x.OccurrenceOrdinal);
+        foreach (var castEvent in newCastEvents)
+        {
+            if (castEvent.EventType == CastEventType.Completed)
+            {
+                OnCastCompleted(castEvent, nowUtc);
+            }
+        }
+
         UpdateActiveCast(newCastEvents.LastOrDefault(), nowUtc);
+    }
+
+    /// <summary>A finished cast starts its recast cooldown (when the catalog
+    /// knows one), records buff effects on you/pet, and promotes realm
+    /// abilities — some shards print RA use as a normal cast line.</summary>
+    private void OnCastCompleted(CastEvent castEvent, DateTimeOffset nowUtc)
+    {
+        var spellName = NormalizeCastSpellName(castEvent.SpellName);
+        if (string.IsNullOrWhiteSpace(spellName))
+        {
+            return;
+        }
+
+        if (_realmAbilityCooldowns.TryGetValue(spellName, out var raCooldown)
+            && !_realmAbilityUses.Any(x =>
+                string.Equals(x.AbilityName, spellName, StringComparison.OrdinalIgnoreCase)
+                && nowUtc - x.UsedUtc < TimeSpan.FromSeconds(10)))
+        {
+            _realmAbilityUses.Add(new RealmAbilityActivation(spellName, nowUtc, raCooldown));
+            _diagnostics?.Log($"[RA] {spellName} (via cast line)");
+        }
+
+        var spellInfo = _castSpellCatalog.FindBySpellName(spellName, _activeCharacterClass, _activeCharacterLevel);
+        if (spellInfo is null)
+        {
+            return;
+        }
+
+        if (spellInfo.RecastSeconds is > 0)
+        {
+            _spellCooldowns[spellInfo.SpellName] = new CooldownEntry(
+                spellInfo.SpellName,
+                nowUtc,
+                nowUtc.AddSeconds(spellInfo.RecastSeconds.Value),
+                spellInfo.Icon);
+            _diagnostics?.Log($"[Cooldown] {spellInfo.SpellName} ready in {spellInfo.RecastSeconds.Value:0}s");
+        }
+
+        if (spellInfo.IsBuffEffect)
+        {
+            RecordBuff(spellInfo, nowUtc);
+        }
+    }
+
+    private void RecordBuff(CastSpellInfo spellInfo, DateTimeOffset nowUtc)
+    {
+        var onPet = IsPetTargeted(spellInfo);
+        var expiresAt = spellInfo.UsesConcentration
+            ? (DateTimeOffset?)null
+            : spellInfo.DurationSeconds is > 0
+                ? nowUtc.AddSeconds(spellInfo.DurationSeconds.Value)
+                : nowUtc.AddMinutes(20); // typical buff length when the catalog has no duration
+        _activeBuffs[spellInfo.SpellName] = new TrackedBuff(
+            spellInfo.SpellName, nowUtc, expiresAt, onPet, spellInfo.Icon);
+        _diagnostics?.Log($"[Buff] {spellInfo.SpellName}{(onPet ? " → pet" : string.Empty)}");
+    }
+
+    /// <summary>Pet spells hit the pet regardless of target; other buffs land
+    /// on whatever you had selected when the cast finished.</summary>
+    private bool IsPetTargeted(CastSpellInfo spellInfo)
+    {
+        if (string.Equals(spellInfo.CastTarget, "Pet", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (string.Equals(spellInfo.CastTarget, "Self", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var values = _adapterValueSource?.LatestAdapterValues;
+        if (values is null
+            || !values.TryGetValue("mini_pet_title", out var petTitle)
+            || string.IsNullOrWhiteSpace(petTitle))
+        {
+            return false;
+        }
+
+        var currentTarget = ReadAdapterTargetName();
+        return currentTarget is not null
+               && string.Equals(
+                   currentTarget, petTitle.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
     private void TrackTargetEvents(
@@ -381,7 +469,6 @@ public sealed class GameLoopOrchestrator : IDisposable
             _attackers.TryGetValue(attack.Attacker, out var entry);
             _attackers[attack.Attacker] = new PeelEntry(
                 attack.Attacker, (entry?.HitCount ?? 0) + 1, nowUtc);
-            _hitsTaken++;
             if (entry is null)
             {
                 // First sighting of this attacker — that's the alert moment,
@@ -401,12 +488,12 @@ public sealed class GameLoopOrchestrator : IDisposable
         {
             if (life.Kind == CombatLifeKind.Kill)
             {
-                _kills++;
                 _diagnostics?.Log($"[Combat] you killed {life.OtherName}");
             }
             else
             {
-                _deaths++;
+                // Death drops every buff — conc or not.
+                _activeBuffs.Clear();
                 _diagnostics?.Log($"[Combat] you died" + (life.OtherName is { } killer ? $" to {killer}" : ""));
             }
         }
@@ -419,7 +506,6 @@ public sealed class GameLoopOrchestrator : IDisposable
             _realmAbilityUses.Add(new RealmAbilityActivation(
                 ra.AbilityName, nowUtc,
                 _realmAbilityCooldowns.TryGetValue(ra.AbilityName, out var cooldown) ? cooldown : null));
-            _raUseCount++;
             _diagnostics?.Log($"[RA] {ra.AbilityName}");
         }
     }
@@ -448,6 +534,17 @@ public sealed class GameLoopOrchestrator : IDisposable
         // 30-minute shelf life so the list can't grow forever.
         _realmAbilityUses.RemoveAll(x =>
             nowUtc - x.UsedUtc > TimeSpan.FromSeconds(x.CooldownSeconds ?? 1800));
+        foreach (var ready in _spellCooldowns.Where(x => x.Value.ReadyUtc <= nowUtc)
+                     .Select(x => x.Key).ToList())
+        {
+            _spellCooldowns.Remove(ready);
+        }
+        foreach (var expired in _activeBuffs.Where(x => x.Value.ExpiresAtUtc <= nowUtc)
+                     .Select(x => x.Key).ToList())
+        {
+            _activeBuffs.Remove(expired);
+        }
+        DropFadedBuffs(ocrText);
 
         var snapshot = new OverlaySnapshot(
             GetLastTarget(),
@@ -456,17 +553,53 @@ public sealed class GameLoopOrchestrator : IDisposable
             ocrText,
             _selfCc,
             _attackers.Values.OrderByDescending(x => x.LastSeenUtc).Take(6).ToList(),
-            _realmAbilityUses.OrderByDescending(x => x.UsedUtc).Take(12).ToList(),
+            BuildCooldownLines(),
+            _activeBuffs.Values.OrderByDescending(x => x.AppliedUtc).ToList(),
             ClientStateExtractor.Extract(_adapterValueSource?.LatestAdapterValues),
-            (_kills > 0 || _deaths > 0 || _hitsTaken > 0)
-                ? new SessionCombatStats(_kills, _deaths, _hitsTaken, _raUseCount, _sessionStartedUtc)
-                : null,
             _castInterruptedUntil > nowUtc ? _castInterruptedUntil : null);
 
         var renderStopwatch = Stopwatch.StartNew();
         await _overlayRenderer.RenderAsync(snapshot, cancellationToken);
         renderStopwatch.Stop();
         _diagnostics?.Log($"[Timing] render: {renderStopwatch.ElapsedMilliseconds} ms");
+    }
+
+    /// <summary>RA activations + spell recasts as one countdown list —
+    /// ready-time when the cooldown is known, else used-time only.</summary>
+    private List<CooldownEntry> BuildCooldownLines()
+    {
+        return _realmAbilityUses
+            .Select(x => new CooldownEntry(
+                x.AbilityName,
+                x.UsedUtc,
+                x.CooldownSeconds is { } cd ? x.UsedUtc.AddSeconds(cd) : null))
+            .Concat(_spellCooldowns.Values)
+            .OrderByDescending(x => x.UsedUtc)
+            .Take(12)
+            .ToList();
+    }
+
+    /// <summary>Buff-drop messages ("X wears off", "Your X fades") end the
+    /// tracked buff early — the chat line stays on screen for a few frames,
+    /// so a repeat match is harmless.</summary>
+    private void DropFadedBuffs(string ocrText)
+    {
+        if (_activeBuffs.Count == 0 || string.IsNullOrEmpty(ocrText))
+        {
+            return;
+        }
+
+        foreach (var name in _activeBuffs.Keys.ToList())
+        {
+            if (ocrText.Contains($"{name} wears off", StringComparison.OrdinalIgnoreCase)
+                || ocrText.Contains($"{name} fades", StringComparison.OrdinalIgnoreCase)
+                || ocrText.Contains($"no longer affected by {name}", StringComparison.OrdinalIgnoreCase)
+                || ocrText.Contains($"the {name} wears off", StringComparison.OrdinalIgnoreCase))
+            {
+                _activeBuffs.Remove(name);
+                _diagnostics?.Log($"[Buff] {name} faded");
+            }
+        }
     }
 
     private void UpdateActiveCast(CastEvent? castEvent, DateTimeOffset nowUtc)
@@ -860,9 +993,9 @@ public sealed class GameLoopOrchestrator : IDisposable
             {
                 _nextTargetLookupAtUtc = nowUtc.Add(FailedLookupRetryDelay);
             }
-            else
+            else if (HasPlayerData(result.Profile))
             {
-                var profile = result.Profile;
+                var profile = result.Profile!;
                 if (!string.Equals(profile.Name, result.TargetName, StringComparison.OrdinalIgnoreCase))
                 {
                     profile = profile with { Name = result.TargetName };
@@ -874,6 +1007,10 @@ public sealed class GameLoopOrchestrator : IDisposable
                 profileToCache = profile;
                 applied = true;
             }
+            else
+            {
+                _nextTargetLookupAtUtc = nowUtc.Add(FailedLookupRetryDelay);
+            }
         }
 
         if (result.Error is not null)
@@ -883,6 +1020,10 @@ public sealed class GameLoopOrchestrator : IDisposable
         else if (result.Profile is null)
         {
             _diagnostics?.Log($"[Target] herald returned no profile for {result.TargetName}; keeping last resolved player.");
+        }
+        else if (!applied)
+        {
+            _diagnostics?.Log($"[Target] {result.TargetName} is not a player (no player fields); keeping last resolved player.");
         }
         else if (applied)
         {
@@ -897,6 +1038,16 @@ public sealed class GameLoopOrchestrator : IDisposable
             TryUploadProfileOnline(result.ShardType, profileToCache);
         }
     }
+
+    /// <summary>A lookup result with no player fields is a clicked
+    /// mob/NPC/object — never let it overwrite the last resolved player.</summary>
+    private static bool HasPlayerData(TargetProfile? profile) =>
+        profile is not null &&
+        (!string.IsNullOrWhiteSpace(profile.Class)
+         || !string.IsNullOrWhiteSpace(profile.Guild)
+         || profile.Level is not null
+         || !string.IsNullOrWhiteSpace(profile.RealmRank)
+         || profile.SoloKills is not null);
 
     private static bool IsIncomplete(TargetProfile profile)
     {

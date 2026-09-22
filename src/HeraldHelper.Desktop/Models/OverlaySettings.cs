@@ -21,15 +21,9 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private int _peelX = 1580;
     private int _peelY = 700;
     private int _peelSize = 16;
-    private int _worldX = 1580;
-    private int _worldY = 480;
-    private int _worldSize = 16;
     private int _buffX = 40;
     private int _buffY = 700;
     private int _buffSize = 14;
-    private int _chatX = 40;
-    private int _chatY = 900;
-    private int _chatSize = 15;
     private int _fontSize = 20;
     private int _timerSize = 20;
     private int _resistsSize = 20;
@@ -44,9 +38,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private bool _showGroup;
     private bool _showSelfCc = true;
     private bool _showPeel = true;
-    private bool _showWorld = true;
     private bool _showBuffs = true;
-    private bool _showChat;
     private bool _soundsEnabled;
     private bool _soundSelfCc = true;
     private bool _soundPeel = true;
@@ -81,15 +73,9 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public int PeelX { get => _peelX; set { _peelX = value; OnPropertyChanged(nameof(PeelX)); } }
     public int PeelY { get => _peelY; set { _peelY = value; OnPropertyChanged(nameof(PeelY)); } }
     public int PeelSize { get => _peelSize; set { _peelSize = value; OnPropertyChanged(nameof(PeelSize)); } }
-    public int WorldX { get => _worldX; set { _worldX = value; OnPropertyChanged(nameof(WorldX)); } }
-    public int WorldY { get => _worldY; set { _worldY = value; OnPropertyChanged(nameof(WorldY)); } }
-    public int WorldSize { get => _worldSize; set { _worldSize = value; OnPropertyChanged(nameof(WorldSize)); } }
     public int BuffX { get => _buffX; set { _buffX = value; OnPropertyChanged(nameof(BuffX)); } }
     public int BuffY { get => _buffY; set { _buffY = value; OnPropertyChanged(nameof(BuffY)); } }
     public int BuffSize { get => _buffSize; set { _buffSize = value; OnPropertyChanged(nameof(BuffSize)); } }
-    public int ChatX { get => _chatX; set { _chatX = value; OnPropertyChanged(nameof(ChatX)); } }
-    public int ChatY { get => _chatY; set { _chatY = value; OnPropertyChanged(nameof(ChatY)); } }
-    public int ChatSize { get => _chatSize; set { _chatSize = value; OnPropertyChanged(nameof(ChatSize)); } }
     public int FontSize { get => _fontSize; set { _fontSize = value; OnPropertyChanged(nameof(FontSize)); } }
     public int TimerSize { get => _timerSize; set { _timerSize = value; OnPropertyChanged(nameof(TimerSize)); } }
     public int ResistsSize { get => _resistsSize; set { _resistsSize = value; OnPropertyChanged(nameof(ResistsSize)); } }
@@ -104,9 +90,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public bool ShowGroup { get => _showGroup; set { _showGroup = value; OnPropertyChanged(nameof(ShowGroup)); } }
     public bool ShowSelfCc { get => _showSelfCc; set { _showSelfCc = value; OnPropertyChanged(nameof(ShowSelfCc)); } }
     public bool ShowPeel { get => _showPeel; set { _showPeel = value; OnPropertyChanged(nameof(ShowPeel)); } }
-    public bool ShowWorld { get => _showWorld; set { _showWorld = value; OnPropertyChanged(nameof(ShowWorld)); } }
     public bool ShowBuffs { get => _showBuffs; set { _showBuffs = value; OnPropertyChanged(nameof(ShowBuffs)); } }
-    public bool ShowChat { get => _showChat; set { _showChat = value; OnPropertyChanged(nameof(ShowChat)); } }
     public bool SoundsEnabled { get => _soundsEnabled; set { _soundsEnabled = value; OnPropertyChanged(nameof(SoundsEnabled)); } }
     public bool SoundSelfCc { get => _soundSelfCc; set { _soundSelfCc = value; OnPropertyChanged(nameof(SoundSelfCc)); } }
     public bool SoundPeel { get => _soundPeel; set { _soundPeel = value; OnPropertyChanged(nameof(SoundPeel)); } }

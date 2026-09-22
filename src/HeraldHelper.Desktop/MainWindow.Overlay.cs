@@ -59,19 +59,9 @@ public partial class MainWindow : Window
         PickPeelOverlayPosition();
     }
 
-    internal void PickWorldOverlayPosition_Click(object sender, RoutedEventArgs e)
-    {
-        PickWorldOverlayPosition();
-    }
-
     internal void PickBuffOverlayPosition_Click(object sender, RoutedEventArgs e)
     {
         PickBuffOverlayPosition();
-    }
-
-    internal void PickChatOverlayPosition_Click(object sender, RoutedEventArgs e)
-    {
-        PickChatOverlayPosition();
     }
 
     internal void PickTargetSize_Click(object sender, RoutedEventArgs e)
@@ -116,8 +106,13 @@ public partial class MainWindow : Window
                 new PeelEntry("Moolish", 1, now.AddSeconds(-6))
             ],
             [
-                new RealmAbilityActivation("Purge", now.AddSeconds(-7 * 60), 20 * 60),
-                new RealmAbilityActivation("Ameliorating Melodies", now.AddSeconds(-95), 30 * 60)
+                new CooldownEntry("Purge", now.AddSeconds(-7 * 60), now.AddSeconds(13 * 60)),
+                new CooldownEntry("Cacophony", now.AddSeconds(-4), now.AddSeconds(11)),
+                new CooldownEntry("Ameliorating Melodies", now.AddSeconds(-95))
+            ],
+            [
+                new TrackedBuff("Enhanced Strength", now.AddSeconds(-120), now.AddMinutes(18)),
+                new TrackedBuff("Strength of the Dead", now.AddSeconds(-40), now.AddMinutes(15), OnPet: true)
             ],
             new ClientStateSnapshot(
                 [
@@ -162,15 +157,9 @@ public partial class MainWindow : Window
             PeelX = NormalizeIntText(OverlayPeelXText.Text, 1580),
             PeelY = NormalizeIntText(OverlayPeelYText.Text, 700),
             PeelSize = NormalizeIntText(OverlayPeelSizeText.Text, 16),
-            WorldX = NormalizeIntText(OverlayWorldXText.Text, 1580),
-            WorldY = NormalizeIntText(OverlayWorldYText.Text, 480),
-            WorldSize = NormalizeIntText(OverlayWorldSizeText.Text, 16),
             BuffX = NormalizeIntText(OverlayBuffXText.Text, 40),
             BuffY = NormalizeIntText(OverlayBuffYText.Text, 700),
             BuffSize = NormalizeIntText(OverlayBuffSizeText.Text, 14),
-            ChatX = NormalizeIntText(OverlayChatXText.Text, 40),
-            ChatY = NormalizeIntText(OverlayChatYText.Text, 900),
-            ChatSize = NormalizeIntText(OverlayChatSizeText.Text, 15),
             OverlayOpacity = NormalizeIntText(OverlayOpacityText.Text, 100) / 100.0,
             SoundsEnabled = SoundsEnabledCheckbox?.IsChecked ?? false,
             SoundSelfCc = SoundSelfCcCheckbox?.IsChecked ?? true,
@@ -190,9 +179,7 @@ public partial class MainWindow : Window
             ShowGroup = ShowGroupCheckbox?.IsChecked ?? false,
             ShowSelfCc = ShowSelfCcCheckbox?.IsChecked ?? true,
             ShowPeel = ShowPeelCheckbox?.IsChecked ?? true,
-            ShowWorld = ShowWorldCheckbox?.IsChecked ?? true,
             ShowBuffs = ShowBuffsCheckbox?.IsChecked ?? true,
-            ShowChat = ShowChatCheckbox?.IsChecked ?? false,
             ShowGuild = ShowGuildCheckbox?.IsChecked ?? true,
             ShowClass = ShowClassCheckbox?.IsChecked ?? true,
             ShowLevel = ShowLevelCheckbox?.IsChecked ?? true,

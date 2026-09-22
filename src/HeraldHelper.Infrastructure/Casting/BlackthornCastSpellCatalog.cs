@@ -107,7 +107,12 @@ public sealed class BlackthornCastSpellCatalog : ICastSpellCatalog
             ReadDamageType(element),
             className,
             ReadNullableInt(element, "level"),
-            IsFixedCastTime(element));
+            IsFixedCastTime(element),
+            ReadPositiveDouble(element, "recastDelay"),
+            ReadPositiveDouble(element, "duration"),
+            TryReadString(element, "type", out var type) ? type : null,
+            TryReadString(element, "target", out var target) ? target : null,
+            ReadNullableInt(element, "effectGroup") == 4);
         var key = NormalizeName(name);
         if (!result.TryGetValue(key, out var entries))
         {

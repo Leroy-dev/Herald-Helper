@@ -143,6 +143,13 @@ public sealed class EdenHeraldClient : IHeraldClient, IHeraldProfileUpdateSource
         var rp = ResolveLong(root, "realm_points");
         var level = ResolveLevel(root, xp);
         var rr = ResolveRealmRank(root, rp);
+        // The proxy answers 200 + JSON even for names that aren't players
+        // (clicked mobs/NPCs) — an empty profile must not reach the overlay.
+        if (@class is null && guild is null && xp is null && rp is null)
+        {
+            _diagnostics?.Log($"[Eden] player/{targetName} returned no player fields — not a player.");
+            return null;
+        }
         _soloKillsCache.TryGetValue(targetName, out var solo);
         TriggerSoloKillsRefresh(targetName);
         var profile = new TargetProfile(targetName, guild, @class, level, rr, _soloKillsCache.ContainsKey(targetName) ? solo : null);
