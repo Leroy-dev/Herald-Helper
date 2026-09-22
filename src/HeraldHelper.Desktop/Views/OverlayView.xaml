@@ -47,8 +47,10 @@
                                           ToolTip="Big banner when you get stunned/mesmerized/rooted — shows elapsed time since the CC landed." />
                                 <CheckBox x:Name="ShowPeelCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Peel"
                                           ToolTip="List of enemies who attacked you recently (attacker + hit count) — who's trying to peel you." />
-                                <CheckBox x:Name="ShowBuffsCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Buffs/Pet"
-                                          ToolTip="Pet vitals plus active-effect names — adapter data, needs stats memory read. Effect names only fill while the summary window's icon grid renders." />
+                                <CheckBox x:Name="ShowBuffsCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Buffs"
+                                          ToolTip="Your active buffs with icons — read live from the client's EFFECTS array, needs stats memory read." />
+                                <CheckBox x:Name="ShowPetCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Pet"
+                                          ToolTip="Pet vitals plus its active-effect icons — adapter data, needs stats memory read." />
                                 <CheckBox x:Name="DynamicCastSpeedCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Dynamic Cast Speed"
                                           ToolTip="Adjust the catalog cast time using the OCR-read Dexterity and the configured casting-speed bonus." />
                                 <CheckBox x:Name="EstimatedSpellDamageCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Estimated Spell Damage"
@@ -170,6 +172,16 @@
                                         <TextBox Width="90" x:Name="OverlayBuffXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Buffs X" />
                                         <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayBuffYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Buffs Y" />
                                         <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickBuffOverlayPosition_Click" ToolTip="Drag the buff list position">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="CursorMove" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                                <TextBlock Text="Drag" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </WrapPanel>
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <TextBox Width="90" x:Name="OverlayPetXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Pet X" />
+                                        <TextBox Margin="8,0,0,0" Width="90" x:Name="OverlayPetYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Pet Y" />
+                                        <Button Margin="8,0,0,0" Style="{StaticResource ToolbarButtonStyle}" Click="PickPetOverlayPosition_Click" ToolTip="Drag the pet window position">
                                             <StackPanel Orientation="Horizontal">
                                                 <materialDesign:PackIcon Kind="CursorMove" Width="16" Height="16" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                                                 <TextBlock Text="Drag" VerticalAlignment="Center" />

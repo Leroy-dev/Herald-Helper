@@ -20,6 +20,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private readonly OverlayTextWindow _selfCcWindow;
     private readonly OverlayTextWindow _peelWindow;
     private readonly OverlayTextWindow _buffWindow;
+    private readonly OverlayTextWindow _petWindow;
     private int? _previewTargetX;
     private int? _previewTargetY;
     private int? _previewTimerX;
@@ -37,6 +38,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private int? _previewPeelY;
     private int? _previewBuffX;
     private int? _previewBuffY;
+    private int? _previewPetX;
+    private int? _previewPetY;
     private MediaColor? _previewTargetColor;
     private MediaColor? _previewTimerColor;
     private MediaColor? _previewOutlineColor;
@@ -56,6 +59,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _selfCcWindow = new OverlayTextWindow();
         _peelWindow = new OverlayTextWindow();
         _buffWindow = new OverlayTextWindow();
+        _petWindow = new OverlayTextWindow();
     }
 
     public Task RenderAsync(OverlaySnapshot snapshot, CancellationToken cancellationToken)
@@ -83,6 +87,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             _selfCcWindow.Opacity = opacity;
             _peelWindow.Opacity = opacity;
             _buffWindow.Opacity = opacity;
+            _petWindow.Opacity = opacity;
 
             var ox = overlay.X;
             var oy = overlay.Y;
@@ -131,6 +136,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             var py = _previewPeelY ?? overlay.PeelY;
             var bx = _previewBuffX ?? overlay.BuffX;
             var by = _previewBuffY ?? overlay.BuffY;
+            var pex = _previewPetX ?? overlay.PetX;
+            var pey = _previewPetY ?? overlay.PetY;
 
             var f1 = overlay.FontSize;
             var f2 = overlay.TimerSize;
@@ -217,6 +224,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             _buffWindow.Update(
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)buffLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 bx, by, overlay.BuffSize, overlay.TimerFontFamily, outlineColor);
+            var petLines = overlay.ShowPet ? BuildPetLines(snapshot.ClientState) : null;
+            _petWindow.Update(
+                (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)petLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
+                pex, pey, overlay.BuffSize, overlay.TimerFontFamily, outlineColor);
             Rendered?.Invoke(this, new OverlayViewState(
                 targetText,
                 timerText,
@@ -310,6 +321,12 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewBuffY = y;
     }
 
+    public void SetPreviewPetPosition(int x, int y)
+    {
+        _previewPetX = x;
+        _previewPetY = y;
+    }
+
     public void ClearPreview()
     {
         _previewTargetX = null;
@@ -334,6 +351,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewPeelY = null;
         _previewBuffX = null;
         _previewBuffY = null;
+        _previewPetX = null;
+        _previewPetY = null;
     }
 
     public void Dispose()
@@ -454,27 +473,6 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
 
         var lines = new List<(string, MediaColor, IconSpriteRef?)>();
         var buffColor = MediaColor.FromRgb(0x4A, 0xC5, 0xE7);
-        var petColor = MediaColor.FromRgb(0x45, 0xB9, 0x7C);
-
-        if (state.Pet is { Title: { Length: > 0 } title } pet)
-        {
-            var life = pet.LifePercent is { } hp ? $" {hp}%" : string.Empty;
-            lines.Add(($"Pet {title}{life}", petColor, null));
-        }
-
-        // mini_pet_effect ids are the client's own icon ids — resolve to the
-        // charplan sprite when we can; icon ids are shared across buff families
-        // so no name, just the icon (unresolvable ones keep the raw id).
-        if (state.Pet is not null)
-        {
-            foreach (var iconId in state.Pet.EffectIconIds)
-            {
-                var sprite = IconCatalog.FindBestForSpell(iconId);
-                lines.Add(sprite is not null
-                    ? (string.Empty, petColor, sprite)
-                    : ($"pet fx {iconId}", MediaColor.FromRgb(0x8E, 0x9B, 0xB0), null));
-            }
-        }
 
         // Live self-effects from the client's EFFECTS array — real names +
         // icons, the same data the top-of-screen buff bar draws.
@@ -487,6 +485,41 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         lines.AddRange(state.Buffs
             .Where(b => !string.IsNullOrWhiteSpace(b))
             .Select(b => (b, buffColor, (IconSpriteRef?)null)));
+
+        return lines.Count == 0 ? null : lines;
+    }
+
+    /// <summary>Pet window lines: pet vitals + one icon row per active effect
+    /// (mini_pet_effectN iconIds). Pet-only window — player buffs live in the
+    /// buff window.</summary>
+    internal static IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildPetLines(
+        ClientStateSnapshot? state)
+    {
+        if (state?.Pet is not { } pet)
+        {
+            return null;
+        }
+
+        var petColor = MediaColor.FromRgb(0x45, 0xB9, 0x7C);
+        var mutedColor = MediaColor.FromRgb(0x8E, 0x9B, 0xB0);
+        var lines = new List<(string, MediaColor, IconSpriteRef?)>();
+
+        if (pet.Title is { Length: > 0 } title)
+        {
+            var life = pet.LifePercent is { } hp ? $" {hp}%" : string.Empty;
+            lines.Add(($"Pet {title}{life}", petColor, null));
+        }
+
+        // mini_pet_effect ids are the client's own icon ids — resolve to the
+        // charplan sprite when we can; icon ids are shared across buff families
+        // so no name, just the icon (unresolvable ones keep the raw id).
+        foreach (var iconId in pet.EffectIconIds)
+        {
+            var sprite = IconCatalog.FindBestForSpell(iconId);
+            lines.Add(sprite is not null
+                ? (string.Empty, petColor, sprite)
+                : ($"pet fx {iconId}", mutedColor, null));
+        }
 
         return lines.Count == 0 ? null : lines;
     }
@@ -699,5 +732,6 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _selfCcWindow.Close();
         _peelWindow.Close();
         _buffWindow.Close();
+        _petWindow.Close();
     }
 }

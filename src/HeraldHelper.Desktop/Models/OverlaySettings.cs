@@ -24,6 +24,8 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private int _buffX = 40;
     private int _buffY = 700;
     private int _buffSize = 14;
+    private int _petX = 40;
+    private int _petY = 430;
     private int _fontSize = 20;
     private int _timerSize = 20;
     private int _resistsSize = 20;
@@ -39,6 +41,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private bool _showSelfCc = true;
     private bool _showPeel = true;
     private bool _showBuffs = true;
+    private bool _showPet = true;
     private bool _soundsEnabled;
     private bool _soundSelfCc = true;
     private bool _soundPeel = true;
@@ -76,6 +79,8 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public int BuffX { get => _buffX; set { _buffX = value; OnPropertyChanged(nameof(BuffX)); } }
     public int BuffY { get => _buffY; set { _buffY = value; OnPropertyChanged(nameof(BuffY)); } }
     public int BuffSize { get => _buffSize; set { _buffSize = value; OnPropertyChanged(nameof(BuffSize)); } }
+    public int PetX { get => _petX; set { _petX = value; OnPropertyChanged(nameof(PetX)); } }
+    public int PetY { get => _petY; set { _petY = value; OnPropertyChanged(nameof(PetY)); } }
     public int FontSize { get => _fontSize; set { _fontSize = value; OnPropertyChanged(nameof(FontSize)); } }
     public int TimerSize { get => _timerSize; set { _timerSize = value; OnPropertyChanged(nameof(TimerSize)); } }
     public int ResistsSize { get => _resistsSize; set { _resistsSize = value; OnPropertyChanged(nameof(ResistsSize)); } }
@@ -91,6 +96,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public bool ShowSelfCc { get => _showSelfCc; set { _showSelfCc = value; OnPropertyChanged(nameof(ShowSelfCc)); } }
     public bool ShowPeel { get => _showPeel; set { _showPeel = value; OnPropertyChanged(nameof(ShowPeel)); } }
     public bool ShowBuffs { get => _showBuffs; set { _showBuffs = value; OnPropertyChanged(nameof(ShowBuffs)); } }
+    public bool ShowPet { get => _showPet; set { _showPet = value; OnPropertyChanged(nameof(ShowPet)); } }
     public bool SoundsEnabled { get => _soundsEnabled; set { _soundsEnabled = value; OnPropertyChanged(nameof(SoundsEnabled)); } }
     public bool SoundSelfCc { get => _soundSelfCc; set { _soundSelfCc = value; OnPropertyChanged(nameof(SoundSelfCc)); } }
     public bool SoundPeel { get => _soundPeel; set { _soundPeel = value; OnPropertyChanged(nameof(SoundPeel)); } }

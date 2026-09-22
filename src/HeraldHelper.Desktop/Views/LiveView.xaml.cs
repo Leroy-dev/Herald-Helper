@@ -219,26 +219,33 @@ public partial class LiveView : System.Windows.Controls.UserControl
             ? string.Join("   ", resists.Select(r => $"{r.Item1} {r.Item2 ?? "—"}"))
             : "Resists: —";
 
-        // Same list the overlay buff window renders — pet vitals plus
-        // adapter-reported active-effect names (summary icon grid).
-        var buffLines = DesktopOverlayRenderer.BuildBuffLines(
-            ClientStateExtractor.Extract(values));
-        PlayerBuffsText.Inlines.Clear();
-        if (buffLines is { Count: > 0 })
+        // Same lines the overlay windows render — player buffs (EFFECTS array)
+        // and pet vitals/effect icons.
+        var clientState = ClientStateExtractor.Extract(values);
+        FillOverlayText(PlayerBuffsText, DesktopOverlayRenderer.BuildBuffLines(clientState));
+        FillOverlayText(PlayerPetText, DesktopOverlayRenderer.BuildPetLines(clientState));
+    }
+
+    private void FillOverlayText(
+        TextBlock block,
+        IReadOnlyList<(string Text, System.Windows.Media.Color Color, HeraldHelper.Domain.Models.IconSpriteRef? Icon)>? lines)
+    {
+        block.Inlines.Clear();
+        if (lines is { Count: > 0 })
         {
-            for (var i = 0; i < buffLines.Count; i++)
+            for (var i = 0; i < lines.Count; i++)
             {
                 if (i > 0)
                 {
-                    PlayerBuffsText.Inlines.Add(new Run("   "));
+                    block.Inlines.Add(new Run("   "));
                 }
-                AppendOverlayLine(PlayerBuffsText, buffLines[i], 11);
+                AppendOverlayLine(block, lines[i], 11);
             }
-            PlayerBuffsText.Visibility = Visibility.Visible;
+            block.Visibility = Visibility.Visible;
         }
         else
         {
-            PlayerBuffsText.Visibility = Visibility.Collapsed;
+            block.Visibility = Visibility.Collapsed;
         }
     }
 

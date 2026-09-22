@@ -38,6 +38,10 @@ public partial class OverlayView : System.Windows.Controls.UserControl
     {
         Main?.PickBuffOverlayPosition_Click(sender, e);
     }
+    private void PickPetOverlayPosition_Click(object sender, RoutedEventArgs e)
+    {
+        Main?.PickPetOverlayPosition_Click(sender, e);
+    }
     private void PickResistsSize_Click(object sender, RoutedEventArgs e)
     {
         Main?.PickResistsSize_Click(sender, e);

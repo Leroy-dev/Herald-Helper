@@ -64,6 +64,11 @@ public partial class MainWindow : Window
         PickBuffOverlayPosition();
     }
 
+    internal void PickPetOverlayPosition_Click(object sender, RoutedEventArgs e)
+    {
+        PickPetOverlayPosition();
+    }
+
     internal void PickTargetSize_Click(object sender, RoutedEventArgs e)
     {
         PickSizeLive(OverlayFontSizeText, "Target", size => _liveOverlay?.SetPreviewFontSize(false, size));
@@ -159,6 +164,8 @@ public partial class MainWindow : Window
             BuffX = NormalizeIntText(OverlayBuffXText.Text, 40),
             BuffY = NormalizeIntText(OverlayBuffYText.Text, 700),
             BuffSize = NormalizeIntText(OverlayBuffSizeText.Text, 14),
+            PetX = NormalizeIntText(OverlayPetXText.Text, 40),
+            PetY = NormalizeIntText(OverlayPetYText.Text, 430),
             OverlayOpacity = NormalizeIntText(OverlayOpacityText.Text, 100) / 100.0,
             SoundsEnabled = SoundsEnabledCheckbox?.IsChecked ?? false,
             SoundSelfCc = SoundSelfCcCheckbox?.IsChecked ?? true,
@@ -179,6 +186,7 @@ public partial class MainWindow : Window
             ShowSelfCc = ShowSelfCcCheckbox?.IsChecked ?? true,
             ShowPeel = ShowPeelCheckbox?.IsChecked ?? true,
             ShowBuffs = ShowBuffsCheckbox?.IsChecked ?? true,
+            ShowPet = ShowPetCheckbox?.IsChecked ?? true,
             ShowGuild = ShowGuildCheckbox?.IsChecked ?? true,
             ShowClass = ShowClassCheckbox?.IsChecked ?? true,
             ShowLevel = ShowLevelCheckbox?.IsChecked ?? true,

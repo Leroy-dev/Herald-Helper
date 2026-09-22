@@ -111,9 +111,12 @@ public partial class MainWindow : Window
     private System.Windows.Controls.CheckBox SoundInterruptCheckbox => OverlayView!.SoundInterruptCheckbox;
     private System.Windows.Controls.TextBox OverlayOpacityText => OverlayView!.OverlayOpacityText;
     private System.Windows.Controls.CheckBox ShowBuffsCheckbox => OverlayView!.ShowBuffsCheckbox;
+    private System.Windows.Controls.CheckBox ShowPetCheckbox => OverlayView!.ShowPetCheckbox;
     private System.Windows.Controls.TextBox OverlayBuffXText => OverlayView!.OverlayBuffXText;
     private System.Windows.Controls.TextBox OverlayBuffYText => OverlayView!.OverlayBuffYText;
     private System.Windows.Controls.TextBox OverlayBuffSizeText => OverlayView!.OverlayBuffSizeText;
+    private System.Windows.Controls.TextBox OverlayPetXText => OverlayView!.OverlayPetXText;
+    private System.Windows.Controls.TextBox OverlayPetYText => OverlayView!.OverlayPetYText;
     private System.Windows.Controls.TextBox TargetColorText => OverlayView!.TargetColorText;
     private System.Windows.Controls.CheckBox UseRealmColorsCheckbox => OverlayView!.UseRealmColorsCheckbox;
     private System.Windows.Controls.TextBox TimerColorText => OverlayView!.TimerColorText;
@@ -1165,6 +1168,33 @@ public partial class MainWindow : Window
         SaveOverlaySettings_Click(this, new RoutedEventArgs());
     }
 
+    private void PickPetOverlayPosition()
+    {
+        var originalX = OverlayPetXText.Text;
+        var originalY = OverlayPetYText.Text;
+
+        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
+        {
+            OverlayPetXText.Text = x.ToString();
+            OverlayPetYText.Text = y.ToString();
+            _liveOverlay?.SetPreviewPetPosition(x, y);
+            RenderLiveOverlayPreview();
+        });
+
+        if (selected is null)
+        {
+            OverlayPetXText.Text = originalX;
+            OverlayPetYText.Text = originalY;
+            _liveOverlay?.ClearPreview();
+            RenderLiveOverlayPreview();
+            return;
+        }
+
+        OverlayPetXText.Text = selected.Value.X.ToString();
+        OverlayPetYText.Text = selected.Value.Y.ToString();
+        SaveOverlaySettings_Click(this, new RoutedEventArgs());
+    }
+
 
     private void PickSizeLive(System.Windows.Controls.TextBox targetBox, string label, Action<int> previewSetter)
     {
@@ -1228,6 +1258,8 @@ public partial class MainWindow : Window
         OverlayBuffXText.Text = settings.BuffX.ToString();
         OverlayBuffYText.Text = settings.BuffY.ToString();
         OverlayBuffSizeText.Text = settings.BuffSize.ToString();
+        OverlayPetXText.Text = settings.PetX.ToString();
+        OverlayPetYText.Text = settings.PetY.ToString();
 
         BindToggle(ShowTargetCheckbox, settings.ShowTarget, OverlayVisibilityChanged);
         BindToggle(ShowTimersCheckbox, settings.ShowTimers, OverlayVisibilityChanged);
@@ -1237,6 +1269,7 @@ public partial class MainWindow : Window
         BindToggle(ShowSelfCcCheckbox, settings.ShowSelfCc, OverlayVisibilityChanged);
         BindToggle(ShowPeelCheckbox, settings.ShowPeel, OverlayVisibilityChanged);
         BindToggle(ShowBuffsCheckbox, settings.ShowBuffs, OverlayVisibilityChanged);
+        BindToggle(ShowPetCheckbox, settings.ShowPet, OverlayVisibilityChanged);
         BindToggle(SoundsEnabledCheckbox, settings.SoundsEnabled, OverlayVisibilityChanged);
         BindToggle(SoundSelfCcCheckbox, settings.SoundSelfCc, OverlayVisibilityChanged);
         BindToggle(SoundPeelCheckbox, settings.SoundPeel, OverlayVisibilityChanged);

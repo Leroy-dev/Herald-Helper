@@ -140,6 +140,11 @@
                                FontSize="12"
                                FontFamily="Consolas"
                                TextWrapping="Wrap" />
+                    <TextBlock x:Name="PlayerPetText"
+                               Margin="0,3,0,0"
+                               FontSize="12"
+                               FontFamily="Consolas"
+                               TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
             </StackPanel>
