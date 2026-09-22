@@ -128,7 +128,8 @@ public sealed class OverlayTextWindow : Window
     /// under the icon-offset text.</summary>
     public void Update(IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)> lines, double x, double y, double fontSize, string fontFamily, MediaColor outlineColor)
     {
-        var visible = lines.Where(l => !string.IsNullOrWhiteSpace(l.Text)).ToList();
+        // Icon-only lines are legit — the pet window's effect icons have no text.
+        var visible = lines.Where(l => !string.IsNullOrWhiteSpace(l.Text) || l.Icon is not null).ToList();
         if (visible.Count == 0)
         {
             Hide();
