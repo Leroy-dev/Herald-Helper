@@ -213,7 +213,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)peelLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 px, py, overlay.PeelSize, overlay.TimerFontFamily, outlineColor);
 
-            var buffLines = overlay.ShowBuffs ? BuildBuffLines(snapshot.ClientState, snapshot.TrackedBuffs) : null;
+            var buffLines = overlay.ShowBuffs ? BuildBuffLines(snapshot.ClientState) : null;
             _buffWindow.Update(
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)buffLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 bx, by, overlay.BuffSize, overlay.TimerFontFamily, outlineColor);
@@ -440,46 +440,31 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             .ToList();
     }
 
-    /// <summary>Buff list + pet vitals — tracked casts first (cyan, pet in
-    /// green), then whatever the adapter feed reports (conc orange, buffs
-    /// cyan, pet line green). The client only exposes pet life as a percent —
+    /// <summary>Pet vitals + active-effect names — whatever the adapter feed
+    /// reports (summary icon grid when that window renders, mini_pet_* always
+    /// while a pet is out). The client only exposes pet life as a percent —
     /// there is no absolute pet HP adapter.</summary>
     internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildBuffLines(
-        ClientStateSnapshot? state,
-        IReadOnlyCollection<TrackedBuff>? trackedBuffs = null)
+        ClientStateSnapshot? state)
     {
+        if (state is null)
+        {
+            return null;
+        }
+
         var lines = new List<(string, MediaColor, IconSpriteRef?)>();
-        var concColor = MediaColor.FromRgb(0xE7, 0xA9, 0x3A);
         var buffColor = MediaColor.FromRgb(0x4A, 0xC5, 0xE7);
         var petColor = MediaColor.FromRgb(0x45, 0xB9, 0x7C);
-        var now = DateTimeOffset.UtcNow;
 
-        if (state?.Pet is { Title: { Length: > 0 } title } pet)
+        if (state.Pet is { Title: { Length: > 0 } title } pet)
         {
             var life = pet.LifePercent is { } hp ? $" {hp}%" : string.Empty;
             lines.Add(($"Pet {title}{life}", petColor, null));
         }
 
-        if (trackedBuffs is not null)
-        {
-            foreach (var buff in trackedBuffs.OrderBy(x => x.OnPet).ThenByDescending(x => x.AppliedUtc))
-            {
-                var remaining = buff.ExpiresAtUtc is { } until && until > now
-                    ? $"  {(until - now).TotalMinutes:0}m"
-                    : string.Empty;
-                lines.Add(($"{buff.Name}{remaining}", buff.OnPet ? petColor : buffColor, buff.Icon));
-            }
-        }
-
-        if (state is not null)
-        {
-            lines.AddRange(state.ConcentrationBuffs
-                .Where(b => !string.IsNullOrWhiteSpace(b))
-                .Select(b => (b, concColor, (IconSpriteRef?)null)));
-            lines.AddRange(state.Buffs
-                .Where(b => !string.IsNullOrWhiteSpace(b))
-                .Select(b => (b, buffColor, (IconSpriteRef?)null)));
-        }
+        lines.AddRange(state.Buffs
+            .Where(b => !string.IsNullOrWhiteSpace(b))
+            .Select(b => (b, buffColor, (IconSpriteRef?)null)));
 
         return lines.Count == 0 ? null : lines;
     }

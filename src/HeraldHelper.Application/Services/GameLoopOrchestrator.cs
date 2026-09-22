@@ -43,7 +43,6 @@ public sealed class GameLoopOrchestrator : IDisposable
     private readonly Dictionary<string, PeelEntry> _attackers = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<RealmAbilityActivation> _realmAbilityUses = [];
     private readonly Dictionary<string, CooldownEntry> _spellCooldowns = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, TrackedBuff> _activeBuffs = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset? _castInterruptedUntil;
     private readonly object _targetLock = new();
     private readonly string? _activeCharacterClass;
@@ -369,8 +368,8 @@ public sealed class GameLoopOrchestrator : IDisposable
     }
 
     /// <summary>A finished cast starts its recast cooldown (when the catalog
-    /// knows one), records buff effects on you/pet, and promotes realm
-    /// abilities — some shards print RA use as a normal cast line.</summary>
+    /// knows one) and promotes realm abilities — some shards print RA use as
+    /// a normal cast line.</summary>
     private void OnCastCompleted(CastEvent castEvent, DateTimeOffset nowUtc)
     {
         var spellName = NormalizeCastSpellName(castEvent.SpellName);
@@ -389,12 +388,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         }
 
         var spellInfo = _castSpellCatalog.FindBySpellName(spellName, _activeCharacterClass, _activeCharacterLevel);
-        if (spellInfo is null)
-        {
-            return;
-        }
-
-        if (spellInfo.RecastSeconds is > 0)
+        if (spellInfo?.RecastSeconds is > 0)
         {
             _spellCooldowns[spellInfo.SpellName] = new CooldownEntry(
                 spellInfo.SpellName,
@@ -403,52 +397,6 @@ public sealed class GameLoopOrchestrator : IDisposable
                 spellInfo.Icon);
             _diagnostics?.Log($"[Cooldown] {spellInfo.SpellName} ready in {spellInfo.RecastSeconds.Value:0}s");
         }
-
-        if (spellInfo.IsBuffEffect)
-        {
-            RecordBuff(spellInfo, nowUtc);
-        }
-    }
-
-    private void RecordBuff(CastSpellInfo spellInfo, DateTimeOffset nowUtc)
-    {
-        var onPet = IsPetTargeted(spellInfo);
-        var expiresAt = spellInfo.UsesConcentration
-            ? (DateTimeOffset?)null
-            : spellInfo.DurationSeconds is > 0
-                ? nowUtc.AddSeconds(spellInfo.DurationSeconds.Value)
-                : nowUtc.AddMinutes(20); // typical buff length when the catalog has no duration
-        _activeBuffs[spellInfo.SpellName] = new TrackedBuff(
-            spellInfo.SpellName, nowUtc, expiresAt, onPet, spellInfo.Icon);
-        _diagnostics?.Log($"[Buff] {spellInfo.SpellName}{(onPet ? " → pet" : string.Empty)}");
-    }
-
-    /// <summary>Pet spells hit the pet regardless of target; other buffs land
-    /// on whatever you had selected when the cast finished.</summary>
-    private bool IsPetTargeted(CastSpellInfo spellInfo)
-    {
-        if (string.Equals(spellInfo.CastTarget, "Pet", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        if (string.Equals(spellInfo.CastTarget, "Self", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        var values = _adapterValueSource?.LatestAdapterValues;
-        if (values is null
-            || !values.TryGetValue("mini_pet_title", out var petTitle)
-            || string.IsNullOrWhiteSpace(petTitle))
-        {
-            return false;
-        }
-
-        var currentTarget = ReadAdapterTargetName();
-        return currentTarget is not null
-               && string.Equals(
-                   currentTarget, petTitle.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
     private void TrackTargetEvents(
@@ -550,8 +498,6 @@ public sealed class GameLoopOrchestrator : IDisposable
             }
             else
             {
-                // Death drops every buff — conc or not.
-                _activeBuffs.Clear();
                 _diagnostics?.Log($"[Combat] you died" + (life.OtherName is { } killer ? $" to {killer}" : ""));
             }
         }
@@ -597,12 +543,6 @@ public sealed class GameLoopOrchestrator : IDisposable
         {
             _spellCooldowns.Remove(ready);
         }
-        foreach (var expired in _activeBuffs.Where(x => x.Value.ExpiresAtUtc <= nowUtc)
-                     .Select(x => x.Key).ToList())
-        {
-            _activeBuffs.Remove(expired);
-        }
-        DropFadedBuffs(ocrText);
 
         var snapshot = new OverlaySnapshot(
             GetLastTarget(),
@@ -612,7 +552,6 @@ public sealed class GameLoopOrchestrator : IDisposable
             _selfCc,
             _attackers.Values.OrderByDescending(x => x.LastSeenUtc).Take(6).ToList(),
             BuildCooldownLines(),
-            _activeBuffs.Values.OrderByDescending(x => x.AppliedUtc).ToList(),
             ClientStateExtractor.Extract(_adapterValueSource?.LatestAdapterValues),
             _castInterruptedUntil > nowUtc ? _castInterruptedUntil : null);
 
@@ -635,29 +574,6 @@ public sealed class GameLoopOrchestrator : IDisposable
             .OrderByDescending(x => x.UsedUtc)
             .Take(12)
             .ToList();
-    }
-
-    /// <summary>Buff-drop messages ("X wears off", "Your X fades") end the
-    /// tracked buff early — the chat line stays on screen for a few frames,
-    /// so a repeat match is harmless.</summary>
-    private void DropFadedBuffs(string ocrText)
-    {
-        if (_activeBuffs.Count == 0 || string.IsNullOrEmpty(ocrText))
-        {
-            return;
-        }
-
-        foreach (var name in _activeBuffs.Keys.ToList())
-        {
-            if (ocrText.Contains($"{name} wears off", StringComparison.OrdinalIgnoreCase)
-                || ocrText.Contains($"{name} fades", StringComparison.OrdinalIgnoreCase)
-                || ocrText.Contains($"no longer affected by {name}", StringComparison.OrdinalIgnoreCase)
-                || ocrText.Contains($"the {name} wears off", StringComparison.OrdinalIgnoreCase))
-            {
-                _activeBuffs.Remove(name);
-                _diagnostics?.Log($"[Buff] {name} faded");
-            }
-        }
     }
 
     private void UpdateActiveCast(CastEvent? castEvent, DateTimeOffset nowUtc)

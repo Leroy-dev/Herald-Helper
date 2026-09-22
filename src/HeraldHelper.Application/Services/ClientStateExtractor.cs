@@ -15,7 +15,6 @@ public static class ClientStateExtractor
     private const int MaxGroupSlots = 8;
     private const int MaxGroupBuffIcons = 30;
     private const int MaxPetSlots = 8;
-    private static readonly Regex ListEntry = new(@"\[([^\]]+)\]", RegexOptions.Compiled);
 
     public static ClientStateSnapshot Extract(IReadOnlyDictionary<string, string>? values)
     {
@@ -27,7 +26,6 @@ public static class ClientStateExtractor
         return new ClientStateSnapshot(
             GroupMembers: ExtractGroupMembers(values),
             Buffs: ExtractSummaryIconDescriptions(values),
-            ConcentrationBuffs: ExtractList(values, "conc_list"),
             Pet: ExtractPet(values),
             Siege: ExtractSiege(values),
             InCombat: ReadInt(values, "combat_mode") == 1,
@@ -136,27 +134,6 @@ public static class ClientStateExtractor
         }
 
         return buffs;
-    }
-
-    /// <summary>"[Sprint]\[Speed of Sound I|5]\[Glacial Movement]" → names.</summary>
-    private static IReadOnlyList<string> ExtractList(IReadOnlyDictionary<string, string> values, string key)
-    {
-        if (!values.TryGetValue(key, out var raw) || string.IsNullOrWhiteSpace(raw))
-        {
-            return [];
-        }
-
-        var entries = new List<string>();
-        foreach (Match match in ListEntry.Matches(raw))
-        {
-            var name = match.Groups[1].Value.Split('|')[0].Trim();
-            if (name.Length > 0)
-            {
-                entries.Add(name);
-            }
-        }
-
-        return entries;
     }
 
     private static int? ReadInt(IReadOnlyDictionary<string, string> values, string key) =>

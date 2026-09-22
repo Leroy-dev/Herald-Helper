@@ -145,10 +145,8 @@ public partial class LiveView : System.Windows.Controls.UserControl
     /// <summary>
     /// Renders the client's own live adapter values (read from process memory)
     /// below the mirror — the player's vitals/resists, not the target's.
-    /// The snapshot supplies chat-tracked buffs (cast lines + durations) on
-    /// top of whatever buffs the adapters report.
     /// </summary>
-    public void UpdateClientState(IReadOnlyDictionary<string, string>? values, OverlaySnapshot? snapshot = null)
+    public void UpdateClientState(IReadOnlyDictionary<string, string>? values)
     {
         if (values is null || values.Count == 0)
         {
@@ -221,10 +219,10 @@ public partial class LiveView : System.Windows.Controls.UserControl
             ? string.Join("   ", resists.Select(r => $"{r.Item1} {r.Item2 ?? "—"}"))
             : "Resists: —";
 
-        // Same source list the overlay buff window renders — chat-tracked
-        // casts first, then adapter-reported conc/buff names + pet vitals.
+        // Same list the overlay buff window renders — pet vitals plus
+        // adapter-reported active-effect names (summary icon grid).
         var buffLines = DesktopOverlayRenderer.BuildBuffLines(
-            ClientStateExtractor.Extract(values), snapshot?.TrackedBuffs);
+            ClientStateExtractor.Extract(values));
         PlayerBuffsText.Inlines.Clear();
         if (buffLines is { Count: > 0 })
         {

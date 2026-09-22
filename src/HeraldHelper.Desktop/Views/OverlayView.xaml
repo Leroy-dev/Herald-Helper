@@ -48,7 +48,7 @@
                                 <CheckBox x:Name="ShowPeelCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Peel"
                                           ToolTip="List of enemies who attacked you recently (attacker + hit count) — who's trying to peel you." />
                                 <CheckBox x:Name="ShowBuffsCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show Buffs/Pet"
-                                          ToolTip="Buffs you cast on yourself or your pet (with remaining time from the spell catalog), concentration list, and pet vitals when the adapter feed is on." />
+                                          ToolTip="Pet vitals plus active-effect names — adapter data, needs stats memory read. Effect names only fill while the summary window's icon grid renders." />
                                 <CheckBox x:Name="DynamicCastSpeedCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Dynamic Cast Speed"
                                           ToolTip="Adjust the catalog cast time using the OCR-read Dexterity and the configured casting-speed bonus." />
                                 <CheckBox x:Name="EstimatedSpellDamageCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Estimated Spell Damage"

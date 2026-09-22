@@ -110,10 +110,6 @@ public partial class MainWindow : Window
                 new CooldownEntry("Cacophony", now.AddSeconds(-4), now.AddSeconds(11)),
                 new CooldownEntry("Ameliorating Melodies", now.AddSeconds(-95))
             ],
-            [
-                new TrackedBuff("Enhanced Strength", now.AddSeconds(-120), now.AddMinutes(18)),
-                new TrackedBuff("Strength of the Dead", now.AddSeconds(-40), now.AddMinutes(15), OnPet: true)
-            ],
             new ClientStateSnapshot(
                 [
                     new GroupMemberState(0, "Leroy", "Cleric", 100, 87, 55, 50, "Emain Macha", null, null, null, []),
@@ -124,7 +120,6 @@ public partial class MainWindow : Window
                     "Toughness III", "Endurance II", "Regrowth", "Spec af",
                     "Damnation", "Serenity", "Acuity III"
                 ],
-                ["Powermastery", "Clarity", "Alacrity"],
                 new PetState("Greater forest wolf", 82, [0], [0]),
                 new SiegeState(42, true, 7, null),
                 true, 90, 7963728, 1548245, 75, null, 90));

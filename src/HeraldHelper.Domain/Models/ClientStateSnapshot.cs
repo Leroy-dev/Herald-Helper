@@ -8,7 +8,6 @@ namespace HeraldHelper.Domain.Models;
 public sealed record ClientStateSnapshot(
     IReadOnlyList<GroupMemberState> GroupMembers,
     IReadOnlyList<string> Buffs,
-    IReadOnlyList<string> ConcentrationBuffs,
     PetState? Pet,
     SiegeState? Siege,
     bool InCombat,
@@ -20,7 +19,7 @@ public sealed record ClientStateSnapshot(
     double? TimerSeconds)
 {
     public static readonly ClientStateSnapshot Empty = new(
-        [], [], [], null, null, false, null, null, null, null, null, null);
+        [], [], null, null, false, null, null, null, null, null, null);
 }
 
 public sealed record GroupMemberState(

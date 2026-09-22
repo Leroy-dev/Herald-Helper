@@ -10,7 +10,6 @@ public sealed record OverlaySnapshot(
     SelfCcState? SelfCc = null,
     IReadOnlyCollection<PeelEntry>? RecentAttackers = null,
     IReadOnlyCollection<CooldownEntry>? Cooldowns = null,
-    IReadOnlyCollection<TrackedBuff>? TrackedBuffs = null,
     ClientStateSnapshot? ClientState = null,
     DateTimeOffset? CastInterruptedUntil = null);
 
@@ -28,14 +27,4 @@ public sealed record CooldownEntry(
     string Name,
     DateTimeOffset UsedUtc,
     DateTimeOffset? ReadyUtc = null,
-    IconSpriteRef? Icon = null);
-
-/// <summary>A buff applied to you or your pet — tracked from cast chat lines,
-/// expiry from catalog duration. Concentration buffs have no ExpiresAtUtc
-/// (they persist until released/faded).</summary>
-public sealed record TrackedBuff(
-    string Name,
-    DateTimeOffset AppliedUtc,
-    DateTimeOffset? ExpiresAtUtc = null,
-    bool OnPet = false,
     IconSpriteRef? Icon = null);

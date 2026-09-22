@@ -49,7 +49,7 @@ public sealed class ClientStateExtractorTests
     }
 
     [Fact]
-    public void BracketLists_ParseNamesAndStripCounts()
+    public void SummaryIconDescriptions_FeedTheBuffList()
     {
         var state = ClientStateExtractor.Extract(Map(
             ("summary_icon_desc00", "Enhanced Strength\n+20 Str"),
@@ -57,11 +57,9 @@ public sealed class ClientStateExtractorTests
             ("summary_icon_desc99", "  "),
             // stats_abil is the passive-abilities page, not active buffs —
             // it must NOT feed the buff list.
-            ("stats_abil", "[Sprint]\\[Evade II]"),
-            ("conc_list", "[Abomination]\\[Abomination|4]")));
+            ("stats_abil", "[Sprint]\\[Evade II]")));
 
         Assert.Equal(["Enhanced Strength", "Speed of Sound"], state.Buffs);
-        Assert.Equal(["Abomination", "Abomination"], state.ConcentrationBuffs);
     }
 
     [Fact]

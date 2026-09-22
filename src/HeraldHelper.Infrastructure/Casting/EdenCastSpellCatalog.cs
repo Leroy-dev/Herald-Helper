@@ -212,11 +212,7 @@ public sealed class EdenCastSpellCatalog : ICastSpellCatalog
             className,
             ReadNullableInt(element, "level"),
             HasFixedCastTime(element),
-            TryReadEdenAttribute(element, "Recast Delay", out var recast) ? ParseDurationSecondsValue(recast) : null,
-            TryReadEdenAttribute(element, "Duration", out var duration) ? ParseDurationSecondsValue(duration) : null,
-            ReadEdenTextAttribute(element, "Type"),
-            ReadEdenTextAttribute(element, "Target"),
-            TryReadEdenAttribute(element, "Concentration", out _));
+            TryReadEdenAttribute(element, "Recast Delay", out var recast) ? ParseDurationSecondsValue(recast) : null);
         var normalizedName = NormalizeName(name);
         if (!result.TryGetValue(normalizedName, out var entries))
         {
