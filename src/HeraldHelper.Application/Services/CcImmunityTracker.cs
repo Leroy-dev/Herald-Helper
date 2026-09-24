@@ -80,13 +80,20 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
     /// min(60s, appliedDuration × immunity_timer_adaptive_length) when
     /// adaptive, else flat immunity_timer_flat_length — the deployed
     /// opendaoc.sqlite3 serverproperties have adaptive=False/flat=60, so
-    /// every hard CC gets 60s immunity AFTER the effect ends (Slam 9s =
-    /// 69s total). EffectHelper.GetImmunityEffectFromSpell maps
-    /// Mez→MezImmunity, Stun+StyleStun→StunImmunity (one shared bucket),
+    /// every hard CC gets 60s immunity AFTER the effect ends.
+    /// EffectHelper.GetImmunityEffectFromSpell maps Mez→MezImmunity,
+    /// Stun+StyleStun→StunImmunity (one shared bucket),
     /// SpeedDecrease→SnareImmunity, Nearsight→NearsightImmunity;
     /// DamageSpeedDecrease is absent = no immunity (debuff timer only).
-    /// Eden keeps the user-verified 6× melee immunity (Slam 63s); the
-    /// shard arg selects the model.</summary>
+    ///
+    /// Handler-level facts (spells/): StyleStun has zero resist chance and
+    /// ignores StunDurationReduction — melee stuns land at full duration
+    /// regardless of target det/resists on OpenDAoC. Casted Stun, Mez and
+    /// SpeedDecrease all multiply the matching *DurationReduction property
+    /// (det DOES shorten casted mez). The live-era rule encoded in
+    /// StyleStun.OnEffectExpires is 5× stun as post-effect immunity
+    /// (camelotherald/more/1749) — Eden uses that measured/live model.
+    /// The shard arg selects: Eden = 5× melee + det, others = flat 60s.</summary>
     private static int CalculateImmunitySeconds(AbilityHit hit, string? targetClass, int resistPercent, ShardType shard)
     {
         var ccLength = hit.BaseDurationSeconds;
@@ -99,8 +106,7 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
         if (hit.EffectType is ControlEffectType.Nearsight)
         {
             // NearsightImmunity is a real server immunity — flat 60s
-            // post-effect on OpenDAoC; the debuff lands at resist-scaled
-            // duration like any casted spell.
+            // post-effect; no det property exists for nearsight.
             var nearEffective = (int)Math.Floor(ccLength * (0.74 - resistPercent / 100.0));
             return Math.Max(1, nearEffective + 60);
         }
@@ -118,23 +124,24 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
             }
         }
 
-        // Melee style stuns land at their listed duration — only
-        // Determination cuts them, spell resists do not apply.
         if (hit.IsMeleeStyle)
         {
-            var applied = (int)Math.Floor(ccLength * detMultiplier);
-            // Eden measured 6× stun as post-effect immunity; the OpenDAoC
-            // server source confirms flat 60s (adaptive off) — same model
-            // casted stuns use.
-            return Math.Max(1, applied + (shard == ShardType.Eden ? applied * 6 : 60));
+            if (shard == ShardType.Eden)
+            {
+                // Live-era rule: 5× the applied stun as immunity after it
+                // ends (herald patch note). Det still shortens the stun on
+                // Eden as far as anyone has measured.
+                var applied = (int)Math.Floor(ccLength * detMultiplier);
+                return Math.Max(1, applied + applied * 5);
+            }
+
+            // OpenDAoC: StyleStun ignores det and resists — full duration,
+            // then flat 60s immunity. Slam 9s → 69s total.
+            return Math.Max(1, ccLength + 60);
         }
 
-        // Casted CC lands at the spell-resist fraction (0.74 base on Eden
-        // PvP); mez ignores Determination.
         var baseMultiplier = 0.74 - (resistPercent / 100.0);
-        var effective = hit.EffectType == ControlEffectType.Mezz
-            ? (int)Math.Floor(ccLength * baseMultiplier)
-            : (int)Math.Floor(ccLength * baseMultiplier * detMultiplier);
+        var effective = (int)Math.Floor(ccLength * baseMultiplier * detMultiplier);
         return Math.Max(1, effective + 60);
     }
 }

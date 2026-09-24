@@ -35,13 +35,37 @@ Other findings: summoned-pet stuns set `TriggersImmunity=false`;
 `UnresistableStunSpellHandler` skips immunity; NPCs get halving
 diminishing returns (`NpcImmunityEffect`), not the player flat timer.
 
-Tracker model now: Eden keeps the user-measured `6 × applied stun`
-melee immunity; all other shards use the server-verified flat 60 s
-(`applied + 60`). Casted CC is `effective + 60` on both — identical
-under flat and under adaptive for any duration ≥10 s. Nearsight now
-tracks `resist-scaled duration + 60 s immunity` (it has a real immunity
-effect); DamageSpeedDecrease stays debuff-duration-only. `shard` flows
-TickAsync → RegisterSuccessfulHit → PreviewImmunitySeconds.
+## Handler-level duration rules (spells/CCSpellHandler.cs)
+
+- `StyleStun.CalculateSpellResistChance` → 0 and `CalculateEffectDuration`
+  ignores `eProperty.StunDurationReduction` — **melee stuns land at full
+  listed duration, no det, no resists** on OpenDAoC. Only NPC-immunity
+  halving shortens them.
+- `StunSpellHandler`/`MesmerizeSpellHandler`/`SpeedDecreaseSpellHandler`
+  multiply `StunDurationReduction`/`MesmerizeDurationReduction`/
+  `SpeedDecreaseDurationReduction` — **det shortens casted stun, mez and
+  snare alike** ("mez ignores det" was wrong). Det = RA property,
+  15 %/level (NF max 5 = 75 %, OF max 3 = 45 %); Stoicism adds −25 %.
+- Casted duration also scales by to-hit chance (`87.5 + (spellLevel −
+  targetLevel)/2 + toHitBonus`): <55 % shrinks duration, >100 % grows it
+  (cap 4×). Resist itself is binary (`100 − hitChance`).
+- `StyleStun.OnEffectExpires` returns `Spell.Duration × 5` citing
+  camelotherald/more/1749 — the live-era rule: **style-stun immunity =
+  5× the stun** (Slam 9 s → 45 s). In ECS mode the flat-60 property
+  overrides it; the ×5 documents the classic rule Eden follows.
+- Pet stuns: `Spell.ResurrectHealth` scales immunity (pet stun immunity
+  is ~5× too).
+
+## Tracker model now
+
+- **Eden**: melee = `applied + applied × 5` (live rule; det shortens
+  the applied stun), casted = `effective + 60`, nearsight =
+  `resist-scaled + 60`, DamageSpeedDecrease = duration-only.
+- **Other shards (OpenDAoC-verified)**: melee = `full duration + 60`
+  (styles ignore det/resists → Slam 9 s = 69 s), casted =
+  `dur × det + 60` (det applies to stun/mez/snare), nearsight =
+  `resist-scaled + 60`, DamageSpeedDecrease = duration-only.
+- `shard` flows TickAsync → RegisterSuccessfulHit → PreviewImmunitySeconds.
 
 - `skill_code` in hand-edited ability rows ('s'/'m' = spell vs melee
   line) is a trigger label only — never drive immunity math or rendering

@@ -38,10 +38,11 @@ public sealed class CcImmunityTrackerTests
     }
 
     [Fact]
-    public void RegisterSuccessfulHit_MeleeStyleStun_EdenKeepsMeasuredSixTimes()
+    public void RegisterSuccessfulHit_MeleeStyleStun_EdenUsesLiveFiveTimesRule()
     {
-        // Eden measured model: 6x the applied stun as post-effect immunity —
-        // 9s stun + 54s = 63s total.
+        // Live-era rule (camelotherald/more/1749, encoded in OpenDAoC's
+        // StyleStun.OnEffectExpires): immunity = 5x the applied stun —
+        // 9s stun + 45s = 54s total.
         var tracker = new CcImmunityTracker();
         var now = DateTimeOffset.UtcNow;
         var hit = new AbilityHit("TargetA", "Slam perfectly", "m", ControlEffectType.Stun, 9, true, IsMeleeStyle: true);
@@ -49,7 +50,7 @@ public sealed class CcImmunityTrackerTests
         tracker.RegisterSuccessfulHit(hit, "Cleric", 0, now, ShardType.Eden);
 
         var remaining = Assert.Single(tracker.GetActiveTimers(now)).RemainingSeconds(now);
-        Assert.InRange(remaining, 62, 64); // 9s stun + 54s immunity
+        Assert.InRange(remaining, 53, 55); // 9s stun + 45s immunity
     }
 
     [Fact]
@@ -84,7 +85,7 @@ public sealed class CcImmunityTrackerTests
     public void RegisterSuccessfulHit_StyleStun_DetReducesStunAndImmunity()
     {
         // A 20-det target is stunned ~1.8s — on Eden the immunity scales off
-        // the applied stun, not the nominal one.
+        // the applied stun at 5x, not the nominal one.
         var tracker = new CcImmunityTracker();
         var now = DateTimeOffset.UtcNow;
         var hit = new AbilityHit("TargetA", "Slam perfectly", "m", ControlEffectType.Stun, 9, true, IsMeleeStyle: true);
@@ -92,14 +93,15 @@ public sealed class CcImmunityTrackerTests
         tracker.RegisterSuccessfulHit(hit, "Warrior", 0, now, ShardType.Eden);
 
         var remaining = Assert.Single(tracker.GetActiveTimers(now)).RemainingSeconds(now);
-        Assert.InRange(remaining, 7, 14); // floor(9*0.2)=1 -> 1+6
+        Assert.InRange(remaining, 5, 7); // floor(9*0.2)=1 -> 1+5
     }
 
     [Fact]
-    public void RegisterSuccessfulHit_StyleStun_NonEdenUsesFlatSixty()
+    public void RegisterSuccessfulHit_StyleStun_NonEdenIgnoresDet()
     {
-        // Same 20-det Slam on the OpenDAoC server model: the flat 60s
-        // immunity does NOT scale with the applied stun duration.
+        // OpenDAoC server-verified: StyleStun ignores StunDurationReduction
+        // AND resists — a Slam on a 20-det Warrior still lands 9s and the
+        // flat 60s immunity follows: 69s total.
         var tracker = new CcImmunityTracker();
         var now = DateTimeOffset.UtcNow;
         var hit = new AbilityHit("TargetA", "Slam perfectly", "m", ControlEffectType.Stun, 9, true, IsMeleeStyle: true);
@@ -107,7 +109,7 @@ public sealed class CcImmunityTrackerTests
         tracker.RegisterSuccessfulHit(hit, "Warrior", 0, now);
 
         var remaining = Assert.Single(tracker.GetActiveTimers(now)).RemainingSeconds(now);
-        Assert.InRange(remaining, 60, 62); // floor(9*0.2)=1 + 60
+        Assert.InRange(remaining, 68, 70); // 9 + 60
     }
 
     [Fact]
