@@ -63,13 +63,27 @@ public sealed class DaocWindowSelectionWindow : Window
 
         ok.Click += (_, _) =>
         {
-            DialogResult = true;
+            try
+            {
+                DialogResult = true;
+            }
+            catch (InvalidOperationException)
+            {
+                // Modal session already ended (window was hidden/shown) —
+                // still close rather than crash.
+            }
             Close();
         };
 
         cancel.Click += (_, _) =>
         {
-            DialogResult = false;
+            try
+            {
+                DialogResult = false;
+            }
+            catch (InvalidOperationException)
+            {
+            }
             Close();
         };
 
@@ -136,7 +150,12 @@ public sealed class DaocWindowSelectionWindow : Window
         }
 
         _preview.Hide();
-        Hide();
+        // This window is shown via ShowDialog — Hide() would end the modal
+        // session and the follow-up Show() would reopen it modeless, after
+        // which setting DialogResult on OK/Cancel throws. Stay shown but
+        // invisible/inert while the drag picker owns the screen.
+        Opacity = 0;
+        IsHitTestVisible = false;
         try
         {
             var region = RegionSelectionWindow.Select(this);
@@ -156,7 +175,8 @@ public sealed class DaocWindowSelectionWindow : Window
         }
         finally
         {
-            Show();
+            Opacity = 1;
+            IsHitTestVisible = true;
             Activate();
             RefreshPreview();
         }
