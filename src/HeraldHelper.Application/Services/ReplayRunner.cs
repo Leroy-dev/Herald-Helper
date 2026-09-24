@@ -123,7 +123,8 @@ public sealed class ReplayRunner : IOverlayRenderer, ICcImmunityTracker
         return Task.CompletedTask;
     }
 
-    public void RegisterSuccessfulHit(AbilityHit hit, string? targetClass, int resistPercent, DateTimeOffset nowUtc)
+    public void RegisterSuccessfulHit(AbilityHit hit, string? targetClass, int resistPercent, DateTimeOffset nowUtc,
+        ShardType shard = ShardType.Default)
     {
     }
 

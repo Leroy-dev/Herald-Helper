@@ -20,14 +20,15 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
 
     private readonly List<CcTimerEntry> _entries = [];
 
-    public void RegisterSuccessfulHit(AbilityHit hit, string? targetClass, int resistPercent, DateTimeOffset nowUtc)
+    public void RegisterSuccessfulHit(AbilityHit hit, string? targetClass, int resistPercent, DateTimeOffset nowUtc,
+        ShardType shard = ShardType.Default)
     {
         if (!hit.LandedSuccessfully)
         {
             return;
         }
 
-        var immunitySeconds = CalculateImmunitySeconds(hit, targetClass, resistPercent);
+        var immunitySeconds = CalculateImmunitySeconds(hit, targetClass, resistPercent, shard);
         _entries.RemoveAll(x => x.TargetName == hit.TargetName && x.EffectType == hit.EffectType);
         var expiresAtUtc = nowUtc.AddSeconds(immunitySeconds);
         _entries.Add(new CcTimerEntry(hit.TargetName, hit.EffectType, expiresAtUtc, hit.Icon, targetClass, nowUtc));
@@ -68,24 +69,40 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
 
     /// <summary>What the immunity window would be for this hit — used by the
     /// abilities "test line" so users can verify durations without a client.</summary>
-    public static int PreviewImmunitySeconds(AbilityHit hit, string? targetClass, int resistPercent)
+    public static int PreviewImmunitySeconds(AbilityHit hit, string? targetClass, int resistPercent,
+        ShardType shard = ShardType.Default)
     {
-        return CalculateImmunitySeconds(hit, targetClass, resistPercent);
+        return CalculateImmunitySeconds(hit, targetClass, resistPercent, shard);
     }
 
-    /// <summary>Eden CC model (user-confirmed): casted CC — spells and
-    /// songs — grants a flat 60s immunity that starts when the effect ends,
-    /// so the timer is appliedDuration + 60. Melee/style CC grants immunity
-    /// of 6x the stun after it ends — Slam 9s is 9s stun + 54s immunity =
-    /// 63s total. Debuffs without immunity (nearsight, damage+snare) track
-    /// the effect duration only.</summary>
-    private static int CalculateImmunitySeconds(AbilityHit hit, string? targetClass, int resistPercent)
+    /// <summary>CC immunity model — OpenDAoC-server-verified
+    /// (ECS-Effects/CrowdControlECSEffect.cs): ImmunityDuration =
+    /// min(60s, appliedDuration × immunity_timer_adaptive_length) when
+    /// adaptive, else flat immunity_timer_flat_length — the deployed
+    /// opendaoc.sqlite3 serverproperties have adaptive=False/flat=60, so
+    /// every hard CC gets 60s immunity AFTER the effect ends (Slam 9s =
+    /// 69s total). EffectHelper.GetImmunityEffectFromSpell maps
+    /// Mez→MezImmunity, Stun+StyleStun→StunImmunity (one shared bucket),
+    /// SpeedDecrease→SnareImmunity, Nearsight→NearsightImmunity;
+    /// DamageSpeedDecrease is absent = no immunity (debuff timer only).
+    /// Eden keeps the user-verified 6× melee immunity (Slam 63s); the
+    /// shard arg selects the model.</summary>
+    private static int CalculateImmunitySeconds(AbilityHit hit, string? targetClass, int resistPercent, ShardType shard)
     {
         var ccLength = hit.BaseDurationSeconds;
 
-        if (hit.EffectType is ControlEffectType.Nearsight or ControlEffectType.Snare)
+        if (hit.EffectType is ControlEffectType.Snare)
         {
             return Math.Max(1, ccLength);
+        }
+
+        if (hit.EffectType is ControlEffectType.Nearsight)
+        {
+            // NearsightImmunity is a real server immunity — flat 60s
+            // post-effect on OpenDAoC; the debuff lands at resist-scaled
+            // duration like any casted spell.
+            var nearEffective = (int)Math.Floor(ccLength * (0.74 - resistPercent / 100.0));
+            return Math.Max(1, nearEffective + 60);
         }
 
         var detMultiplier = 1.0;
@@ -106,7 +123,10 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
         if (hit.IsMeleeStyle)
         {
             var applied = (int)Math.Floor(ccLength * detMultiplier);
-            return Math.Max(1, applied + applied * 6);
+            // Eden measured 6× stun as post-effect immunity; the OpenDAoC
+            // server source confirms flat 60s (adaptive off) — same model
+            // casted stuns use.
+            return Math.Max(1, applied + (shard == ShardType.Eden ? applied * 6 : 60));
         }
 
         // Casted CC lands at the spell-resist fraction (0.74 base on Eden

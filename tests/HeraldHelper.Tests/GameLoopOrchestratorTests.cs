@@ -1331,7 +1331,8 @@ public sealed class GameLoopOrchestratorTests
     {
         public List<AbilityHit> RegisteredHits { get; } = [];
 
-        public void RegisterSuccessfulHit(AbilityHit hit, string? targetClass, int resistPercent, DateTimeOffset nowUtc)
+        public void RegisterSuccessfulHit(AbilityHit hit, string? targetClass, int resistPercent, DateTimeOffset nowUtc,
+            ShardType shard = ShardType.Default)
         {
             RegisteredHits.Add(hit);
         }

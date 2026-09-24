@@ -22,8 +22,9 @@ public sealed class CcImmunityTrackerTests
     [Fact]
     public void RegisterSuccessfulHit_MeleeStyleStun_UsesStyleImmunity()
     {
-        // Eden melee/model: a 9s style stun grants 6x9s immunity after the
-        // stun ends — 63s total, no spell-resist reduction on styles.
+        // OpenDAoC server model (verified in ECS-Effects + deployed
+        // serverproperties: adaptive off, flat 60s): a 9s style stun grants
+        // 60s immunity after the stun ends — 69s total.
         var tracker = new CcImmunityTracker();
         var now = DateTimeOffset.UtcNow;
         var hit = new AbilityHit("TargetA", "Slam perfectly", "m", ControlEffectType.Stun, 9, true, IsMeleeStyle: true);
@@ -33,6 +34,21 @@ public sealed class CcImmunityTrackerTests
 
         var entry = Assert.Single(active);
         var remaining = entry.RemainingSeconds(now);
+        Assert.InRange(remaining, 68, 70); // 9s stun + 60s flat immunity
+    }
+
+    [Fact]
+    public void RegisterSuccessfulHit_MeleeStyleStun_EdenKeepsMeasuredSixTimes()
+    {
+        // Eden measured model: 6x the applied stun as post-effect immunity —
+        // 9s stun + 54s = 63s total.
+        var tracker = new CcImmunityTracker();
+        var now = DateTimeOffset.UtcNow;
+        var hit = new AbilityHit("TargetA", "Slam perfectly", "m", ControlEffectType.Stun, 9, true, IsMeleeStyle: true);
+
+        tracker.RegisterSuccessfulHit(hit, "Cleric", 0, now, ShardType.Eden);
+
+        var remaining = Assert.Single(tracker.GetActiveTimers(now)).RemainingSeconds(now);
         Assert.InRange(remaining, 62, 64); // 9s stun + 54s immunity
     }
 
@@ -67,8 +83,23 @@ public sealed class CcImmunityTrackerTests
     [Fact]
     public void RegisterSuccessfulHit_StyleStun_DetReducesStunAndImmunity()
     {
-        // A 20-det target is stunned ~1.8s — immunity scales off the applied
-        // stun, not the nominal one.
+        // A 20-det target is stunned ~1.8s — on Eden the immunity scales off
+        // the applied stun, not the nominal one.
+        var tracker = new CcImmunityTracker();
+        var now = DateTimeOffset.UtcNow;
+        var hit = new AbilityHit("TargetA", "Slam perfectly", "m", ControlEffectType.Stun, 9, true, IsMeleeStyle: true);
+
+        tracker.RegisterSuccessfulHit(hit, "Warrior", 0, now, ShardType.Eden);
+
+        var remaining = Assert.Single(tracker.GetActiveTimers(now)).RemainingSeconds(now);
+        Assert.InRange(remaining, 7, 14); // floor(9*0.2)=1 -> 1+6
+    }
+
+    [Fact]
+    public void RegisterSuccessfulHit_StyleStun_NonEdenUsesFlatSixty()
+    {
+        // Same 20-det Slam on the OpenDAoC server model: the flat 60s
+        // immunity does NOT scale with the applied stun duration.
         var tracker = new CcImmunityTracker();
         var now = DateTimeOffset.UtcNow;
         var hit = new AbilityHit("TargetA", "Slam perfectly", "m", ControlEffectType.Stun, 9, true, IsMeleeStyle: true);
@@ -76,7 +107,7 @@ public sealed class CcImmunityTrackerTests
         tracker.RegisterSuccessfulHit(hit, "Warrior", 0, now);
 
         var remaining = Assert.Single(tracker.GetActiveTimers(now)).RemainingSeconds(now);
-        Assert.InRange(remaining, 7, 14); // floor(9*0.2)=1 -> 1+6
+        Assert.InRange(remaining, 60, 62); // floor(9*0.2)=1 + 60
     }
 
     [Fact]
@@ -195,8 +226,11 @@ public sealed class CcImmunityTrackerTests
     }
 
     [Fact]
-    public void RegisterSuccessfulHit_NearsightTracksDebuffDurationOnly()
+    public void RegisterSuccessfulHit_NearsightGetsRealImmunity()
     {
+        // Server-verified (EffectHelper.GetImmunityEffectFromSpell):
+        // Nearsight → NearsightImmunity — the debuff lands at the
+        // resist-scaled duration, then 60s immunity follows.
         var tracker = new CcImmunityTracker();
         var now = DateTimeOffset.UtcNow;
         tracker.RegisterSuccessfulHit(
@@ -204,9 +238,8 @@ public sealed class CcImmunityTrackerTests
             null, 0, now);
 
         var timer = Assert.Single(tracker.GetActiveTimers(now));
-        // No immunity multiplier — nearsight is a debuff, not hard CC.
-        Assert.InRange(timer.RemainingSeconds(now), 18, 20);
-        Assert.True(timer.RemainingSeconds(now.AddSeconds(19)) > 0);
-        Assert.Empty(tracker.GetActiveTimers(now.AddSeconds(21)));
+        // floor(20 * 0.74) = 14 applied + 60s immunity = 74s total
+        Assert.InRange(timer.RemainingSeconds(now), 73, 75);
+        Assert.Empty(tracker.GetActiveTimers(now.AddSeconds(75)));
     }
 }

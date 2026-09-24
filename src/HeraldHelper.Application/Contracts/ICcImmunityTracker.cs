@@ -1,10 +1,12 @@
+using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 
 namespace HeraldHelper.Application.Contracts;
 
 public interface ICcImmunityTracker
 {
-    void RegisterSuccessfulHit(AbilityHit hit, string? targetClass, int resistPercent, DateTimeOffset nowUtc);
+    void RegisterSuccessfulHit(AbilityHit hit, string? targetClass, int resistPercent, DateTimeOffset nowUtc,
+        ShardType shard = ShardType.Default);
     /// <summary>Removes timers created within <paramref name="maxAge"/> for
     /// the given targets — resist/immune messages can arrive a tick after
     /// the cast line that wrongly started the timer.</summary>

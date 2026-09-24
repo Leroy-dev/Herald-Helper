@@ -139,7 +139,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         TrackCastEvents(parseResult, nowUtc);
         ApplyCompletedTargetLookup(nowUtc);
         TrackTargetEvents(parseResult, shardType, nowUtc, cancellationToken);
-        TrackAbilityHits(parseResult, resistPercent, nowUtc);
+        TrackAbilityHits(parseResult, shardType, resistPercent, nowUtc);
         TrackNegationEvents(parseResult, nowUtc);
         TrackCombatEvents(parseResult, nowUtc);
         await RenderFrameAsync(frame.OcrText, nowUtc, cancellationToken);
@@ -437,7 +437,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         }
     }
 
-    private void TrackAbilityHits(ChatParseResult parseResult, int resistPercent, DateTimeOffset nowUtc)
+    private void TrackAbilityHits(ChatParseResult parseResult, ShardType shardType, int resistPercent, DateTimeOffset nowUtc)
     {
         var newAbilityHits = _abilityEventTracker.ObserveFrame(
             parseResult.AbilityHits,
@@ -445,7 +445,7 @@ public sealed class GameLoopOrchestrator : IDisposable
             static x => x.OccurrenceOrdinal);
         foreach (var hit in newAbilityHits)
         {
-            _ccImmunityTracker.RegisterSuccessfulHit(hit, GetTargetClass(hit.TargetName), resistPercent, nowUtc);
+            _ccImmunityTracker.RegisterSuccessfulHit(hit, GetTargetClass(hit.TargetName), resistPercent, nowUtc, shardType);
             if (hit.LandedSuccessfully)
             {
                 _diagnostics?.Log(

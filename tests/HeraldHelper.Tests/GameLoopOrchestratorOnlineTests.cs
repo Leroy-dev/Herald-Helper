@@ -150,7 +150,9 @@ public sealed class GameLoopOrchestratorOnlineTests
 
     private sealed class RecordingCcImmunityTracker : ICcImmunityTracker
     {
-        public void RegisterSuccessfulHit(AbilityHit hit, string? targetClass, int resistPercent, DateTimeOffset nowUtc) { }
+        public void RegisterSuccessfulHit(AbilityHit hit, string? targetClass, int resistPercent, DateTimeOffset nowUtc,
+            ShardType shard = ShardType.Default)
+        { }
 
         public void RetractFreshEntries(IEnumerable<string> targetNames, DateTimeOffset nowUtc, TimeSpan maxAge) { }
 

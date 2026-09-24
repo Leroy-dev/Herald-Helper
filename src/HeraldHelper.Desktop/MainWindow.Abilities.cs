@@ -246,7 +246,8 @@ public partial class MainWindow : Window
             }
 
             var targetClass = TryGetCachedTargetClass(hit.TargetName);
-            var immunity = CcImmunityTracker.PreviewImmunitySeconds(hit, targetClass, _resistPercent);
+            var immunity = CcImmunityTracker.PreviewImmunitySeconds(
+                hit, targetClass, _resistPercent, _abilityProfileController.Shard);
             var classNote = targetClass is null ? string.Empty : $" ({targetClass})";
             return $"{hit.AbilityName} → {hit.TargetName}{classNote} [{hit.EffectType} {hit.BaseDurationSeconds}s → imm {immunity}s]";
         }));

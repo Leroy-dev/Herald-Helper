@@ -5,25 +5,48 @@ cases that broke attribution. `AbilitiesChatEventParser` +
 `CcImmunityTracker` implement these rules; tests in
 `CcImmunityTrackerTests`/`OverlayTimerLineTests` pin them.
 
-## Immunity formulas (user-confirmed)
+## Immunity formulas (server-source-verified)
 
-| CC source | Immunity |
+OpenDAoC `GameServer/ECS-Effects/CrowdControlECSEffect.cs` — every hard-CC
+effect computes one `ImmunityDuration` at creation:
+
+```
+adaptive (property OFF by default): min(60000, appliedDuration * adaptive_length /*=6*/)
+flat    (deployed default):         immunity_timer_flat_length /*=60*/ * 1000
+```
+
+The deployed `runtime/data/opendaoc.sqlite3.db` `serverproperty` table
+confirms `immunity_timer_use_adaptive=False`, `flat=60`, `adaptive=6` —
+immunity starts when the CC ends, so **all** hard CC gets flat 60 s
+post-effect on this server (Slam 9 s → 69 s total, not 63 s).
+
+`EffectHelper.GetImmunityEffectFromSpell` — the authoritative
+spell→immunity map:
+
+| SpellType | Immunity |
 |-----------|----------|
-| Casted (spell) CC | `60 s + actual CC duration` |
-| Style/melee CC (e.g. Slam) | `6 × actual stun duration` |
+| Mesmerize | MezImmunity |
+| **Stun + StyleStun** | **StunImmunity (one shared bucket)** |
+| SpeedDecrease + UnbreakableSpeedDecrease | SnareImmunity |
+| Nearsight | NearsightImmunity |
+| DamageSpeedDecrease | (absent → **no immunity**) |
 
-- Root and snare **share one immunity category** (same `ControlEffectType`
-  bucket).
-- Damage spells that *include* a snare component do **not** apply an
-  immunity timer — flagged non-immunizing on the hit/profile.
-- Nearsight is a debuff, not CC — its tracked duration is **not**
-  multiplied through the CC immunity math.
-- Confusion and amnesia are intentionally ignored.
-- Slam cap/rounding vs the 60 s casted floor: open question — currently
-  follows `6 × duration` with no cap clamp.
+Other findings: summoned-pet stuns set `TriggersImmunity=false`;
+`UnresistableStunSpellHandler` skips immunity; NPCs get halving
+diminishing returns (`NpcImmunityEffect`), not the player flat timer.
+
+Tracker model now: Eden keeps the user-measured `6 × applied stun`
+melee immunity; all other shards use the server-verified flat 60 s
+(`applied + 60`). Casted CC is `effective + 60` on both — identical
+under flat and under adaptive for any duration ≥10 s. Nearsight now
+tracks `resist-scaled duration + 60 s immunity` (it has a real immunity
+effect); DamageSpeedDecrease stays debuff-duration-only. `shard` flows
+TickAsync → RegisterSuccessfulHit → PreviewImmunitySeconds.
+
 - `skill_code` in hand-edited ability rows ('s'/'m' = spell vs melee
   line) is a trigger label only — never drive immunity math or rendering
   from it.
+- Confusion and amnesia are intentionally ignored.
 
 ## Target attribution
 
