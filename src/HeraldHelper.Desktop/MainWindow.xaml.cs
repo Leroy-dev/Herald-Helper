@@ -68,10 +68,6 @@ public partial class MainWindow : Window
     private System.Windows.Controls.ComboBox AbilityProfileClassCombo => AbilitiesView!.AbilityProfileClassCombo;
     private System.Windows.Controls.TextBlock AbilityProfileSummaryText => AbilitiesView!.AbilityProfileSummaryText;
     private System.Windows.Controls.DataGrid AbilitiesGrid => AbilitiesView!.AbilitiesGrid;
-    private System.Windows.Controls.CheckBox ShowTargetCheckbox => OverlayView!.ShowTargetCheckbox;
-    private System.Windows.Controls.CheckBox ShowTimersCheckbox => OverlayView!.ShowTimersCheckbox;
-    private System.Windows.Controls.CheckBox ShowCastBarCheckbox => OverlayView!.ShowCastBarCheckbox;
-    private System.Windows.Controls.CheckBox ShowResistsCheckbox => OverlayView!.ShowResistsCheckbox;
     private System.Windows.Controls.CheckBox ShowGuildCheckbox => OverlayView!.ShowGuildCheckbox;
     private System.Windows.Controls.CheckBox ShowClassCheckbox => OverlayView!.ShowClassCheckbox;
     private System.Windows.Controls.CheckBox ShowLevelCheckbox => OverlayView!.ShowLevelCheckbox;
@@ -82,48 +78,15 @@ public partial class MainWindow : Window
     private System.Windows.Controls.CheckBox OcrReplayCheckbox => OverlayView!.OcrReplayCheckbox;
     private System.Windows.Controls.TextBox CastingSpeedBonusText => OverlayView!.CastingSpeedBonusText;
     private System.Windows.Controls.TextBox SpellDamageBonusText => OverlayView!.SpellDamageBonusText;
-    private System.Windows.Controls.TextBox OverlayXText => OverlayView!.OverlayXText;
-    private System.Windows.Controls.TextBox OverlayYText => OverlayView!.OverlayYText;
-    private System.Windows.Controls.TextBox OverlayTimerXText => OverlayView!.OverlayTimerXText;
-    private System.Windows.Controls.TextBox OverlayTimerYText => OverlayView!.OverlayTimerYText;
-    private System.Windows.Controls.TextBox OverlayFontSizeText => OverlayView!.OverlayFontSizeText;
-    private System.Windows.Controls.TextBox OverlayTimerSizeText => OverlayView!.OverlayTimerSizeText;
-    private System.Windows.Controls.TextBox OverlayCastXText => OverlayView!.OverlayCastXText;
-    private System.Windows.Controls.TextBox OverlayCastYText => OverlayView!.OverlayCastYText;
-    private System.Windows.Controls.TextBox OverlayResistsXText => OverlayView!.OverlayResistsXText;
-    private System.Windows.Controls.TextBox OverlayResistsYText => OverlayView!.OverlayResistsYText;
-    private System.Windows.Controls.TextBox OverlayResistsSizeText => OverlayView!.OverlayResistsSizeText;
-    private System.Windows.Controls.CheckBox ShowGroupCheckbox => OverlayView!.ShowGroupCheckbox;
-    private System.Windows.Controls.TextBox OverlayGroupXText => OverlayView!.OverlayGroupXText;
-    private System.Windows.Controls.TextBox OverlayGroupYText => OverlayView!.OverlayGroupYText;
-    private System.Windows.Controls.TextBox OverlayGroupSizeText => OverlayView!.OverlayGroupSizeText;
-    private System.Windows.Controls.CheckBox ShowSelfCcCheckbox => OverlayView!.ShowSelfCcCheckbox;
-    private System.Windows.Controls.CheckBox ShowPeelCheckbox => OverlayView!.ShowPeelCheckbox;
-    private System.Windows.Controls.TextBox OverlaySelfCcXText => OverlayView!.OverlaySelfCcXText;
-    private System.Windows.Controls.TextBox OverlaySelfCcYText => OverlayView!.OverlaySelfCcYText;
-    private System.Windows.Controls.TextBox OverlaySelfCcSizeText => OverlayView!.OverlaySelfCcSizeText;
-    private System.Windows.Controls.TextBox OverlayPeelXText => OverlayView!.OverlayPeelXText;
-    private System.Windows.Controls.TextBox OverlayPeelYText => OverlayView!.OverlayPeelYText;
-    private System.Windows.Controls.TextBox OverlayPeelSizeText => OverlayView!.OverlayPeelSizeText;
     private System.Windows.Controls.CheckBox SoundsEnabledCheckbox => OverlayView!.SoundsEnabledCheckbox;
     private System.Windows.Controls.CheckBox SoundSelfCcCheckbox => OverlayView!.SoundSelfCcCheckbox;
     private System.Windows.Controls.CheckBox SoundPeelCheckbox => OverlayView!.SoundPeelCheckbox;
     private System.Windows.Controls.CheckBox SoundInterruptCheckbox => OverlayView!.SoundInterruptCheckbox;
     private System.Windows.Controls.TextBox OverlayOpacityText => OverlayView!.OverlayOpacityText;
-    private System.Windows.Controls.CheckBox ShowBuffsCheckbox => OverlayView!.ShowBuffsCheckbox;
-    private System.Windows.Controls.CheckBox ShowPetCheckbox => OverlayView!.ShowPetCheckbox;
-    private System.Windows.Controls.TextBox OverlayBuffXText => OverlayView!.OverlayBuffXText;
-    private System.Windows.Controls.TextBox OverlayBuffYText => OverlayView!.OverlayBuffYText;
-    private System.Windows.Controls.TextBox OverlayBuffSizeText => OverlayView!.OverlayBuffSizeText;
-    private System.Windows.Controls.TextBox OverlayPetXText => OverlayView!.OverlayPetXText;
-    private System.Windows.Controls.TextBox OverlayPetYText => OverlayView!.OverlayPetYText;
     private System.Windows.Controls.TextBox TargetColorText => OverlayView!.TargetColorText;
     private System.Windows.Controls.CheckBox UseRealmColorsCheckbox => OverlayView!.UseRealmColorsCheckbox;
     private System.Windows.Controls.TextBox TimerColorText => OverlayView!.TimerColorText;
     private System.Windows.Controls.TextBox OutlineColorText => OverlayView!.OutlineColorText;
-    private System.Windows.Controls.ComboBox OverlayTargetFontCombo => OverlayView!.OverlayTargetFontCombo;
-    private System.Windows.Controls.ComboBox OverlayTimerFontCombo => OverlayView!.OverlayTimerFontCombo;
-    private System.Windows.Controls.ComboBox OverlayCastbarFontCombo => OverlayView!.OverlayCastbarFontCombo;
 
     public static readonly System.Windows.Input.RoutedUICommand SelectLiveViewCommand = new(
         "Live", "SelectLiveView", typeof(MainWindow),
@@ -167,9 +130,6 @@ public partial class MainWindow : Window
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(f => f, StringComparer.OrdinalIgnoreCase)
             .ToList();
-        OverlayTargetFontCombo.ItemsSource = fontFamilies;
-        OverlayTimerFontCombo.ItemsSource = fontFamilies;
-        OverlayCastbarFontCombo.ItemsSource = fontFamilies;
 
         _services = services;
         _store = services.GetRequiredService<AppDataStore>();
@@ -233,6 +193,18 @@ public partial class MainWindow : Window
         LoadDaocCharacterProfiles();
         RepairInvalidSavedCustomWindowRegions();
         BuildDaocCharacterSelectorUi();
+        _overlaySettings = _overlaySettingsController.Load();
+        _isBindingControls = true;
+        try
+        {
+            BuildOverlayElementsPanel(fontFamilies);
+        }
+        finally
+        {
+            _isBindingControls = false;
+        }
+        HookOverlayElementEvents();
+        WireOverlayScalarControls();
         ReloadOverlaySettingsFromStore();
         _themeController.Initialize();
         ThemeToggleButton.Content = _themeController.ToggleButtonContent;
@@ -346,7 +318,8 @@ public partial class MainWindow : Window
         }
         else if (OverlayView.Visibility == System.Windows.Visibility.Visible)
         {
-            SaveOverlaySettings_Click(this, new System.Windows.RoutedEventArgs());
+            PersistOverlaySettings();
+            OutputBox.Text = "Overlay settings saved.";
         }
     }
 
@@ -361,6 +334,10 @@ public partial class MainWindow : Window
         _ocrEngineMode = _runtimeController.RuntimeSettings?.OcrEngineMode ?? OcrEngineMode.Adaptive;
         BindControlsFromSettings();
         UpdateRegionText();
+        // The checklist reads runtime settings — anything that rebuilt the
+        // runtime (character pick, OCR windows, region, folder, toggles)
+        // must refresh it, not just view switches.
+        RefreshSetupChecklist();
     }
 
     private void OnLoopTickCompleted(LoopTickResult tick)
@@ -977,315 +954,43 @@ public partial class MainWindow : Window
         });
     }
 
-    private void PickOverlayPosition(bool isTimerOverlay)
-    {
-        var xText = isTimerOverlay ? OverlayTimerXText : OverlayXText;
-        var yText = isTimerOverlay ? OverlayTimerYText : OverlayYText;
-        var originalX = xText.Text;
-        var originalY = yText.Text;
-
-        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
-        {
-            xText.Text = x.ToString();
-            yText.Text = y.ToString();
-            _liveOverlay?.SetPreviewPosition(isTimerOverlay, x, y);
-            RenderLiveOverlayPreview();
-        });
-
-        if (selected is null)
-        {
-            xText.Text = originalX;
-            yText.Text = originalY;
-            _liveOverlay?.ClearPreview();
-            RenderLiveOverlayPreview();
-            return;
-        }
-
-        xText.Text = selected.Value.X.ToString();
-        yText.Text = selected.Value.Y.ToString();
-        SaveOverlaySettings_Click(this, new RoutedEventArgs());
-    }
-
-    private void PickCastOverlayPosition()
-    {
-        var originalX = OverlayCastXText.Text;
-        var originalY = OverlayCastYText.Text;
-
-        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
-        {
-            OverlayCastXText.Text = x.ToString();
-            OverlayCastYText.Text = y.ToString();
-            _liveOverlay?.SetPreviewCastBarPosition(x, y);
-            RenderLiveOverlayPreview();
-        });
-
-        if (selected is null)
-        {
-            OverlayCastXText.Text = originalX;
-            OverlayCastYText.Text = originalY;
-            _liveOverlay?.ClearPreview();
-            RenderLiveOverlayPreview();
-            return;
-        }
-
-        OverlayCastXText.Text = selected.Value.X.ToString();
-        OverlayCastYText.Text = selected.Value.Y.ToString();
-        SaveOverlaySettings_Click(this, new RoutedEventArgs());
-    }
-
-    private void PickResistsOverlayPosition()
-    {
-        var originalX = OverlayResistsXText.Text;
-        var originalY = OverlayResistsYText.Text;
-
-        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
-        {
-            OverlayResistsXText.Text = x.ToString();
-            OverlayResistsYText.Text = y.ToString();
-            _liveOverlay?.SetPreviewResistsPosition(x, y);
-            RenderLiveOverlayPreview();
-        });
-
-        if (selected is null)
-        {
-            OverlayResistsXText.Text = originalX;
-            OverlayResistsYText.Text = originalY;
-            _liveOverlay?.ClearPreview();
-            RenderLiveOverlayPreview();
-            return;
-        }
-
-        OverlayResistsXText.Text = selected.Value.X.ToString();
-        OverlayResistsYText.Text = selected.Value.Y.ToString();
-        SaveOverlaySettings_Click(this, new RoutedEventArgs());
-    }
-
-    private void PickGroupOverlayPosition()
-    {
-        var originalX = OverlayGroupXText.Text;
-        var originalY = OverlayGroupYText.Text;
-
-        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
-        {
-            OverlayGroupXText.Text = x.ToString();
-            OverlayGroupYText.Text = y.ToString();
-            _liveOverlay?.SetPreviewGroupPosition(x, y);
-            RenderLiveOverlayPreview();
-        });
-
-        if (selected is null)
-        {
-            OverlayGroupXText.Text = originalX;
-            OverlayGroupYText.Text = originalY;
-            _liveOverlay?.ClearPreview();
-            RenderLiveOverlayPreview();
-            return;
-        }
-
-        OverlayGroupXText.Text = selected.Value.X.ToString();
-        OverlayGroupYText.Text = selected.Value.Y.ToString();
-        SaveOverlaySettings_Click(this, new RoutedEventArgs());
-    }
-
-    private void PickSelfCcOverlayPosition()
-    {
-        var originalX = OverlaySelfCcXText.Text;
-        var originalY = OverlaySelfCcYText.Text;
-
-        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
-        {
-            OverlaySelfCcXText.Text = x.ToString();
-            OverlaySelfCcYText.Text = y.ToString();
-            _liveOverlay?.SetPreviewSelfCcPosition(x, y);
-            RenderLiveOverlayPreview();
-        });
-
-        if (selected is null)
-        {
-            OverlaySelfCcXText.Text = originalX;
-            OverlaySelfCcYText.Text = originalY;
-            _liveOverlay?.ClearPreview();
-            RenderLiveOverlayPreview();
-            return;
-        }
-
-        OverlaySelfCcXText.Text = selected.Value.X.ToString();
-        OverlaySelfCcYText.Text = selected.Value.Y.ToString();
-        SaveOverlaySettings_Click(this, new RoutedEventArgs());
-    }
-
-    private void PickPeelOverlayPosition()
-    {
-        var originalX = OverlayPeelXText.Text;
-        var originalY = OverlayPeelYText.Text;
-
-        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
-        {
-            OverlayPeelXText.Text = x.ToString();
-            OverlayPeelYText.Text = y.ToString();
-            _liveOverlay?.SetPreviewPeelPosition(x, y);
-            RenderLiveOverlayPreview();
-        });
-
-        if (selected is null)
-        {
-            OverlayPeelXText.Text = originalX;
-            OverlayPeelYText.Text = originalY;
-            _liveOverlay?.ClearPreview();
-            RenderLiveOverlayPreview();
-            return;
-        }
-
-        OverlayPeelXText.Text = selected.Value.X.ToString();
-        OverlayPeelYText.Text = selected.Value.Y.ToString();
-        SaveOverlaySettings_Click(this, new RoutedEventArgs());
-    }
-
-    private void PickBuffOverlayPosition()
-    {
-        var originalX = OverlayBuffXText.Text;
-        var originalY = OverlayBuffYText.Text;
-
-        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
-        {
-            OverlayBuffXText.Text = x.ToString();
-            OverlayBuffYText.Text = y.ToString();
-            _liveOverlay?.SetPreviewBuffPosition(x, y);
-            RenderLiveOverlayPreview();
-        });
-
-        if (selected is null)
-        {
-            OverlayBuffXText.Text = originalX;
-            OverlayBuffYText.Text = originalY;
-            _liveOverlay?.ClearPreview();
-            RenderLiveOverlayPreview();
-            return;
-        }
-
-        OverlayBuffXText.Text = selected.Value.X.ToString();
-        OverlayBuffYText.Text = selected.Value.Y.ToString();
-        SaveOverlaySettings_Click(this, new RoutedEventArgs());
-    }
-
-    private void PickPetOverlayPosition()
-    {
-        var originalX = OverlayPetXText.Text;
-        var originalY = OverlayPetYText.Text;
-
-        var selected = OverlayCursorPickerWindow.Pick(this, (x, y) =>
-        {
-            OverlayPetXText.Text = x.ToString();
-            OverlayPetYText.Text = y.ToString();
-            _liveOverlay?.SetPreviewPetPosition(x, y);
-            RenderLiveOverlayPreview();
-        });
-
-        if (selected is null)
-        {
-            OverlayPetXText.Text = originalX;
-            OverlayPetYText.Text = originalY;
-            _liveOverlay?.ClearPreview();
-            RenderLiveOverlayPreview();
-            return;
-        }
-
-        OverlayPetXText.Text = selected.Value.X.ToString();
-        OverlayPetYText.Text = selected.Value.Y.ToString();
-        SaveOverlaySettings_Click(this, new RoutedEventArgs());
-    }
-
-
-    private void PickSizeLive(System.Windows.Controls.TextBox targetBox, string label, Action<int> previewSetter)
-    {
-        var original = NormalizeIntText(targetBox.Text, 20);
-        targetBox.Text = original.ToString();
-
-        var selected = LiveSizePickerWindow.Pick(this, label, original, size =>
-        {
-            targetBox.Text = size.ToString();
-            previewSetter(size);
-            RenderLiveOverlayPreview();
-        });
-
-        if (selected is null)
-        {
-            targetBox.Text = original.ToString();
-            previewSetter(original);
-            RenderLiveOverlayPreview();
-            return;
-        }
-
-        targetBox.Text = selected.Value.ToString();
-        SaveOverlaySettings_Click(this, new RoutedEventArgs());
-    }
-
     internal void ReloadOverlaySettingsFromStore()
     {
-        var settings = _overlaySettingsController.Load();
-        OverlayXText.Text = settings.X.ToString();
-        OverlayYText.Text = settings.Y.ToString();
-        OverlayTimerXText.Text = settings.TimerX.ToString();
-        OverlayTimerYText.Text = settings.TimerY.ToString();
-        OverlayCastXText.Text = settings.CastX.ToString();
-        OverlayCastYText.Text = settings.CastY.ToString();
-        OverlayFontSizeText.Text = settings.FontSize.ToString();
-        OverlayTimerSizeText.Text = settings.TimerSize.ToString();
-        TargetColorText.Text = NormalizeColorText(settings.TargetColor, "#FFFFFF");
-        TimerColorText.Text = NormalizeColorText(settings.TimerColor, "#FFFFFF");
-        OutlineColorText.Text = NormalizeColorText(settings.OutlineColor, "#000000");
-        BindToggle(UseRealmColorsCheckbox, settings.UseRealmColors, OverlayVisibilityChanged);
+        _overlaySettings = _overlaySettingsController.Load();
+        PushOverlayElementValues();
 
-        var map = _settingsController.LoadMap();
-        var character = ReadOrDefault(map, CharacterSettingsKeys.SelectedCharacter(_shardType), string.Empty);
-        var stats = _store.LoadCharacterStats(_shardType, character);
-        CastingSpeedBonusText.Text = (stats?.CastingSpeedPercent ?? 0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
-        SpellDamageBonusText.Text = (stats?.SpellDamagePercent ?? 0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        _isBindingControls = true;
+        try
+        {
+            var map = _settingsController.LoadMap();
+            var character = ReadOrDefault(map, CharacterSettingsKeys.SelectedCharacter(_shardType), string.Empty);
+            var stats = _store.LoadCharacterStats(_shardType, character);
+            CastingSpeedBonusText.Text = (stats?.CastingSpeedPercent ?? 0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+            SpellDamageBonusText.Text = (stats?.SpellDamagePercent ?? 0).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
 
-        OverlayResistsXText.Text = settings.ResistsX.ToString();
-        OverlayResistsYText.Text = settings.ResistsY.ToString();
-        OverlayResistsSizeText.Text = settings.ResistsSize.ToString();
-        OverlayGroupXText.Text = settings.GroupX.ToString();
-        OverlayGroupYText.Text = settings.GroupY.ToString();
-        OverlayGroupSizeText.Text = settings.GroupSize.ToString();
-        OverlaySelfCcXText.Text = settings.SelfCcX.ToString();
-        OverlaySelfCcYText.Text = settings.SelfCcY.ToString();
-        OverlaySelfCcSizeText.Text = settings.SelfCcSize.ToString();
-        OverlayPeelXText.Text = settings.PeelX.ToString();
-        OverlayPeelYText.Text = settings.PeelY.ToString();
-        OverlayPeelSizeText.Text = settings.PeelSize.ToString();
-        OverlayOpacityText.Text = ((int)Math.Round(settings.OverlayOpacity * 100)).ToString();
-        OverlayBuffXText.Text = settings.BuffX.ToString();
-        OverlayBuffYText.Text = settings.BuffY.ToString();
-        OverlayBuffSizeText.Text = settings.BuffSize.ToString();
-        OverlayPetXText.Text = settings.PetX.ToString();
-        OverlayPetYText.Text = settings.PetY.ToString();
+            OverlayOpacityText.Text = ((int)Math.Round(_overlaySettings.OverlayOpacity * 100)).ToString();
+            TargetColorText.Text = NormalizeColorText(_overlaySettings.TargetColor, "#FFFFFF");
+            TimerColorText.Text = NormalizeColorText(_overlaySettings.TimerColor, "#FFFFFF");
+            OutlineColorText.Text = NormalizeColorText(_overlaySettings.OutlineColor, "#000000");
 
-        BindToggle(ShowTargetCheckbox, settings.ShowTarget, OverlayVisibilityChanged);
-        BindToggle(ShowTimersCheckbox, settings.ShowTimers, OverlayVisibilityChanged);
-        BindToggle(ShowCastBarCheckbox, settings.ShowCastBar, OverlayVisibilityChanged);
-        BindToggle(ShowResistsCheckbox, settings.ShowResists, OverlayVisibilityChanged);
-        BindToggle(ShowGroupCheckbox, settings.ShowGroup, OverlayVisibilityChanged);
-        BindToggle(ShowSelfCcCheckbox, settings.ShowSelfCc, OverlayVisibilityChanged);
-        BindToggle(ShowPeelCheckbox, settings.ShowPeel, OverlayVisibilityChanged);
-        BindToggle(ShowBuffsCheckbox, settings.ShowBuffs, OverlayVisibilityChanged);
-        BindToggle(ShowPetCheckbox, settings.ShowPet, OverlayVisibilityChanged);
-        BindToggle(SoundsEnabledCheckbox, settings.SoundsEnabled, OverlayVisibilityChanged);
-        BindToggle(SoundSelfCcCheckbox, settings.SoundSelfCc, OverlayVisibilityChanged);
-        BindToggle(SoundPeelCheckbox, settings.SoundPeel, OverlayVisibilityChanged);
-        BindToggle(SoundInterruptCheckbox, settings.SoundInterrupt, OverlayVisibilityChanged);
-        BindToggle(ShowGuildCheckbox, settings.ShowGuild, OverlayVisibilityChanged);
-        BindToggle(ShowClassCheckbox, settings.ShowClass, OverlayVisibilityChanged);
-        BindToggle(ShowLevelCheckbox, settings.ShowLevel, OverlayVisibilityChanged);
-        BindToggle(ShowRealmRankCheckbox, settings.ShowRealmRank, OverlayVisibilityChanged);
-        BindToggle(ShowSoloKillsCheckbox, settings.ShowSoloKills, OverlayVisibilityChanged);
-        BindToggle(DynamicCastSpeedCheckbox, settings.DynamicCastSpeedEnabled, OverlayVisibilityChanged);
-        BindToggle(EstimatedSpellDamageCheckbox, settings.EstimatedSpellDamageEnabled, OverlayVisibilityChanged);
-        BindToggle(OcrReplayCheckbox, settings.OcrReplayEnabled, OverlayVisibilityChanged);
-
-        SelectFont(OverlayTargetFontCombo, settings.TargetFontFamily);
-        SelectFont(OverlayTimerFontCombo, settings.TimerFontFamily);
-        SelectFont(OverlayCastbarFontCombo, settings.CastbarFontFamily);
+            ShowGuildCheckbox.IsChecked = _overlaySettings.ShowGuild;
+            ShowClassCheckbox.IsChecked = _overlaySettings.ShowClass;
+            ShowLevelCheckbox.IsChecked = _overlaySettings.ShowLevel;
+            ShowRealmRankCheckbox.IsChecked = _overlaySettings.ShowRealmRank;
+            ShowSoloKillsCheckbox.IsChecked = _overlaySettings.ShowSoloKills;
+            UseRealmColorsCheckbox.IsChecked = _overlaySettings.UseRealmColors;
+            SoundsEnabledCheckbox.IsChecked = _overlaySettings.SoundsEnabled;
+            SoundSelfCcCheckbox.IsChecked = _overlaySettings.SoundSelfCc;
+            SoundPeelCheckbox.IsChecked = _overlaySettings.SoundPeel;
+            SoundInterruptCheckbox.IsChecked = _overlaySettings.SoundInterrupt;
+            DynamicCastSpeedCheckbox.IsChecked = _overlaySettings.DynamicCastSpeedEnabled;
+            EstimatedSpellDamageCheckbox.IsChecked = _overlaySettings.EstimatedSpellDamageEnabled;
+            OcrReplayCheckbox.IsChecked = _overlaySettings.OcrReplayEnabled;
+        }
+        finally
+        {
+            _isBindingControls = false;
+        }
     }
 
     private static void SelectFont(System.Windows.Controls.ComboBox? comboBox, string fontFamily)
@@ -1297,25 +1002,6 @@ public partial class MainWindow : Window
 
         var item = comboBox.Items.OfType<string>().FirstOrDefault(x => x.Equals(fontFamily, StringComparison.OrdinalIgnoreCase));
         comboBox.SelectedItem = item ?? "Segoe UI";
-    }
-
-    private void BindToggle(System.Windows.Controls.CheckBox? checkBox, bool value, RoutedEventHandler? handler = null)
-    {
-        if (checkBox is null)
-        {
-            return;
-        }
-
-        checkBox.IsChecked = value;
-        if (handler is null)
-        {
-            return;
-        }
-
-        checkBox.Checked -= handler;
-        checkBox.Unchecked -= handler;
-        checkBox.Checked += handler;
-        checkBox.Unchecked += handler;
     }
 
     private static bool ReadBool(IReadOnlyDictionary<string, string> map, string key, bool fallback)
@@ -1331,27 +1017,6 @@ public partial class MainWindow : Window
             "0" or "false" or "no" => false,
             _ => fallback
         };
-    }
-
-    private void OverlayVisibilityChanged(object sender, RoutedEventArgs e)
-    {
-        _overlaySettingsController.UpdateOverlay(overlay =>
-        {
-            overlay.ShowTarget = ShowTargetCheckbox?.IsChecked ?? true;
-            overlay.ShowTimers = ShowTimersCheckbox?.IsChecked ?? true;
-            overlay.ShowCastBar = ShowCastBarCheckbox?.IsChecked ?? true;
-            overlay.ShowResists = ShowResistsCheckbox?.IsChecked ?? false;
-            overlay.ShowGuild = ShowGuildCheckbox?.IsChecked ?? true;
-            overlay.ShowClass = ShowClassCheckbox?.IsChecked ?? true;
-            overlay.ShowLevel = ShowLevelCheckbox?.IsChecked ?? true;
-            overlay.ShowRealmRank = ShowRealmRankCheckbox?.IsChecked ?? true;
-            overlay.ShowSoloKills = ShowSoloKillsCheckbox?.IsChecked ?? true;
-            overlay.UseRealmColors = UseRealmColorsCheckbox?.IsChecked ?? true;
-            overlay.DynamicCastSpeedEnabled = DynamicCastSpeedCheckbox?.IsChecked ?? false;
-            overlay.EstimatedSpellDamageEnabled = EstimatedSpellDamageCheckbox?.IsChecked ?? false;
-            overlay.OcrReplayEnabled = OcrReplayCheckbox?.IsChecked ?? false;
-        });
-        RebuildRuntimeFromFiles();
     }
 
     private void SaveCurrentCharacterStatBonuses()
@@ -1411,7 +1076,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void PickColorLive(System.Windows.Controls.TextBox targetBox, string fallback)
+    private void PickColorLive(System.Windows.Controls.TextBox targetBox, string fallback, Action<OverlaySettings, string> setter)
     {
         var original = NormalizeColorText(targetBox.Text, fallback);
         targetBox.Text = original;
@@ -1426,14 +1091,17 @@ public partial class MainWindow : Window
         if (selected is null)
         {
             targetBox.Text = original;
-        }
-        else
-        {
-            targetBox.Text = NormalizeColorText(selected, fallback);
+            ApplyOverlayColorPreviewFromInputs();
+            RenderLiveOverlayPreview();
+            return;
         }
 
+        var normalized = NormalizeColorText(selected, fallback);
+        targetBox.Text = normalized;
+        setter(_overlaySettings, normalized);
+        _liveOverlay?.ClearPreview();
         ApplyOverlayColorPreviewFromInputs();
-        RenderLiveOverlayPreview();
+        PersistOverlaySettings();
     }
 
     private static string ReadOrDefault(IReadOnlyDictionary<string, string> map, string key, string fallback)

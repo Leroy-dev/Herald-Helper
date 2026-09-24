@@ -144,10 +144,13 @@ public sealed class CastBarWindow : Window
         OverlayTextWindowInterop.SetWindowLongPtr(hwnd, new IntPtr(exStyle));
     }
 
-    public void Update(CastBarState? state, double x, double y, MediaColor targetColor, MediaColor timerColor, MediaColor outlineColor, string fontFamily, DateTimeOffset? interruptUntil = null)
+    public void Update(CastBarState? state, double x, double y, MediaColor targetColor, MediaColor timerColor, MediaColor outlineColor, string fontFamily, int fontSize = 15, DateTimeOffset? interruptUntil = null)
     {
         _state = state;
         _interruptUntil = interruptUntil;
+        var nameSize = Math.Clamp(fontSize, 8, 72);
+        _spellNameText.FontSize = nameSize;
+        _secondsText.FontSize = Math.Max(9, nameSize - 3);
         // Clamp into the virtual screen so a saved position can't hide the bar.
         Left = Math.Clamp(x,
             SystemParameters.VirtualScreenLeft,

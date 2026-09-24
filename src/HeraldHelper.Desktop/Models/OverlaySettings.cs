@@ -26,6 +26,8 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private int _buffSize = 14;
     private int _petX = 40;
     private int _petY = 430;
+    private int? _petSize;
+    private int _castSize = 15;
     private int _fontSize = 20;
     private int _timerSize = 20;
     private int _resistsSize = 20;
@@ -58,6 +60,12 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private string _targetFontFamily = "Segoe UI";
     private string _timerFontFamily = "Segoe UI";
     private string _castbarFontFamily = "Segoe UI";
+    private string? _resistsFontFamily;
+    private string? _groupFontFamily;
+    private string? _selfCcFontFamily;
+    private string? _peelFontFamily;
+    private string? _buffFontFamily;
+    private string? _petFontFamily;
 
     public int X { get => _x; set { _x = value; OnPropertyChanged(nameof(X)); } }
     public int Y { get => _y; set { _y = value; OnPropertyChanged(nameof(Y)); } }
@@ -81,6 +89,10 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public int BuffSize { get => _buffSize; set { _buffSize = value; OnPropertyChanged(nameof(BuffSize)); } }
     public int PetX { get => _petX; set { _petX = value; OnPropertyChanged(nameof(PetX)); } }
     public int PetY { get => _petY; set { _petY = value; OnPropertyChanged(nameof(PetY)); } }
+    /// <summary>Null = follow <see cref="BuffSize"/> (the pre-split behavior).</summary>
+    public int? PetSize { get => _petSize; set { _petSize = value; OnPropertyChanged(nameof(PetSize)); OnPropertyChanged(nameof(EffectivePetSize)); } }
+    public int EffectivePetSize => _petSize ?? _buffSize;
+    public int CastSize { get => _castSize; set { _castSize = value; OnPropertyChanged(nameof(CastSize)); } }
     public int FontSize { get => _fontSize; set { _fontSize = value; OnPropertyChanged(nameof(FontSize)); } }
     public int TimerSize { get => _timerSize; set { _timerSize = value; OnPropertyChanged(nameof(TimerSize)); } }
     public int ResistsSize { get => _resistsSize; set { _resistsSize = value; OnPropertyChanged(nameof(ResistsSize)); } }
@@ -113,6 +125,25 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public string TargetFontFamily { get => _targetFontFamily; set { _targetFontFamily = value; OnPropertyChanged(nameof(TargetFontFamily)); } }
     public string TimerFontFamily { get => _timerFontFamily; set { _timerFontFamily = value; OnPropertyChanged(nameof(TimerFontFamily)); } }
     public string CastbarFontFamily { get => _castbarFontFamily; set { _castbarFontFamily = value; OnPropertyChanged(nameof(CastbarFontFamily)); } }
+    /// <summary>Null = follow <see cref="TargetFontFamily"/> (the pre-split behavior).</summary>
+    public string? ResistsFontFamily { get => _resistsFontFamily; set { _resistsFontFamily = value; OnPropertyChanged(nameof(ResistsFontFamily)); } }
+    /// <summary>Null = follow <see cref="TimerFontFamily"/>.</summary>
+    public string? GroupFontFamily { get => _groupFontFamily; set { _groupFontFamily = value; OnPropertyChanged(nameof(GroupFontFamily)); } }
+    /// <summary>Null = follow <see cref="TargetFontFamily"/>.</summary>
+    public string? SelfCcFontFamily { get => _selfCcFontFamily; set { _selfCcFontFamily = value; OnPropertyChanged(nameof(SelfCcFontFamily)); } }
+    /// <summary>Null = follow <see cref="TimerFontFamily"/>.</summary>
+    public string? PeelFontFamily { get => _peelFontFamily; set { _peelFontFamily = value; OnPropertyChanged(nameof(PeelFontFamily)); } }
+    /// <summary>Null = follow <see cref="TimerFontFamily"/>.</summary>
+    public string? BuffFontFamily { get => _buffFontFamily; set { _buffFontFamily = value; OnPropertyChanged(nameof(BuffFontFamily)); } }
+    /// <summary>Null = follow <see cref="TimerFontFamily"/>.</summary>
+    public string? PetFontFamily { get => _petFontFamily; set { _petFontFamily = value; OnPropertyChanged(nameof(PetFontFamily)); } }
+
+    public string EffectiveResistsFontFamily => _resistsFontFamily ?? _targetFontFamily;
+    public string EffectiveGroupFontFamily => _groupFontFamily ?? _timerFontFamily;
+    public string EffectiveSelfCcFontFamily => _selfCcFontFamily ?? _targetFontFamily;
+    public string EffectivePeelFontFamily => _peelFontFamily ?? _timerFontFamily;
+    public string EffectiveBuffFontFamily => _buffFontFamily ?? _timerFontFamily;
+    public string EffectivePetFontFamily => _petFontFamily ?? _timerFontFamily;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

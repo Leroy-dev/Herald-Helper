@@ -21,30 +21,14 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private readonly OverlayTextWindow _peelWindow;
     private readonly OverlayTextWindow _buffWindow;
     private readonly OverlayTextWindow _petWindow;
-    private int? _previewTargetX;
-    private int? _previewTargetY;
-    private int? _previewTimerX;
-    private int? _previewTimerY;
-    private int? _previewCastX;
-    private int? _previewCastY;
-    private int? _previewResistsX;
-    private int? _previewResistsY;
-    private int? _previewResistsFontSize;
-    private int? _previewGroupX;
-    private int? _previewGroupY;
-    private int? _previewSelfCcX;
-    private int? _previewSelfCcY;
-    private int? _previewPeelX;
-    private int? _previewPeelY;
-    private int? _previewBuffX;
-    private int? _previewBuffY;
-    private int? _previewPetX;
-    private int? _previewPetY;
+    /// <summary>Live drag/resize previews keyed by element ("target",
+    /// "timers", "castbar", "resists", "group", "selfcc", "peel", "buffs",
+    /// "pet") — the Overlay settings table drives these.</summary>
+    private readonly Dictionary<string, (int X, int Y)> _previewPositions = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, int> _previewFontSizes = new(StringComparer.OrdinalIgnoreCase);
     private MediaColor? _previewTargetColor;
     private MediaColor? _previewTimerColor;
     private MediaColor? _previewOutlineColor;
-    private int? _previewTargetFontSize;
-    private int? _previewTimerFontSize;
     private bool _disposed;
 
     public DesktopOverlayRenderer(Func<OverlaySettings> getOverlay, Func<IReadOnlyDictionary<string, string>>? getMap = null)
@@ -89,73 +73,25 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             _buffWindow.Opacity = opacity;
             _petWindow.Opacity = opacity;
 
-            var ox = overlay.X;
-            var oy = overlay.Y;
-            var tx = overlay.TimerX;
-            var ty = overlay.TimerY;
-            var cx = overlay.CastX;
-            var cy = overlay.CastY;
+            var (ox, oy) = PreviewPos("target", overlay.X, overlay.Y);
+            var (tx, ty) = PreviewPos("timers", overlay.TimerX, overlay.TimerY);
+            var (cx, cy) = PreviewPos("castbar", overlay.CastX, overlay.CastY);
+            var (rx, ry) = PreviewPos("resists", overlay.ResistsX, overlay.ResistsY);
+            var (gx, gy) = PreviewPos("group", overlay.GroupX, overlay.GroupY);
+            var (scx, scy) = PreviewPos("selfcc", overlay.SelfCcX, overlay.SelfCcY);
+            var (px, py) = PreviewPos("peel", overlay.PeelX, overlay.PeelY);
+            var (bx, by) = PreviewPos("buffs", overlay.BuffX, overlay.BuffY);
+            var (pex, pey) = PreviewPos("pet", overlay.PetX, overlay.PetY);
 
-            if (_previewTargetX is not null)
-            {
-                ox = _previewTargetX.Value;
-            }
-
-            if (_previewTargetY is not null)
-            {
-                oy = _previewTargetY.Value;
-            }
-
-            if (_previewTimerX is not null)
-            {
-                tx = _previewTimerX.Value;
-            }
-
-            if (_previewTimerY is not null)
-            {
-                ty = _previewTimerY.Value;
-            }
-
-            if (_previewCastX is not null)
-            {
-                cx = _previewCastX.Value;
-            }
-
-            if (_previewCastY is not null)
-            {
-                cy = _previewCastY.Value;
-            }
-
-            var rx = _previewResistsX ?? overlay.ResistsX;
-            var ry = _previewResistsY ?? overlay.ResistsY;
-            var gx = _previewGroupX ?? overlay.GroupX;
-            var gy = _previewGroupY ?? overlay.GroupY;
-            var scx = _previewSelfCcX ?? overlay.SelfCcX;
-            var scy = _previewSelfCcY ?? overlay.SelfCcY;
-            var px = _previewPeelX ?? overlay.PeelX;
-            var py = _previewPeelY ?? overlay.PeelY;
-            var bx = _previewBuffX ?? overlay.BuffX;
-            var by = _previewBuffY ?? overlay.BuffY;
-            var pex = _previewPetX ?? overlay.PetX;
-            var pey = _previewPetY ?? overlay.PetY;
-
-            var f1 = overlay.FontSize;
-            var f2 = overlay.TimerSize;
-            var f3 = overlay.ResistsSize;
-            if (_previewTargetFontSize is not null)
-            {
-                f1 = _previewTargetFontSize.Value;
-            }
-
-            if (_previewTimerFontSize is not null)
-            {
-                f2 = _previewTimerFontSize.Value;
-            }
-
-            if (_previewResistsFontSize is not null)
-            {
-                f3 = _previewResistsFontSize.Value;
-            }
+            var f1 = PreviewSize("target", overlay.FontSize);
+            var f2 = PreviewSize("timers", overlay.TimerSize);
+            var f3 = PreviewSize("resists", overlay.ResistsSize);
+            var castSize = PreviewSize("castbar", overlay.CastSize);
+            var groupSize = PreviewSize("group", overlay.GroupSize);
+            var selfCcSize = PreviewSize("selfcc", overlay.SelfCcSize);
+            var peelSize = PreviewSize("peel", overlay.PeelSize);
+            var buffSize = PreviewSize("buffs", overlay.BuffSize);
+            var petSize = PreviewSize("pet", overlay.EffectivePetSize);
 
             var baseTargetColor = ReadColor(overlay.TargetColor, Colors.White);
             var timerColor = ReadColor(overlay.TimerColor, Colors.White);
@@ -199,35 +135,35 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             _resistsWindow.Update(
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)resistsLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 rx, ry,
-                f3, overlay.TargetFontFamily, outlineColor);
+                f3, overlay.EffectiveResistsFontFamily, outlineColor);
             var cast = overlay.ShowCastBar ? snapshot.ActiveCast : null;
             _castBarWindow.Update(cast, cx, cy, castbarColor, timerColor, outlineColor, overlay.CastbarFontFamily,
-                snapshot.CastInterruptedUntil);
+                castSize, snapshot.CastInterruptedUntil);
             _groupWindow.Update(
                 overlay.ShowGroup ? snapshot.ClientState?.GroupMembers : null,
-                gx, gy, overlay.GroupSize, overlay.TimerFontFamily, outlineColor);
+                gx, gy, groupSize, overlay.EffectiveGroupFontFamily, outlineColor);
 
             _selfCcWindow.Update(
                 overlay.ShowSelfCc && snapshot.SelfCc is not null
                     ? BuildSelfCcText(snapshot.SelfCc)
                     : string.Empty,
-                scx, scy, overlay.SelfCcSize, overlay.TargetFontFamily,
+                scx, scy, selfCcSize, overlay.EffectiveSelfCcFontFamily,
                 snapshot.SelfCc is { } cc ? EffectTypeColor(cc.Effect, Colors.White) : Colors.White,
                 outlineColor, FontWeights.Bold);
 
             var peelLines = overlay.ShowPeel ? BuildPeelLines(snapshot.RecentAttackers) : null;
             _peelWindow.Update(
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)peelLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
-                px, py, overlay.PeelSize, overlay.TimerFontFamily, outlineColor);
+                px, py, peelSize, overlay.EffectivePeelFontFamily, outlineColor);
 
             var buffLines = overlay.ShowBuffs ? BuildBuffLines(snapshot.ClientState) : null;
             _buffWindow.Update(
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)buffLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
-                bx, by, overlay.BuffSize, overlay.TimerFontFamily, outlineColor);
+                bx, by, buffSize, overlay.EffectiveBuffFontFamily, outlineColor);
             var petLines = overlay.ShowPet ? BuildPetLines(snapshot.ClientState) : null;
             _petWindow.Update(
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)petLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
-                pex, pey, overlay.BuffSize, overlay.TimerFontFamily, outlineColor);
+                pex, pey, petSize, overlay.EffectivePetFontFamily, outlineColor);
             Rendered?.Invoke(this, new OverlayViewState(
                 targetText,
                 timerText,
@@ -248,17 +184,26 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
 
     public event EventHandler<OverlayViewState>? Rendered;
 
-    public void SetPreviewPosition(bool timerOverlay, int x, int y)
+    private (int X, int Y) PreviewPos(string key, int fallbackX, int fallbackY)
     {
-        if (timerOverlay)
-        {
-            _previewTimerX = x;
-            _previewTimerY = y;
-            return;
-        }
+        return _previewPositions.TryGetValue(key, out var pos) ? pos : (fallbackX, fallbackY);
+    }
 
-        _previewTargetX = x;
-        _previewTargetY = y;
+    private int PreviewSize(string key, int fallback)
+    {
+        return _previewFontSizes.TryGetValue(key, out var size) ? size : fallback;
+    }
+
+    /// <summary>Live-drag preview for an element's position — cleared by
+    /// <see cref="ClearPreview"/> once the drag is accepted or cancelled.</summary>
+    public void SetPreviewPosition(string elementKey, int x, int y)
+    {
+        _previewPositions[elementKey] = (x, y);
+    }
+
+    public void SetPreviewFontSize(string elementKey, int size)
+    {
+        _previewFontSizes[elementKey] = Math.Clamp(size, 8, 72);
     }
 
     public void SetPreviewColors(MediaColor? targetColor, MediaColor? timerColor, MediaColor? outlineColor)
@@ -268,91 +213,13 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _previewOutlineColor = outlineColor;
     }
 
-    public void SetPreviewFontSize(bool timerOverlay, int size)
-    {
-        var normalized = Math.Clamp(size, 10, 72);
-        if (timerOverlay)
-        {
-            _previewTimerFontSize = normalized;
-            return;
-        }
-
-        _previewTargetFontSize = normalized;
-    }
-
-    public void SetPreviewCastBarPosition(int x, int y)
-    {
-        _previewCastX = x;
-        _previewCastY = y;
-    }
-
-    public void SetPreviewResistsPosition(int x, int y)
-    {
-        _previewResistsX = x;
-        _previewResistsY = y;
-    }
-
-    public void SetPreviewResistsFontSize(int size)
-    {
-        _previewResistsFontSize = Math.Clamp(size, 10, 72);
-    }
-
-    public void SetPreviewGroupPosition(int x, int y)
-    {
-        _previewGroupX = x;
-        _previewGroupY = y;
-    }
-
-    public void SetPreviewSelfCcPosition(int x, int y)
-    {
-        _previewSelfCcX = x;
-        _previewSelfCcY = y;
-    }
-
-    public void SetPreviewPeelPosition(int x, int y)
-    {
-        _previewPeelX = x;
-        _previewPeelY = y;
-    }
-
-    public void SetPreviewBuffPosition(int x, int y)
-    {
-        _previewBuffX = x;
-        _previewBuffY = y;
-    }
-
-    public void SetPreviewPetPosition(int x, int y)
-    {
-        _previewPetX = x;
-        _previewPetY = y;
-    }
-
     public void ClearPreview()
     {
-        _previewTargetX = null;
-        _previewTargetY = null;
-        _previewTimerX = null;
-        _previewTimerY = null;
+        _previewPositions.Clear();
+        _previewFontSizes.Clear();
         _previewTargetColor = null;
         _previewTimerColor = null;
         _previewOutlineColor = null;
-        _previewTargetFontSize = null;
-        _previewTimerFontSize = null;
-        _previewCastX = null;
-        _previewCastY = null;
-        _previewResistsX = null;
-        _previewResistsY = null;
-        _previewResistsFontSize = null;
-        _previewGroupX = null;
-        _previewGroupY = null;
-        _previewSelfCcX = null;
-        _previewSelfCcY = null;
-        _previewPeelX = null;
-        _previewPeelY = null;
-        _previewBuffX = null;
-        _previewBuffY = null;
-        _previewPetX = null;
-        _previewPetY = null;
     }
 
     public void Dispose()
