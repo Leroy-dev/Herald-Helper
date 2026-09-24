@@ -92,8 +92,19 @@ public sealed class BlackthornCastSpellCatalog : ICastSpellCatalog
     {
         if (!TryReadString(element, "name", out var name) ||
             !TryReadString(element, "objectType", out var objectType) ||
-            !string.Equals(objectType, "Spell", StringComparison.OrdinalIgnoreCase) ||
-            !TryReadPositiveDouble(element, "castTime", out var castTime))
+            !string.Equals(objectType, "Spell", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var castTime = element.TryGetProperty("castTime", out var castTimeElement) &&
+                       castTimeElement.TryGetDouble(out var castTimeValue)
+            ? castTimeValue
+            : (double?)null;
+        var recastSeconds = ReadPositiveDouble(element, "recastDelay");
+        // Instant casts still print "You cast a X spell!" — keep them when
+        // they have a recast so the cooldown tracker can find them.
+        if (castTime is not > 0 && recastSeconds is not > 0)
         {
             return;
         }
@@ -101,14 +112,14 @@ public sealed class BlackthornCastSpellCatalog : ICastSpellCatalog
         var icon = ReadIcon(element);
         var candidate = new CastSpellInfo(
             name.Trim(),
-            castTime,
+            castTime ?? 0,
             icon,
             ReadPositiveDouble(element, "damage"),
             ReadDamageType(element),
             className,
             ReadNullableInt(element, "level"),
             IsFixedCastTime(element),
-            ReadPositiveDouble(element, "recastDelay"));
+            recastSeconds);
         var key = NormalizeName(name);
         if (!result.TryGetValue(key, out var entries))
         {

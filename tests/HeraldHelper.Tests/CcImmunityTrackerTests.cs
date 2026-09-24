@@ -20,20 +20,78 @@ public sealed class CcImmunityTrackerTests
     }
 
     [Fact]
-    public void RegisterSuccessfulHit_MeleeStunSkillCode_UsesStunImmunity()
+    public void RegisterSuccessfulHit_MeleeStyleStun_UsesStyleImmunity()
     {
-        // Hand-edited profiles use skill_code as the trigger label
-        // ('m' = melee line) — immunity math must follow EffectType.
+        // Eden melee/model: a 9s style stun grants 6x9s immunity after the
+        // stun ends — 63s total, no spell-resist reduction on styles.
         var tracker = new CcImmunityTracker();
         var now = DateTimeOffset.UtcNow;
-        var hit = new AbilityHit("TargetA", "Slam perfectly", "m", ControlEffectType.Stun, 9, true);
+        var hit = new AbilityHit("TargetA", "Slam perfectly", "m", ControlEffectType.Stun, 9, true, IsMeleeStyle: true);
 
         tracker.RegisterSuccessfulHit(hit, "Cleric", 0, now);
         var active = tracker.GetActiveTimers(now);
 
         var entry = Assert.Single(active);
         var remaining = entry.RemainingSeconds(now);
-        Assert.InRange(remaining, 62, 69); // 60 + ~9s stun path, not the ~63s mezz path
+        Assert.InRange(remaining, 62, 64); // 9s stun + 54s immunity
+    }
+
+    [Fact]
+    public void RegisterSuccessfulHit_CastedStun_UsesDurationPlusSixty()
+    {
+        // Casted CC: immunity is a flat 60s after the effect ends; the casted
+        // duration lands at the 0.74 spell-resist fraction first.
+        var tracker = new CcImmunityTracker();
+        var now = DateTimeOffset.UtcNow;
+        var hit = new AbilityHit("TargetA", "Stunning Bellow", "s", ControlEffectType.Stun, 9, true);
+
+        tracker.RegisterSuccessfulHit(hit, null, 0, now);
+
+        var remaining = Assert.Single(tracker.GetActiveTimers(now)).RemainingSeconds(now);
+        Assert.InRange(remaining, 65, 67); // floor(9*0.74)=6 + 60
+    }
+
+    [Fact]
+    public void RegisterSuccessfulHit_CastedMezz_UsesDurationPlusSixty()
+    {
+        var tracker = new CcImmunityTracker();
+        var now = DateTimeOffset.UtcNow;
+        var hit = new AbilityHit("TargetA", "Mesmerizing Melody", "m", ControlEffectType.Mezz, 30, true);
+
+        tracker.RegisterSuccessfulHit(hit, null, 0, now);
+
+        var remaining = Assert.Single(tracker.GetActiveTimers(now)).RemainingSeconds(now);
+        Assert.InRange(remaining, 81, 83); // floor(30*0.74)=22 + 60
+    }
+
+    [Fact]
+    public void RegisterSuccessfulHit_StyleStun_DetReducesStunAndImmunity()
+    {
+        // A 20-det target is stunned ~1.8s — immunity scales off the applied
+        // stun, not the nominal one.
+        var tracker = new CcImmunityTracker();
+        var now = DateTimeOffset.UtcNow;
+        var hit = new AbilityHit("TargetA", "Slam perfectly", "m", ControlEffectType.Stun, 9, true, IsMeleeStyle: true);
+
+        tracker.RegisterSuccessfulHit(hit, "Warrior", 0, now);
+
+        var remaining = Assert.Single(tracker.GetActiveTimers(now)).RemainingSeconds(now);
+        Assert.InRange(remaining, 7, 14); // floor(9*0.2)=1 -> 1+6
+    }
+
+    [Fact]
+    public void RegisterSuccessfulHit_SnareTracksDebuffDurationOnly()
+    {
+        // Damage+snare spells do not create a root/snare immunity window.
+        var tracker = new CcImmunityTracker();
+        var now = DateTimeOffset.UtcNow;
+        tracker.RegisterSuccessfulHit(
+            new AbilityHit("TargetA", "Snare Nuke", "e", ControlEffectType.Snare, 30, true),
+            null, 0, now);
+
+        var timer = Assert.Single(tracker.GetActiveTimers(now));
+        Assert.InRange(timer.RemainingSeconds(now), 28, 30);
+        Assert.Empty(tracker.GetActiveTimers(now.AddSeconds(31)));
     }
 
     [Fact]

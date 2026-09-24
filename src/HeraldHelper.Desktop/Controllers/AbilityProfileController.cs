@@ -173,6 +173,7 @@ internal sealed class AbilityProfileController
             "s" or "stun" => "s",
             "r" or "root" => "r",
             "n" or "nearsight" or "near-sight" => "n",
+            "e" or "snare" => "e",
             _ => "s"
         };
     }

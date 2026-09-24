@@ -60,19 +60,21 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         ("you are put to sleep", ControlEffectType.Mezz),
         ("you fall into a deep sleep", ControlEffectType.Mezz),
         ("you are rooted", ControlEffectType.Root),
-        ("you are snared", ControlEffectType.Root),
+        ("you are snared", ControlEffectType.Snare),
         ("you cannot move", ControlEffectType.Stun),
         ("you are entangled", ControlEffectType.Root),
         ("you are paralyzed", ControlEffectType.Stun),
         ("you are nearsighted", ControlEffectType.Nearsight),
         ("you are entranced", ControlEffectType.Mezz),
         // Effect Message1 strings (OpenDAoC spell DB) — the first-person
-        // line the target actually receives per spell type.
+        // line the target actually receives per spell type. SpeedDecrease
+        // with Value=99 is a root ("feet frozen"); partial-speed snares and
+        // damage+snare spells print the bonds/hindered lines instead.
         ("combat skills are hampered by blindness", ControlEffectType.Nearsight),
         ("your feet are frozen to the ground", ControlEffectType.Root),
-        ("constricting bonds surround your body", ControlEffectType.Root),
-        ("a blast of energy hinders you", ControlEffectType.Root),
-        ("rocks rise from the ground and obstruct your movement", ControlEffectType.Root)
+        ("rocks rise from the ground and obstruct your movement", ControlEffectType.Root),
+        ("constricting bonds surround your body", ControlEffectType.Snare),
+        ("a blast of energy hinders you", ControlEffectType.Snare)
     ];
     private static readonly string[] CastInterruptedMarkers =
     [
@@ -291,7 +293,8 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
                 mention.Ability.DurationSeconds,
                 landed,
                 occurrenceOrdinal,
-                mention.Ability.Icon));
+                mention.Ability.Icon,
+                context == MentionContext.StyleExecute));
         }
 
         return new ChatParseResult(
@@ -952,6 +955,7 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
             "s" => ControlEffectType.Stun,
             "r" => ControlEffectType.Root,
             "n" => ControlEffectType.Nearsight,
+            "e" => ControlEffectType.Snare,
             _ => ControlEffectType.Stun
         };
     }

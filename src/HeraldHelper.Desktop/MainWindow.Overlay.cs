@@ -75,6 +75,16 @@ public partial class MainWindow : Window
         },
         new()
         {
+            Key = "cooldowns", Label = "Cooldowns",
+            ToolTip = "Spell recasts and realm-ability cooldowns — purple countdown lines, newest first.",
+            GetShow = s => s.ShowCooldowns, SetShow = (s, v) => s.ShowCooldowns = v,
+            GetX = s => s.CooldownsX, SetX = (s, v) => s.CooldownsX = v,
+            GetY = s => s.CooldownsY, SetY = (s, v) => s.CooldownsY = v,
+            GetSize = s => s.EffectiveCooldownsSize, SetSize = (s, v) => s.CooldownsSize = v,
+            GetFont = s => s.EffectiveCooldownsFontFamily, SetFont = (s, v) => s.CooldownsFontFamily = v
+        },
+        new()
+        {
             Key = "castbar", Label = "Spellbar",
             ToolTip = "Your active cast — spell name, progress bar and remaining seconds.",
             GetShow = s => s.ShowCastBar, SetShow = (s, v) => s.ShowCastBar = v,

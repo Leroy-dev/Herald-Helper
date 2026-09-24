@@ -184,7 +184,13 @@ public sealed class EdenCastSpellCatalog : ICastSpellCatalog
         }
 
         castTimeSeconds ??= ParseCastTimeSecondsFromAttributes(element);
-        if (castTimeSeconds is null || castTimeSeconds <= 0)
+        var recastSeconds = TryReadEdenAttribute(element, "Recast Delay", out var recast)
+            ? ParseDurationSecondsValue(recast)
+            : null;
+        // Instant casts (cast time 0) carry no begin-cast line but still
+        // print "You cast a X spell!" — keep them when they have a recast
+        // so the cooldown tracker can find them.
+        if ((castTimeSeconds is null || castTimeSeconds <= 0) && recastSeconds is not > 0)
         {
             return;
         }
@@ -205,14 +211,14 @@ public sealed class EdenCastSpellCatalog : ICastSpellCatalog
 
         var candidate = new CastSpellInfo(
             name.Trim(),
-            castTimeSeconds.Value,
+            castTimeSeconds ?? 0,
             icon,
             ReadEdenNumberAttribute(element, "Damage"),
             ReadEdenTextAttribute(element, "Damage Type"),
             className,
             ReadNullableInt(element, "level"),
             HasFixedCastTime(element),
-            TryReadEdenAttribute(element, "Recast Delay", out var recast) ? ParseDurationSecondsValue(recast) : null);
+            recastSeconds);
         var normalizedName = NormalizeName(name);
         if (!result.TryGetValue(normalizedName, out var entries))
         {

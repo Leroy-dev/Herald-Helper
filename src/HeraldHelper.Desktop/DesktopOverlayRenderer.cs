@@ -21,6 +21,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private readonly OverlayTextWindow _peelWindow;
     private readonly OverlayTextWindow _buffWindow;
     private readonly OverlayTextWindow _petWindow;
+    private readonly OverlayTextWindow _cooldownsWindow;
     /// <summary>Live drag/resize previews keyed by element ("target",
     /// "timers", "castbar", "resists", "group", "selfcc", "peel", "buffs",
     /// "pet") — the Overlay settings table drives these.</summary>
@@ -44,6 +45,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _peelWindow = new OverlayTextWindow();
         _buffWindow = new OverlayTextWindow();
         _petWindow = new OverlayTextWindow();
+        _cooldownsWindow = new OverlayTextWindow();
     }
 
     public Task RenderAsync(OverlaySnapshot snapshot, CancellationToken cancellationToken)
@@ -72,6 +74,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             _peelWindow.Opacity = opacity;
             _buffWindow.Opacity = opacity;
             _petWindow.Opacity = opacity;
+            _cooldownsWindow.Opacity = opacity;
 
             var (ox, oy) = PreviewPos("target", overlay.X, overlay.Y);
             var (tx, ty) = PreviewPos("timers", overlay.TimerX, overlay.TimerY);
@@ -82,6 +85,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             var (px, py) = PreviewPos("peel", overlay.PeelX, overlay.PeelY);
             var (bx, by) = PreviewPos("buffs", overlay.BuffX, overlay.BuffY);
             var (pex, pey) = PreviewPos("pet", overlay.PetX, overlay.PetY);
+            var (cdx, cdy) = PreviewPos("cooldowns", overlay.CooldownsX, overlay.CooldownsY);
 
             var f1 = PreviewSize("target", overlay.FontSize);
             var f2 = PreviewSize("timers", overlay.TimerSize);
@@ -92,6 +96,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             var peelSize = PreviewSize("peel", overlay.PeelSize);
             var buffSize = PreviewSize("buffs", overlay.BuffSize);
             var petSize = PreviewSize("pet", overlay.EffectivePetSize);
+            var cooldownsSize = PreviewSize("cooldowns", overlay.EffectiveCooldownsSize);
 
             var baseTargetColor = ReadColor(overlay.TargetColor, Colors.White);
             var timerColor = ReadColor(overlay.TimerColor, Colors.White);
@@ -124,7 +129,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             }
 
             var targetText = overlay.ShowTarget ? BuildTargetText(snapshot.Target, overlay) : string.Empty;
-            var timerLines = overlay.ShowTimers ? BuildTimerLines(snapshot.Timers, snapshot.Cooldowns, timerColor) : null;
+            var timerLines = overlay.ShowTimers ? BuildTimerLines(snapshot.Timers, timerColor) : null;
+            var cooldownLines = overlay.ShowCooldowns ? BuildCooldownLines(snapshot.Cooldowns) : null;
             var timerText = timerLines is null ? string.Empty : string.Join("\n", timerLines.Select(l => l.Text));
             var resistsLines = overlay.ShowResists ? BuildResistsLines(snapshot.Target) : null;
 
@@ -164,6 +170,9 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             _petWindow.Update(
                 (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)petLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
                 pex, pey, petSize, overlay.EffectivePetFontFamily, outlineColor);
+            _cooldownsWindow.Update(
+                (IReadOnlyList<(string Text, MediaColor Color, IconSpriteRef? Icon)>?)cooldownLines ?? Array.Empty<(string Text, MediaColor Color, IconSpriteRef? Icon)>(),
+                cdx, cdy, cooldownsSize, overlay.EffectiveCooldownsFontFamily, outlineColor);
             Rendered?.Invoke(this, new OverlayViewState(
                 targetText,
                 timerText,
@@ -304,6 +313,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             ControlEffectType.Mezz => "MESMERIZED",
             ControlEffectType.Root => "ROOTED",
             ControlEffectType.Nearsight => "NEARSIGHTED",
+            ControlEffectType.Snare => "SNARED",
             _ => "CC'd"
         };
         return $"{label}  {elapsed:0.0}s";
@@ -477,12 +487,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
 
     /// <summary>Timer lines colored by CC type — the AHK palette: mezz yellow,
     /// stun magenta, root amber; anything else takes the user's timer color.
-    /// Spell recasts and realm-ability cooldowns (purple) ride in the same
-    /// window. Each line can carry the ability's catalog icon (resolved
-    /// lazily by the caller via IconImageLoader).</summary>
+    /// Each line can carry the ability's catalog icon (resolved lazily by the
+    /// caller via IconImageLoader). Cooldowns live in their own window.</summary>
     internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildTimerLines(
         IReadOnlyCollection<CcTimerEntry> timers,
-        IReadOnlyCollection<CooldownEntry>? cooldowns = null,
         MediaColor fallbackColor = default)
     {
         var now = DateTimeOffset.UtcNow;
@@ -506,19 +514,32 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                     x.Icon);
             }));
 
-        if (cooldowns is not null)
+        return lines.Count == 0 ? null : lines.Take(14).ToList();
+    }
+
+    /// <summary>Spell recasts and realm-ability cooldowns — purple "⟳ name
+    /// mm:ss" countdowns, newest first. Used-time only entries fade after
+    /// 30 minutes.</summary>
+    internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildCooldownLines(
+        IReadOnlyCollection<CooldownEntry>? cooldowns)
+    {
+        if (cooldowns is null || cooldowns.Count == 0)
         {
-            var cooldownColor = MediaColor.FromRgb(0x9C, 0x6E, 0xE8);
-            foreach (var cd in cooldowns.OrderByDescending(x => x.UsedUtc))
+            return null;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var cooldownColor = MediaColor.FromRgb(0x9C, 0x6E, 0xE8);
+        var lines = new List<(string Text, MediaColor Color, IconSpriteRef? Icon)>();
+        foreach (var cd in cooldowns.OrderByDescending(x => x.UsedUtc))
+        {
+            if (cd.ReadyUtc is { } ready && ready > now)
             {
-                if (cd.ReadyUtc is { } ready && ready > now)
-                {
-                    lines.Add(($"⟳ {cd.Name} {(ready - now):m\\:ss}", cooldownColor, cd.Icon));
-                }
-                else if (cd.ReadyUtc is null && now - cd.UsedUtc < TimeSpan.FromMinutes(30))
-                {
-                    lines.Add(($"⟳ {cd.Name} {(now - cd.UsedUtc).TotalMinutes:0}m ago", cooldownColor, cd.Icon));
-                }
+                lines.Add(($"⟳ {cd.Name} {(ready - now):m\\:ss}", cooldownColor, cd.Icon));
+            }
+            else if (cd.ReadyUtc is null && now - cd.UsedUtc < TimeSpan.FromMinutes(30))
+            {
+                lines.Add(($"⟳ {cd.Name} {(now - cd.UsedUtc).TotalMinutes:0}m ago", cooldownColor, cd.Icon));
             }
         }
 
@@ -532,6 +553,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             ControlEffectType.Stun => MediaColor.FromRgb(0xCF, 0x33, 0xA4),
             ControlEffectType.Root => MediaColor.FromRgb(0xA8, 0x71, 0x30),
             ControlEffectType.Nearsight => MediaColor.FromRgb(0x3E, 0xA4, 0xDC),
+            ControlEffectType.Snare => MediaColor.FromRgb(0x4E, 0xC9, 0x7B),
             _ => fallback
         };
 
@@ -550,6 +572,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             ControlEffectType.Stun => "S",
             ControlEffectType.Root => "R",
             ControlEffectType.Nearsight => "N",
+            ControlEffectType.Snare => "E",
             _ => "?"
         };
     }

@@ -73,54 +73,48 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
         return CalculateImmunitySeconds(hit, targetClass, resistPercent);
     }
 
+    /// <summary>Eden CC model (user-confirmed): casted CC — spells and
+    /// songs — grants a flat 60s immunity that starts when the effect ends,
+    /// so the timer is appliedDuration + 60. Melee/style CC grants immunity
+    /// of 6x the stun after it ends — Slam 9s is 9s stun + 54s immunity =
+    /// 63s total. Debuffs without immunity (nearsight, damage+snare) track
+    /// the effect duration only.</summary>
     private static int CalculateImmunitySeconds(AbilityHit hit, string? targetClass, int resistPercent)
     {
-        // EffectType is the authoritative CC class — SkillCode is a trigger
-        // label ('s'/'m' for spell vs melee line in hand-edited profiles) and
-        // mixes the two in real configs.
         var ccLength = hit.BaseDurationSeconds;
-        var baseMultiplier = 0.74 - (resistPercent / 100.0);
-        var ccLengthModifier = 10;
 
-        // Nearsight is a debuff, not hard CC — no immunity window, the
-        // timer just tracks the debuff duration itself.
-        if (hit.EffectType == ControlEffectType.Nearsight)
+        if (hit.EffectType is ControlEffectType.Nearsight or ControlEffectType.Snare)
         {
             return Math.Max(1, ccLength);
         }
 
-        if (hit.EffectType == ControlEffectType.Mezz)
+        var detMultiplier = 1.0;
+        if (!string.IsNullOrWhiteSpace(targetClass))
         {
-            ccLengthModifier = 6;
-        }
-        else
-        {
-            var detMultiplier = 1.0;
-            if (!string.IsNullOrWhiteSpace(targetClass))
+            if (DetClasses.Contains(targetClass))
             {
-                if (DetClasses.Contains(targetClass))
-                {
-                    detMultiplier = 0.2;
-                }
-                else if (LightDetClasses.Contains(targetClass))
-                {
-                    detMultiplier = 0.45;
-                }
+                detMultiplier = 0.2;
             }
-
-            ccLength = (int)Math.Floor(ccLength * baseMultiplier * detMultiplier);
+            else if (LightDetClasses.Contains(targetClass))
+            {
+                detMultiplier = 0.45;
+            }
         }
 
-        var total = ccLength * ccLengthModifier;
-        if (total >= 60 || hit.EffectType == ControlEffectType.Stun)
+        // Melee style stuns land at their listed duration — only
+        // Determination cuts them, spell resists do not apply.
+        if (hit.IsMeleeStyle)
         {
-            total = 60 + ccLength;
-        }
-        else
-        {
-            total += ccLength;
+            var applied = (int)Math.Floor(ccLength * detMultiplier);
+            return Math.Max(1, applied + applied * 6);
         }
 
-        return Math.Max(1, total);
+        // Casted CC lands at the spell-resist fraction (0.74 base on Eden
+        // PvP); mez ignores Determination.
+        var baseMultiplier = 0.74 - (resistPercent / 100.0);
+        var effective = hit.EffectType == ControlEffectType.Mezz
+            ? (int)Math.Floor(ccLength * baseMultiplier)
+            : (int)Math.Floor(ccLength * baseMultiplier * detMultiplier);
+        return Math.Max(1, effective + 60);
     }
 }

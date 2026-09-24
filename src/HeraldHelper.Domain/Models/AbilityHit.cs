@@ -10,4 +10,8 @@ public sealed record AbilityHit(
     int BaseDurationSeconds,
     bool LandedSuccessfully,
     int OccurrenceOrdinal = 1,
-    IconSpriteRef? Icon = null);
+    IconSpriteRef? Icon = null,
+    /// True when the CC came from a melee style ("You perform your Slam
+    /// perfectly!") — style immunity is 6x the stun, casted CC gets a flat
+    /// 60s on top of the effect duration.
+    bool IsMeleeStyle = false);

@@ -27,6 +27,9 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private int _petX = 40;
     private int _petY = 430;
     private int? _petSize;
+    private int _cooldownsX = 1580;
+    private int _cooldownsY = 760;
+    private int? _cooldownsSize;
     private int _castSize = 15;
     private int _fontSize = 20;
     private int _timerSize = 20;
@@ -44,6 +47,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private bool _showPeel = true;
     private bool _showBuffs = true;
     private bool _showPet = true;
+    private bool _showCooldowns = true;
     private bool _soundsEnabled;
     private bool _soundSelfCc = true;
     private bool _soundPeel = true;
@@ -66,6 +70,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private string? _peelFontFamily;
     private string? _buffFontFamily;
     private string? _petFontFamily;
+    private string? _cooldownsFontFamily;
 
     public int X { get => _x; set { _x = value; OnPropertyChanged(nameof(X)); } }
     public int Y { get => _y; set { _y = value; OnPropertyChanged(nameof(Y)); } }
@@ -92,6 +97,12 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     /// <summary>Null = follow <see cref="BuffSize"/> (the pre-split behavior).</summary>
     public int? PetSize { get => _petSize; set { _petSize = value; OnPropertyChanged(nameof(PetSize)); OnPropertyChanged(nameof(EffectivePetSize)); } }
     public int EffectivePetSize => _petSize ?? _buffSize;
+    public int CooldownsX { get => _cooldownsX; set { _cooldownsX = value; OnPropertyChanged(nameof(CooldownsX)); } }
+    public int CooldownsY { get => _cooldownsY; set { _cooldownsY = value; OnPropertyChanged(nameof(CooldownsY)); } }
+    /// <summary>Null = follow <see cref="TimerSize"/> — cooldowns used to
+    /// ride in the timers window and share its font size.</summary>
+    public int? CooldownsSize { get => _cooldownsSize; set { _cooldownsSize = value; OnPropertyChanged(nameof(CooldownsSize)); OnPropertyChanged(nameof(EffectiveCooldownsSize)); } }
+    public int EffectiveCooldownsSize => _cooldownsSize ?? _timerSize;
     public int CastSize { get => _castSize; set { _castSize = value; OnPropertyChanged(nameof(CastSize)); } }
     public int FontSize { get => _fontSize; set { _fontSize = value; OnPropertyChanged(nameof(FontSize)); } }
     public int TimerSize { get => _timerSize; set { _timerSize = value; OnPropertyChanged(nameof(TimerSize)); } }
@@ -109,6 +120,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public bool ShowPeel { get => _showPeel; set { _showPeel = value; OnPropertyChanged(nameof(ShowPeel)); } }
     public bool ShowBuffs { get => _showBuffs; set { _showBuffs = value; OnPropertyChanged(nameof(ShowBuffs)); } }
     public bool ShowPet { get => _showPet; set { _showPet = value; OnPropertyChanged(nameof(ShowPet)); } }
+    public bool ShowCooldowns { get => _showCooldowns; set { _showCooldowns = value; OnPropertyChanged(nameof(ShowCooldowns)); } }
     public bool SoundsEnabled { get => _soundsEnabled; set { _soundsEnabled = value; OnPropertyChanged(nameof(SoundsEnabled)); } }
     public bool SoundSelfCc { get => _soundSelfCc; set { _soundSelfCc = value; OnPropertyChanged(nameof(SoundSelfCc)); } }
     public bool SoundPeel { get => _soundPeel; set { _soundPeel = value; OnPropertyChanged(nameof(SoundPeel)); } }
@@ -137,6 +149,8 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public string? BuffFontFamily { get => _buffFontFamily; set { _buffFontFamily = value; OnPropertyChanged(nameof(BuffFontFamily)); } }
     /// <summary>Null = follow <see cref="TimerFontFamily"/>.</summary>
     public string? PetFontFamily { get => _petFontFamily; set { _petFontFamily = value; OnPropertyChanged(nameof(PetFontFamily)); } }
+    /// <summary>Null = follow <see cref="TimerFontFamily"/>.</summary>
+    public string? CooldownsFontFamily { get => _cooldownsFontFamily; set { _cooldownsFontFamily = value; OnPropertyChanged(nameof(CooldownsFontFamily)); } }
 
     public string EffectiveResistsFontFamily => _resistsFontFamily ?? _targetFontFamily;
     public string EffectiveGroupFontFamily => _groupFontFamily ?? _timerFontFamily;
@@ -144,6 +158,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public string EffectivePeelFontFamily => _peelFontFamily ?? _timerFontFamily;
     public string EffectiveBuffFontFamily => _buffFontFamily ?? _timerFontFamily;
     public string EffectivePetFontFamily => _petFontFamily ?? _timerFontFamily;
+    public string EffectiveCooldownsFontFamily => _cooldownsFontFamily ?? _timerFontFamily;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
