@@ -85,6 +85,22 @@ diminishing returns (`NpcImmunityEffect`), not the player flat timer.
 - Effect-expire messages are **unreliable for attribution**: they only
   render when near the target. Don't build timers off them.
 
+## Server-emitted reject/immune strings (parser coverage verified)
+
+`AbstractCCSpellHandler`/`StunSpellHandler`/`MesmerizeSpellHandler`/
+`SpeedDecreaseSpellHandler`/`HereticSpeedDecrease` emit exactly:
+
+| Message | Parser handling |
+|---------|-----------------|
+| `Your target is immune to this effect!` | ImmuneMarkers ✓ |
+| `{name} resists the effect! (X%)` (caster-side) | ResistTargetRegex ✓ |
+| `You resist the effect!` (target-side) | self-side only — no timer |
+| `Your target is enraged and resists the spell!` | ImmuneMarkers ✓ |
+| `Your target is moving too fast for this spell…` | ImmuneMarkers (charge/sprint) ✓ |
+| `{name} is moving to fast for this spell…` | FailedApplicationNamed — **server typo "to fast" kept** (regex allows to[o]?) ✓ |
+| `Ceremonial Bracer intercept your mez!` / `Your item effect intercepts …` | ImmuneMarkers ✓ |
+| `Your spell has no effect on the {name}.` | SpellNoEffectRegex ✓ |
+
 ## OpenDAoC message strings
 
 - Self-CC markers exist for stun, mezz, root, snare, nearsight — plus

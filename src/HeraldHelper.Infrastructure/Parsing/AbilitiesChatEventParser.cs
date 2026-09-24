@@ -128,13 +128,15 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         "your target is immune to this effect",
         "your target is enraged and resists the spell",
         "your item effect intercepts the",
-        "ceremonial bracer intercept"
+        "ceremonial bracer intercept",
+        // AbstractCCSpellHandler: charging / too-fast targets are CC-immune.
+        "your target is moving too fast"
     ];
     /// "{name} can't have that effect again yet!" (Eden immunity) and
     /// "{name} already has this effect!" — the application was rejected
     /// because the CC is still running; the prior timer stays valid.
     private static readonly Regex FailedApplicationNamedRegex = new(
-        @"(?<name>[A-Za-z][A-Za-z0-9'\- ]{1,40}?)\s+(?:can't\s+have\s+that\s+effect\s+again|already\s+has\s+(?:this|that)\s+effect|is\s+too\s+strong\s+for\s+you\s+to\s+charm|can't\s+be\s+charmed|is\s+currently\s+being\s+controlled)",
+        @"(?<name>[A-Za-z][A-Za-z0-9'\- ]{1,40}?)\s+(?:can't\s+have\s+that\s+effect\s+again|already\s+has\s+(?:this|that)\s+effect|is\s+too\s+strong\s+for\s+you\s+to\s+charm|can't\s+be\s+charmed|is\s+currently\s+being\s+controlled|is\s+moving\s+to[o]?\s+fast\s+for\s+this\s+spell)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly string[] FailedApplicationMarkers =
     [

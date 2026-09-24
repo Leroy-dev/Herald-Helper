@@ -380,6 +380,44 @@ public sealed class AbilitiesChatEventParserTests
     }
 
     [Fact]
+    public void Parse_ChargingTargetIsNotLanded()
+    {
+        // AbstractCCSpellHandler: charge/sprint targets are CC-immune —
+        // "Your target is moving too fast for this spell to have any
+        // effect!" — the timer must not start.
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Mesmerizing Gaze", "s", 30, HeraldHelper.Domain.Enums.ControlEffectType.Mezz)
+        ]);
+
+        var result = parser.Parse("You target [Alice]. You cast a Mesmerizing Gaze spell! Your target is moving too fast for this spell to have any effect!");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.False(hit.LandedSuccessfully);
+        Assert.Contains(result.NegationEvents!, n => n.Kind == NegationKind.Immune);
+    }
+
+    [Fact]
+    public void Parse_SnareImmuneNamedTargetIsNotLanded()
+    {
+        // SpeedDecreaseSpellHandler emits "{name} is moving to fast for
+        // this spell to have any effect!" (server typo "to fast" kept) —
+        // a named failed application so the wrong timer can't persist.
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Root", "s", 60, HeraldHelper.Domain.Enums.ControlEffectType.Root)
+        ]);
+
+        var result = parser.Parse("You target [Alice]. You cast a Root spell! Alice is moving to fast for this spell to have any effect!");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.False(hit.LandedSuccessfully);
+        var negation = Assert.Single(
+            result.NegationEvents!, n => n.Kind == NegationKind.FailedApplication);
+        Assert.Equal("Alice", negation.TargetName);
+    }
+
+    [Fact]
     public void Parse_StylePrepareDoesNotCreateHit()
     {
         var parser = new AbilitiesChatEventParser(
