@@ -440,14 +440,20 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         }
 
         // mini_pet_effect ids are the client's own icon ids — resolve to the
-        // charplan sprite when we can; icon ids are shared across buff families
-        // so no name, just the icon (unresolvable ones keep the raw id).
+        // charplan sprite when we can, and to the real spell name via the
+        // client icons.csv→spells.csv link when the id maps to a spell.
         foreach (var iconId in pet.EffectIconIds)
         {
             var sprite = IconCatalog.FindBestForSpell(iconId);
-            lines.Add(sprite is not null
-                ? (string.Empty, petColor, sprite)
-                : ($"pet fx {iconId}", mutedColor, null));
+            var name = ClientIconSpellMap.NameForIcon(iconId);
+            if (sprite is not null || name is not null)
+            {
+                lines.Add((name ?? string.Empty, petColor, sprite));
+            }
+            else
+            {
+                lines.Add(($"pet fx {iconId}", mutedColor, null));
+            }
         }
 
         return lines.Count == 0 ? null : lines;

@@ -121,4 +121,13 @@ public sealed class OverlayTimerLineTests
 
         Assert.Contains("67%", text);
     }
+
+    [Fact]
+    public void ClientIconSpellMap_ResolvesSpellIcons()
+    {
+        // Icon 1000 is "Amethyst Shield" in the shipped client spells.csv —
+        // the table must resolve real names and stay silent on non-spell ids.
+        Assert.Equal("Amethyst Shield", ClientIconSpellMap.NameForIcon(1000));
+        Assert.Null(ClientIconSpellMap.NameForIcon(0));
+    }
 }
