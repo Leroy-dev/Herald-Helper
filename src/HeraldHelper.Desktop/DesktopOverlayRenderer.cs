@@ -128,11 +128,15 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                 outlineColor = _previewOutlineColor.Value;
             }
 
-            var targetText = overlay.ShowTarget ? BuildTargetText(snapshot.Target, overlay) : string.Empty;
-            var timerLines = overlay.ShowTimers ? BuildTimerLines(snapshot.Timers, timerColor) : null;
+            var targetText = overlay.ShowTarget
+                ? BuildTargetText(snapshot.Target, overlay, snapshot.ClientState?.TargetHealthPercent)
+                : string.Empty;
+            var timerLines = overlay.ShowTimers
+                ? BuildTimerLines(snapshot.Timers, timerColor, snapshot.Target?.Name)
+                : null;
             var cooldownLines = overlay.ShowCooldowns ? BuildCooldownLines(snapshot.Cooldowns) : null;
             var timerText = timerLines is null ? string.Empty : string.Join("\n", timerLines.Select(l => l.Text));
-            var resistsLines = overlay.ShowResists ? BuildResistsLines(snapshot.Target) : null;
+            var resistsLines = overlay.ShowResists ? BuildResistsLines(snapshot.Target, snapshot.ClientState) : null;
 
             _targetWindow.Update(targetText, ox, oy, f1, overlay.TargetFontFamily, targetColor, outlineColor, FontWeights.SemiBold);
             _timerWindow.Update(
@@ -251,7 +255,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
 
     /// <summary>Typed-flag variant — the Overlay view's field checkboxes are the
     /// source of truth; the map overloads remain for tests and legacy cfg.</summary>
-    internal static string BuildTargetText(TargetProfile? target, OverlaySettings overlay)
+    internal static string BuildTargetText(
+        TargetProfile? target, OverlaySettings overlay, int? targetHealthPercent = null)
     {
         return BuildTargetTextCore(
             target,
@@ -260,7 +265,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             overlay.ShowLevel,
             overlay.ShowRealmRank,
             overlay.ShowSoloKills,
-            allowDetailFallback: false);
+            allowDetailFallback: false,
+            targetHealthPercent);
     }
 
     internal static string BuildTargetText(TargetProfile? target, IReadOnlyDictionary<string, string>? map)
@@ -279,27 +285,72 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     }
 
     /// <summary>Thrust/Slash/Crush verdict lines for the resists overlay —
-    /// green = target weak to it, red = resists, white = neutral.</summary>
-    internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildResistsLines(TargetProfile? target)
+    /// green = target weak to it, red = resists, white = neutral. When the
+    /// stats memory source is live the window also carries the player's own
+    /// vitals and real resist values.</summary>
+    internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildResistsLines(
+        TargetProfile? target,
+        ClientStateSnapshot? state = null)
     {
-        if (target is null || !IsRealPlayerTarget(target))
+        var lines = new List<(string Text, MediaColor Color, IconSpriteRef? Icon)>();
+        var white = MediaColor.FromRgb(0xFF, 0xFF, 0xFF);
+
+        if (state?.Vitals is { } vitals)
         {
-            return null;
+            var parts = new List<string>();
+            if (vitals.HealthPercent is { } hp)
+            {
+                parts.Add($"HP {hp}%");
+            }
+            if (vitals.PowerPercent is { } pw)
+            {
+                parts.Add($"PW {pw}%");
+            }
+            if (vitals.EndurancePercent is { } en)
+            {
+                parts.Add($"EN {en}%");
+            }
+            if (parts.Count > 0)
+            {
+                lines.Add((string.Join("  ", parts), white, null));
+            }
+
+            var melee = FormatResists(vitals.Resists, "thrust", "slash", "crush");
+            var magic = FormatResists(
+                vitals.Resists, "heat", "cold", "matter", "body", "spirit", "energy");
+            if (melee is not null)
+            {
+                lines.Add((melee, white, null));
+            }
+            if (magic is not null)
+            {
+                lines.Add((magic, white, null));
+            }
         }
 
-        var (thrust, slash, crush) = ClassArmorTable.Lookup(target.Class);
-        if (thrust == DamageVerdict.Neutral && slash == DamageVerdict.Neutral && crush == DamageVerdict.Neutral)
+        if (target is not null && IsRealPlayerTarget(target))
         {
-            // Cloth/unknown — nothing worth showing.
-            return null;
+            var (thrust, slash, crush) = ClassArmorTable.Lookup(target.Class);
+            if (thrust != DamageVerdict.Neutral || slash != DamageVerdict.Neutral ||
+                crush != DamageVerdict.Neutral)
+            {
+                lines.Add(("Thrust", VerdictColor(thrust), null));
+                lines.Add(("Slash", VerdictColor(slash), null));
+                lines.Add(("Crush", VerdictColor(crush), null));
+            }
         }
 
-        return
-        [
-            ("Thrust", VerdictColor(thrust), (IconSpriteRef?)null),
-            ("Slash", VerdictColor(slash), (IconSpriteRef?)null),
-            ("Crush", VerdictColor(crush), (IconSpriteRef?)null),
-        ];
+        return lines.Count == 0 ? null : lines;
+    }
+
+    private static string? FormatResists(
+        IReadOnlyDictionary<string, int> resists, params string[] keys)
+    {
+        var parts = keys
+            .Where(resists.ContainsKey)
+            .Select(k => $"{k[..3].ToUpperInvariant()} {resists[k]:+0;-0;0}%")
+            .ToList();
+        return parts.Count == 0 ? null : string.Join("  ", parts);
     }
 
     /// <summary>Self-CC banner — the chat line has no duration, so the banner
@@ -417,7 +468,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         bool showLevel,
         bool showRealmRank,
         bool showSoloKills,
-        bool allowDetailFallback)
+        bool allowDetailFallback,
+        int? targetHealthPercent = null)
     {
         if (target is null || string.IsNullOrWhiteSpace(target.Name) || !IsRealPlayerTarget(target))
         {
@@ -442,6 +494,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         if (showRealmRank && !string.IsNullOrWhiteSpace(target.RealmRank))
         {
             line2Parts.Add(target.RealmRank);
+        }
+        if (targetHealthPercent is { } hp)
+        {
+            line2Parts.Add($"{hp}%");
         }
 
         var text = line1;
@@ -491,7 +547,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     /// caller via IconImageLoader). Cooldowns live in their own window.</summary>
     internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildTimerLines(
         IReadOnlyCollection<CcTimerEntry> timers,
-        MediaColor fallbackColor = default)
+        MediaColor fallbackColor = default,
+        string? currentTargetName = null)
     {
         var now = DateTimeOffset.UtcNow;
         var lines = new List<(string Text, MediaColor Color, IconSpriteRef? Icon)>();
@@ -514,7 +571,42 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                     x.Icon);
             }));
 
+        // Per-category readiness on the current target — the categories with
+        // no active immunity entry are open for application right now.
+        if (!string.IsNullOrWhiteSpace(currentTargetName))
+        {
+            var normalizedTarget = NormalizeTimerTargetName(currentTargetName);
+            var immune = timers
+                .Where(x => x.RemainingSeconds(now) > 0 &&
+                            string.Equals(NormalizeTimerTargetName(x.TargetName), normalizedTarget,
+                                StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.EffectType)
+                .ToHashSet();
+            var ready = ReadinessCategories.Where(c => !immune.Contains(c)).ToList();
+            lines.Add((
+                ready.Count == ReadinessCategories.Length
+                    ? "READY: Stun Mezz Root"
+                    : ready.Count == 0
+                        ? "READY: none"
+                        : $"READY: {string.Join(' ', ready.Select(ReadinessType))}",
+                MediaColor.FromRgb(0x4E, 0xC9, 0x7B),
+                null));
+        }
+
         return lines.Count == 0 ? null : lines.Take(14).ToList();
+    }
+
+    private static readonly ControlEffectType[] ReadinessCategories =
+        [ControlEffectType.Stun, ControlEffectType.Mezz, ControlEffectType.Root];
+
+    /// <summary>Same normalization as CcImmunityTracker — chat lines and the
+    /// target adapter disagree on "the " prefixes and "---" suffixes.</summary>
+    private static string NormalizeTimerTargetName(string name)
+    {
+        var trimmed = name.Trim().TrimEnd('-').TrimEnd();
+        return trimmed.StartsWith("the ", StringComparison.OrdinalIgnoreCase)
+            ? trimmed[4..].TrimStart()
+            : trimmed;
     }
 
     /// <summary>Spell recasts and realm-ability cooldowns — purple "⟳ name
@@ -563,6 +655,15 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         string.IsNullOrWhiteSpace(targetClass)
             ? string.Empty
             : $" ·{targetClass[..Math.Min(3, targetClass.Length)]}";
+
+    private static string ReadinessType(ControlEffectType type) =>
+        type switch
+        {
+            ControlEffectType.Mezz => "Mezz",
+            ControlEffectType.Stun => "Stun",
+            ControlEffectType.Root => "Root",
+            _ => type.ToString()
+        };
 
     private static string ShortType(ControlEffectType type)
     {

@@ -35,8 +35,38 @@ public static class ClientStateExtractor
             BountyPoints: ReadLong(values, "bounty_points"),
             RelicTimePercent: ReadNumber(values, "mino_relic_time_percent"),
             ReleaseTimerSeconds: ReadNumber(values, "release_timer_time"),
-            TimerSeconds: ReadNumber(values, "timer_time"));
+            TimerSeconds: ReadNumber(values, "timer_time"),
+            Vitals: ExtractVitals(values),
+            TargetHealthPercent: ReadInt(values, "summary_target_hits"));
     }
+
+    /// <summary>summary_player_hits/power/end are live percents; stats_* are
+    /// the character-sheet resists, rendered "+15%"/"-20%" — populated only
+    /// while the stats memory source feeds them.</summary>
+    private static PlayerVitals? ExtractVitals(IReadOnlyDictionary<string, string> values)
+    {
+        var resists = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var key in ResistKeys)
+        {
+            if (ReadNumber(values, $"stats_{key}") is { } v)
+            {
+                resists[key] = (int)Math.Round(v);
+            }
+        }
+
+        var vitals = new PlayerVitals(
+            ReadInt(values, "summary_player_hits"),
+            ReadInt(values, "summary_player_power"),
+            ReadInt(values, "summary_player_end"),
+            resists);
+        return vitals.HealthPercent is null && vitals.PowerPercent is null &&
+               vitals.EndurancePercent is null && resists.Count == 0
+            ? null
+            : vitals;
+    }
+
+    private static readonly string[] ResistKeys =
+        ["thrust", "slash", "crush", "heat", "cold", "matter", "body", "spirit", "energy"];
 
     private static IReadOnlyList<GroupMemberState> ExtractGroupMembers(IReadOnlyDictionary<string, string> values)
     {

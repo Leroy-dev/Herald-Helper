@@ -27,6 +27,19 @@ How the harness gets game state, and where each path can fail.
 - `IAdapterValueSource.LatestAdapterValues` — memory (`std::map` heap
   records) feeding the capture chain; supplies `summary_target` and the
   numeric/text classification described in client-internals.md.
+- `ClientStateExtractor` projects the raw dict into `ClientStateSnapshot`;
+  surfaces include `summary_player_hits/power/end` (own vitals %),
+  `summary_target_hits` (target HP %), `stats_<resist>` (own resists as
+  "+15%"/"-20%"), `group_*` members, `self_effectN`, `mini_pet_*`,
+  `summary_icon_desc{row}{col}` buffs, `combat_mode`, `compass_heading`,
+  `stats_realm_points`, `bounty_points`, `mino_relic_time_percent`,
+  `release_timer_time`, `timer_time`, `siege_*`.
+- Enemy resists are NOT exposed by the client — the resists overlay keeps
+  class-armor verdicts for targets and shows the *own* resists/vitals
+  read live instead.
+- The timers window appends a `READY:` line per immunity category
+  (Stun/Mezz/Root — root+snare share one bucket) for the current target,
+  using the same name normalization as the tracker.
 
 ## Failure behavior
 

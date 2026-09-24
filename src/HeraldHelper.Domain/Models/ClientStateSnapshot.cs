@@ -17,11 +17,22 @@ public sealed record ClientStateSnapshot(
     long? BountyPoints,
     double? RelicTimePercent,
     double? ReleaseTimerSeconds,
-    double? TimerSeconds)
+    double? TimerSeconds,
+    PlayerVitals? Vitals = null,
+    int? TargetHealthPercent = null)
 {
     public static readonly ClientStateSnapshot Empty = new(
         [], [], [], null, null, false, null, null, null, null, null, null);
 }
+
+/// <summary>The player's own vitals and resists, read live from the
+/// client's adapter registry — real values, not OCR guesses.
+/// Resists arrive as rendered "+15%"/"-20%" strings.</summary>
+public sealed record PlayerVitals(
+    int? HealthPercent,
+    int? PowerPercent,
+    int? EndurancePercent,
+    IReadOnlyDictionary<string, int> Resists);
 
 /// <summary>One active effect on the player, read from the client's
 /// "EFFECTS" array — real name + iconId, live from memory.</summary>

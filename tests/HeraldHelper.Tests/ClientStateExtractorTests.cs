@@ -137,4 +137,34 @@ public sealed class ClientStateExtractorTests
         Assert.Null(state.RealmPoints);
         Assert.False(state.InCombat);
     }
+
+    [Fact]
+    public void Vitals_ExtractPlayerPercentsAndResists()
+    {
+        var state = ClientStateExtractor.Extract(Map(
+            ("summary_player_hits", "82"), ("summary_player_power", "60"),
+            ("summary_player_end", "71"), ("summary_target_hits", "44"),
+            ("stats_thrust", "+15%"), ("stats_slash", "+50%"),
+            ("stats_crush", "+20%"), ("stats_heat", "-20%"),
+            ("stats_spirit", "+25%")));
+
+        Assert.Equal(82, state.Vitals?.HealthPercent);
+        Assert.Equal(60, state.Vitals?.PowerPercent);
+        Assert.Equal(71, state.Vitals?.EndurancePercent);
+        Assert.Equal(44, state.TargetHealthPercent);
+        Assert.Equal(15, state.Vitals?.Resists["thrust"]);
+        Assert.Equal(50, state.Vitals?.Resists["slash"]);
+        Assert.Equal(-20, state.Vitals?.Resists["heat"]);
+        Assert.Equal(25, state.Vitals?.Resists["spirit"]);
+    }
+
+    [Fact]
+    public void Vitals_AbsentWhenNoPlayerAdapters()
+    {
+        var state = ClientStateExtractor.Extract(Map(
+            ("group_name0", "Leroy"), ("group_health0", "50")));
+
+        Assert.Null(state.Vitals);
+        Assert.Null(state.TargetHealthPercent);
+    }
 }
