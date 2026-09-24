@@ -172,6 +172,7 @@ internal sealed class AbilityProfileController
             "m" or "mezz" or "mesmerize" or "mesmerise" => "m",
             "s" or "stun" => "s",
             "r" or "root" => "r",
+            "n" or "nearsight" or "near-sight" => "n",
             _ => "s"
         };
     }

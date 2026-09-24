@@ -64,7 +64,15 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         ("you cannot move", ControlEffectType.Stun),
         ("you are entangled", ControlEffectType.Root),
         ("you are paralyzed", ControlEffectType.Stun),
-        ("you are nearsighted", ControlEffectType.Nearsight)
+        ("you are nearsighted", ControlEffectType.Nearsight),
+        ("you are entranced", ControlEffectType.Mezz),
+        // Effect Message1 strings (OpenDAoC spell DB) — the first-person
+        // line the target actually receives per spell type.
+        ("combat skills are hampered by blindness", ControlEffectType.Nearsight),
+        ("your feet are frozen to the ground", ControlEffectType.Root),
+        ("constricting bonds surround your body", ControlEffectType.Root),
+        ("a blast of energy hinders you", ControlEffectType.Root),
+        ("rocks rise from the ground and obstruct your movement", ControlEffectType.Root)
     ];
     private static readonly string[] CastInterruptedMarkers =
     [
@@ -82,7 +90,19 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         "you cant cast while",
         "you are fumbling for your words",
         "you do not have enough power and your spell was canceled",
-        "you are too tired to hold your shot"
+        "you are too tired to hold your shot",
+        // CheckBeginCast rejections — the cast never started, so any
+        // pending castbar entry must clear. (SpellHandler.CheckBeginCast)
+        "you don't have enough power to cast",
+        "you have exhausted all of your power",
+        "that target is too far away",
+        "your target is not visible",
+        "you can't see your target",
+        "you must select a target for this spell",
+        "you are not wielding the right type of instrument",
+        "you can't cast while sitting",
+        "seconds to cast a spell",
+        "you are already playing a song"
     ];
     /// "{0} is attacking you and your {1} is interrupted!" — the interrupt
     /// tail must be present; the prefix alone also matches pet attacks.
@@ -94,6 +114,11 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
     /// Slam!" stays covered by the per-mention window check.
     private static readonly Regex ResistTargetRegex = new(
         @"(?<name>[A-Za-z][A-Za-z'\- ]{1,40}?)\s+resists\s+the\s+(?:effect|charm)\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    /// "Your spell has no effect on the {name}." — the spell went off but
+    /// the target shrugged it entirely (SpellHandler.CheckTarget).
+    private static readonly Regex SpellNoEffectRegex = new(
+        @"your\s+spell\s+has\s+no\s+effect\s+on\s+(?:the\s+)?(?<name>[A-Za-z][A-Za-z0-9'\- ]{1,40}?)(?=[\.\!]|$)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
     /// CC was negated without a target name — applies to the current target.
     private static readonly string[] ImmuneMarkers =
@@ -107,11 +132,13 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
     /// "{name} already has this effect!" — the application was rejected
     /// because the CC is still running; the prior timer stays valid.
     private static readonly Regex FailedApplicationNamedRegex = new(
-        @"(?<name>[A-Za-z][A-Za-z0-9'\- ]{1,40}?)\s+(?:can't\s+have\s+that\s+effect\s+again|already\s+has\s+(?:this|that)\s+effect)",
+        @"(?<name>[A-Za-z][A-Za-z0-9'\- ]{1,40}?)\s+(?:can't\s+have\s+that\s+effect\s+again|already\s+has\s+(?:this|that)\s+effect|is\s+too\s+strong\s+for\s+you\s+to\s+charm|can't\s+be\s+charmed|is\s+currently\s+being\s+controlled)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly string[] FailedApplicationMarkers =
     [
-        "your target already has that effect"
+        "your target already has that effect",
+        "you can't charm that target",
+        "this spell does not charm that type of monster"
     ];
     /// Style lifecycle (server sends these only in the named phases):
     ///   prepare → button press queues the style (no swing yet)
@@ -370,6 +397,11 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
             events.Add((m.Index, new NegationEvent(NegationKind.Resisted, CleanupResistName(m.Groups["name"].Value))));
         }
 
+        foreach (Match m in SpellNoEffectRegex.Matches(ocrText))
+        {
+            events.Add((m.Index, new NegationEvent(NegationKind.Resisted, CleanupResistName(m.Groups["name"].Value))));
+        }
+
         var lowered = ocrText.ToLowerInvariant();
         foreach (var marker in ImmuneMarkers)
         {
@@ -434,6 +466,12 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
     private static string CleanupResistName(string raw)
     {
         var name = CleanupName(raw);
+        // "Your Moolish resists the effect!" — a pet-target resist reports
+        // the pet's name prefixed by "Your".
+        if (name.StartsWith("your ", StringComparison.OrdinalIgnoreCase))
+        {
+            name = name[5..].TrimStart();
+        }
         foreach (var sep in new[] { " cast a ", " casts ", " casting ", " spell ", " you " })
         {
             int cut;
