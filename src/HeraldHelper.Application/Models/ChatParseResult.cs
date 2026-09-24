@@ -9,6 +9,7 @@ public sealed record ChatParseResult(
     IReadOnlyCollection<TargetEvent>? VisibleTargetEvents = null,
     IReadOnlyCollection<CastEvent>? VisibleCastEvents = null,
     IReadOnlyCollection<SelfCcEvent>? SelfCcEvents = null,
+    IReadOnlyCollection<SelfCcEvent>? SelfCcExpiredEvents = null,
     IReadOnlyCollection<IncomingAttackEvent>? IncomingAttacks = null,
     IReadOnlyCollection<CombatLifeEvent>? LifeEvents = null,
     IReadOnlyCollection<RealmAbilityEvent>? RealmAbilityEvents = null,

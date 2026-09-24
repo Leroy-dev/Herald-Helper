@@ -74,7 +74,25 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         ("your feet are frozen to the ground", ControlEffectType.Root),
         ("rocks rise from the ground and obstruct your movement", ControlEffectType.Root),
         ("constricting bonds surround your body", ControlEffectType.Snare),
-        ("a blast of energy hinders you", ControlEffectType.Snare)
+        ("a blast of energy hinders you", ControlEffectType.Snare),
+        ("a flash of light bursts in front of you", ControlEffectType.Stun),
+        ("your movement is slowed", ControlEffectType.Snare),
+        ("you are enveloped by numbing cold", ControlEffectType.Snare)
+    ];
+    /// Effect-expire (Message3) strings — the OpenDAoC spell DB values for
+    /// CC types. For SELF effects these arrive reliably (the target is you),
+    /// so they end the self-CC banner early; for enemies they only render
+    /// in proximity, which is why target timers don't use them.
+    private static readonly (string Marker, ControlEffectType Effect)[] SelfCcExpireMarkers =
+    [
+        ("you recover from the stun", ControlEffectType.Stun),
+        ("you are no longer entranced", ControlEffectType.Mezz),
+        ("you recover from the mesmerize", ControlEffectType.Mezz),
+        ("your vision returns to normal", ControlEffectType.Nearsight),
+        ("the bonds holding you break", ControlEffectType.Snare),
+        ("the constricting bonds around you fall away", ControlEffectType.Snare),
+        ("you can move normally again", ControlEffectType.Snare),
+        ("the energy hindering you dissipates", ControlEffectType.Snare)
     ];
     private static readonly string[] CastInterruptedMarkers =
     [
@@ -306,6 +324,7 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
             visibleTargetEvents,
             visibleCastEvents,
             ParseSelfCcEvents(normalizedOcrText),
+            ParseSelfCcExpireEvents(normalizedOcrText),
             ParseIncomingAttacks(normalizedOcrText),
             ParseLifeEvents(normalizedOcrText),
             ParseRealmAbilityEvents(normalizedOcrText),
@@ -503,6 +522,29 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         var lowered = ocrText.ToLowerInvariant();
         var events = new List<SelfCcEvent>();
         foreach (var (marker, effect) in SelfCcMarkers)
+        {
+            var count = 0;
+            var startIndex = 0;
+            while ((startIndex = lowered.IndexOf(marker, startIndex, StringComparison.Ordinal)) >= 0)
+            {
+                count++;
+                startIndex += marker.Length;
+            }
+
+            if (count > 0)
+            {
+                events.Add(new SelfCcEvent(effect, count));
+            }
+        }
+
+        return events;
+    }
+
+    private static IReadOnlyList<SelfCcEvent> ParseSelfCcExpireEvents(string ocrText)
+    {
+        var lowered = ocrText.ToLowerInvariant();
+        var events = new List<SelfCcEvent>();
+        foreach (var (marker, effect) in SelfCcExpireMarkers)
         {
             var count = 0;
             var startIndex = 0;

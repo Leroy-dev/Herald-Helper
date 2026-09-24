@@ -36,6 +36,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     private readonly VisibleEventTracker _castEventTracker = new(missingFramesBeforeReset: 1);
     private readonly VisibleEventTracker _abilityEventTracker = new();
     private readonly VisibleEventTracker _selfCcTracker = new();
+    private readonly VisibleEventTracker _selfCcExpireTracker = new();
     private readonly VisibleEventTracker _incomingAttackTracker = new();
     private readonly VisibleEventTracker _lifeEventTracker = new();
     private readonly VisibleEventTracker _realmAbilityTracker = new();
@@ -516,6 +517,25 @@ public sealed class GameLoopOrchestrator : IDisposable
             _selfCc = new SelfCcState(cc.Effect, nowUtc);
             _diagnostics?.Log($"[SelfCC] {cc.Effect}");
             _alertSound?.Play(AlertKind.SelfCc);
+        }
+
+        // Effect-expire (Message3) lines end the self-CC banner at the real
+        // expiry instead of the 90s fallback — purge, mez-break and natural
+        // expiry all funnel through the same message. Root/snare share the
+        // tracker bucket, so a snare-expire clears either.
+        foreach (var expired in _selfCcExpireTracker.ObserveFrame(
+                     parseResult.SelfCcExpiredEvents ?? [],
+                     static x => x.Effect.ToString(),
+                     static x => x.OccurrenceOrdinal))
+        {
+            if (_selfCc is { } active &&
+                (active.Effect == expired.Effect ||
+                 expired.Effect is ControlEffectType.Root or ControlEffectType.Snare &&
+                 active.Effect is ControlEffectType.Root or ControlEffectType.Snare))
+            {
+                _selfCc = null;
+                _diagnostics?.Log($"[SelfCC] {expired.Effect} expired");
+            }
         }
 
         foreach (var attack in _incomingAttackTracker.ObserveFrame(

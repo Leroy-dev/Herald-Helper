@@ -30,6 +30,30 @@ public sealed class CombatEventParsingTests
     }
 
     [Fact]
+    public void SelfCc_ExpireLines_EmitExpiredEvents()
+    {
+        // Spell-DB Message3 strings — self-expire is reliable because the
+        // target is the local player; the banner can clear at real expiry.
+        var result = Parse("You recover from the stun. Your vision returns to normal. The bonds holding you break.");
+
+        Assert.Contains(result.SelfCcExpiredEvents!, x => x.Effect == ControlEffectType.Stun);
+        Assert.Contains(result.SelfCcExpiredEvents!, x => x.Effect == ControlEffectType.Nearsight);
+        Assert.Contains(result.SelfCcExpiredEvents!, x => x.Effect == ControlEffectType.Snare);
+        Assert.Empty(result.SelfCcEvents!);
+    }
+
+    [Fact]
+    public void SelfCc_NewDbStartStrings_Recognized()
+    {
+        // Message1 variants present in the deployed spell table that were
+        // previously uncovered.
+        var result = Parse("A flash of light bursts in front of you! Your movement is slowed! You are enveloped by numbing cold!");
+
+        Assert.Contains(result.SelfCcEvents!, x => x.Effect == ControlEffectType.Stun);
+        Assert.Equal(2, result.SelfCcEvents!.Count(x => x.Effect == ControlEffectType.Snare));
+    }
+
+    [Fact]
     public void SelfCc_SleepVariants_MapToMezz()
     {
         var result = Parse("You fall into a deep sleep!");
