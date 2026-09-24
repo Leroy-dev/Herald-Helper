@@ -77,4 +77,48 @@ public sealed class CcImmunityTrackerTests
 
         Assert.Empty(activeAfterExpiry);
     }
+
+    [Fact]
+    public void RetractFreshEntries_RemovesJustCreatedTimer()
+    {
+        var tracker = new CcImmunityTracker();
+        var now = DateTimeOffset.UtcNow;
+        tracker.RegisterSuccessfulHit(
+            new AbilityHit("Alice", "Mesmerizing Gaze", "s", ControlEffectType.Mezz, 30, true),
+            null, 0, now);
+
+        // Resist line scrolls in a tick later — the timer was wrong.
+        tracker.RetractFreshEntries(["Alice"], now.AddSeconds(1.5), TimeSpan.FromSeconds(8));
+
+        Assert.Empty(tracker.GetActiveTimers(now.AddSeconds(2)));
+    }
+
+    [Fact]
+    public void RetractFreshEntries_KeepsOldTimerAlive()
+    {
+        var tracker = new CcImmunityTracker();
+        var now = DateTimeOffset.UtcNow;
+        tracker.RegisterSuccessfulHit(
+            new AbilityHit("Alice", "Stun", "s", ControlEffectType.Stun, 5, true),
+            "Warrior", 0, now);
+
+        // A new resisted attempt must not wipe the still-running immunity.
+        tracker.RetractFreshEntries(["Alice"], now.AddSeconds(30), TimeSpan.FromSeconds(8));
+
+        Assert.Single(tracker.GetActiveTimers(now.AddSeconds(30)));
+    }
+
+    [Fact]
+    public void RetractFreshEntries_MatchesAcrossLeadingArticle()
+    {
+        var tracker = new CcImmunityTracker();
+        var now = DateTimeOffset.UtcNow;
+        tracker.RegisterSuccessfulHit(
+            new AbilityHit("goborchend wounder", "Charm", "s", ControlEffectType.Mezz, 30, true),
+            null, 0, now);
+
+        tracker.RetractFreshEntries(["The goborchend wounder"], now.AddSeconds(1), TimeSpan.FromSeconds(8));
+
+        Assert.Empty(tracker.GetActiveTimers(now.AddSeconds(1)));
+    }
 }

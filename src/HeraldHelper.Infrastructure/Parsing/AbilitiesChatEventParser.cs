@@ -71,7 +71,65 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         "you move and interrupt your spell",
         "you fumble the spell",
         "you lose your concentration",
-        "cannot concentrate enough to cast"
+        "cannot concentrate enough to cast",
+        "your spell is cancelled",
+        "your spell is canceled",
+        "you can't cast while",
+        "you cant cast while",
+        "you are fumbling for your words",
+        "you do not have enough power and your spell was canceled",
+        "you are too tired to hold your shot"
+    ];
+    /// "{0} is attacking you and your {1} is interrupted!" — the interrupt
+    /// tail must be present; the prefix alone also matches pet attacks.
+    private static readonly Regex AttackInterruptRegex = new(
+        @"is attacking you and your .{1,25}? is interrupted",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    /// "{name} resists the effect! (34.0%)" / "resists the charm!" — the
+    /// target of YOUR spell shrugged it off. Older format "X resists your
+    /// Slam!" stays covered by the per-mention window check.
+    private static readonly Regex ResistTargetRegex = new(
+        @"(?<name>[A-Za-z][A-Za-z'\- ]{1,40}?)\s+resists\s+the\s+(?:effect|charm)\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    /// CC was negated without a target name — applies to the current target.
+    private static readonly string[] ImmuneMarkers =
+    [
+        "your target is immune to this effect",
+        "your target is enraged and resists the spell",
+        "your item effect intercepts the",
+        "ceremonial bracer intercept"
+    ];
+    /// Style lifecycle (server sends these only in the named phases):
+    ///   prepare → button press queues the style (no swing yet)
+    ///   perform perfectly → the swing hit AND the style fired
+    ///   fail to execute → swing hit but the style did not fire
+    ///   no longer preparing → queued style cancelled
+    private static readonly Regex StylePrepareRegex = new(
+        @"you\s+(?:prepare\s+to\s+perform|are\s+now\s+preparing\s+to\s+perform|automatically\s+attempt)\s+(?:a\s+|an\s+)?(?<name>.+?)(?:\s+style)?(?=\s+as\s+a\s+backup|[\.\!]|$)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex StyleExecuteRegex = new(
+        @"you\s+perform\s+your\s+(?<name>.+?)\s+perfectly\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex PetStyleExecuteRegex = new(
+        @"your\s+(?<pet>.+?)\s+performs\s+its\s+(?<name>.+?)\s+perfectly\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex StyleFailRegex = new(
+        @"you\s+fail\s+to\s+execute\s+your\s+(?<name>.+?)\s+perfectly\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex StyleCancelRegex = new(
+        @"you\s+are\s+no\s+longer\s+preparing\s+to\s+use\s+your\s+(?<name>.+?)\s+style\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    /// Swing deflected: "{name} blocks/parries/evades your attack!"
+    private static readonly Regex SwingDeflectedRegex = new(
+        @"(?<name>[A-Za-z][A-Za-z'\- ]{1,40}?)\s+(?:blocks|parries|evades)\s+your\s+attack",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly string[] SwingFailedMarkers =
+    [
+        "you miss",
+        "you were strafing in combat and miss",
+        "you fumble the attack",
+        "was absorbed by a magical barrier",
+        "steps in front of"
     ];
     private readonly IReadOnlyDictionary<string, AbilityDefinition> _abilityByToken;
     private readonly IReadOnlyList<(string Token, AbilityDefinition Ability, int WordCount)> _fuzzyTokens;
@@ -121,9 +179,26 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         var hitMentions = ParseAbilityMentions(normalizedOcrText);
         var visibleCastEvents = ParseCastEvents(normalizedOcrText);
         var castEvent = visibleCastEvents.LastOrDefault();
+        var negationEvents = ParseNegationEvents(normalizedOcrText);
+        var contextSpans = BuildMentionContextSpans(normalizedOcrText);
+        var resistedNames = new HashSet<string>(
+            negationEvents.Where(x => x.Kind == NegationKind.Resisted && x.TargetName is not null)
+                          .Select(x => NormalizeTargetName(x.TargetName!)),
+            StringComparer.OrdinalIgnoreCase);
+        var spellNegated = negationEvents.Any(x => x.Kind == NegationKind.Immune);
         var hitOrdinals = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var mention in hitMentions)
         {
+            var context = ClassifyMention(contextSpans, mention.Index);
+            // "begin casting" / "prepare to perform" / "fail to execute"
+            // name the ability without applying its effect — only a completed
+            // cast or an executed style can land a CC.
+            if (context is MentionContext.CastStart or MentionContext.StylePrepare
+                or MentionContext.StyleFail or MentionContext.Resist)
+            {
+                continue;
+            }
+
             var targetName = ResolveTargetForIndex(targetMentions, mention.Index);
             if (string.IsNullOrWhiteSpace(targetName))
             {
@@ -134,10 +209,23 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
                 continue;
             }
 
-            // Failure text lives in the mention's own sentence or the ones
-            // after it ("Foo resists your Slam!") — a "must wait … again"
-            // line from an earlier attempt must not suppress a landed hit.
-            var landed = !ContainsFailureKeyword(WindowFromLineStart(normalizedOcrText, mention.Index, mention.Ability.Name.Length));
+            var landed = context switch
+            {
+                // "You perform your X perfectly!" only fires on a resolved hit.
+                MentionContext.StyleExecute => true,
+                // "You cast a X spell!" — landed unless a resist/immune line
+                // names this target in the same frame.
+                MentionContext.CastComplete =>
+                    !spellNegated && !resistedNames.Contains(NormalizeTargetName(targetName)),
+                // Failure text lives in the mention's own sentence or the ones
+                // after it ("Foo resists your Slam!") — a "must wait … again"
+                // line from an earlier attempt must not suppress a landed hit.
+                _ => !ContainsFailureKeyword(WindowFromLineStart(normalizedOcrText, mention.Index, mention.Ability.Name.Length))
+            };
+            if (resistedNames.Contains(NormalizeTargetName(targetName)))
+            {
+                landed = false;
+            }
             var hitKey = $"{targetName}|{mention.Ability.Name}|{mention.Ability.SkillCode}|{mention.Ability.EffectType}|{landed}";
             hitOrdinals.TryGetValue(hitKey, out var previousOrdinal);
             var occurrenceOrdinal = previousOrdinal + 1;
@@ -162,7 +250,167 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
             ParseSelfCcEvents(normalizedOcrText),
             ParseIncomingAttacks(normalizedOcrText),
             ParseLifeEvents(normalizedOcrText),
-            ParseRealmAbilityEvents(normalizedOcrText));
+            ParseRealmAbilityEvents(normalizedOcrText),
+            negationEvents);
+    }
+
+    private enum MentionContext
+    {
+        Bare,
+        CastStart,
+        CastComplete,
+        StylePrepare,
+        StyleExecute,
+        StyleFail,
+        Resist
+    }
+
+    /// <summary>Phrase spans that name an ability but mean different things —
+    /// "begin casting X" is not "cast X", "prepare to perform X" is not
+    /// "perform X perfectly".</summary>
+    private static List<(int Start, int End, MentionContext Context)> BuildMentionContextSpans(string text)
+    {
+        var spans = new List<(int, int, MentionContext)>();
+        foreach (Match m in BeginCastingRegex.Matches(text))
+        {
+            spans.Add((m.Index, m.Index + m.Length, MentionContext.CastStart));
+        }
+        foreach (Match m in BeginPlayingRegex.Matches(text))
+        {
+            spans.Add((m.Index, m.Index + m.Length, MentionContext.CastStart));
+        }
+        foreach (Match m in CastCompletedRegex.Matches(text))
+        {
+            spans.Add((m.Index, m.Index + m.Length, MentionContext.CastComplete));
+        }
+        foreach (Match m in StylePrepareRegex.Matches(text))
+        {
+            spans.Add((m.Index, m.Index + m.Length, MentionContext.StylePrepare));
+        }
+        foreach (Match m in StyleExecuteRegex.Matches(text))
+        {
+            spans.Add((m.Index, m.Index + m.Length, MentionContext.StyleExecute));
+        }
+        foreach (Match m in PetStyleExecuteRegex.Matches(text))
+        {
+            spans.Add((m.Index, m.Index + m.Length, MentionContext.StyleExecute));
+        }
+        foreach (Match m in StyleFailRegex.Matches(text))
+        {
+            spans.Add((m.Index, m.Index + m.Length, MentionContext.StyleFail));
+        }
+        foreach (Match m in StyleCancelRegex.Matches(text))
+        {
+            spans.Add((m.Index, m.Index + m.Length, MentionContext.StyleFail));
+        }
+        foreach (Match m in ResistTargetRegex.Matches(text))
+        {
+            spans.Add((m.Index, m.Index + m.Length, MentionContext.Resist));
+        }
+        return spans;
+    }
+
+    private static MentionContext ClassifyMention(
+        IReadOnlyList<(int Start, int End, MentionContext Context)> spans,
+        int mentionIndex)
+    {
+        // Prefer the tightest containing span — nested matches (a cast name
+        // inside a longer sentence region) should resolve to the innermost.
+        var best = MentionContext.Bare;
+        var bestSize = int.MaxValue;
+        foreach (var (start, end, context) in spans)
+        {
+            if (mentionIndex < start || mentionIndex >= end)
+            {
+                continue;
+            }
+            var size = end - start;
+            if (size < bestSize)
+            {
+                bestSize = size;
+                best = context;
+            }
+        }
+        return best;
+    }
+
+    private static IReadOnlyList<NegationEvent> ParseNegationEvents(string ocrText)
+    {
+        var events = new List<(int Index, NegationEvent Event)>();
+
+        foreach (Match m in ResistTargetRegex.Matches(ocrText))
+        {
+            events.Add((m.Index, new NegationEvent(NegationKind.Resisted, CleanupResistName(m.Groups["name"].Value))));
+        }
+
+        var lowered = ocrText.ToLowerInvariant();
+        foreach (var marker in ImmuneMarkers)
+        {
+            var startIndex = 0;
+            while ((startIndex = lowered.IndexOf(marker, startIndex, StringComparison.Ordinal)) >= 0)
+            {
+                events.Add((startIndex, new NegationEvent(NegationKind.Immune, null)));
+                startIndex += marker.Length;
+            }
+        }
+
+        foreach (Match m in StyleFailRegex.Matches(ocrText))
+        {
+            events.Add((m.Index, new NegationEvent(NegationKind.StyleFailed, CleanupName(m.Groups["name"].Value))));
+        }
+        foreach (Match m in StyleCancelRegex.Matches(ocrText))
+        {
+            events.Add((m.Index, new NegationEvent(NegationKind.StyleFailed, CleanupName(m.Groups["name"].Value))));
+        }
+        foreach (Match m in SwingDeflectedRegex.Matches(ocrText))
+        {
+            events.Add((m.Index, new NegationEvent(NegationKind.SwingFailed, CleanupResistName(m.Groups["name"].Value))));
+        }
+        foreach (var marker in SwingFailedMarkers)
+        {
+            var startIndex = 0;
+            while ((startIndex = lowered.IndexOf(marker, startIndex, StringComparison.Ordinal)) >= 0)
+            {
+                events.Add((startIndex, new NegationEvent(NegationKind.SwingFailed, null)));
+                startIndex += marker.Length;
+            }
+        }
+
+        var ordinals = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        return events
+            .OrderBy(x => x.Index)
+            .Select(x =>
+            {
+                var key = $"{x.Event.Kind}|{x.Event.TargetName ?? string.Empty}";
+                ordinals.TryGetValue(key, out var ord);
+                ordinals[key] = ++ord;
+                return x.Event with { OccurrenceOrdinal = ord };
+            })
+            .ToList();
+    }
+
+    /// <summary>OCR can merge "You cast a X spell Alice resists…" without
+    /// punctuation — cut a bleed-over prefix at the last phrase boundary.</summary>
+    private static string CleanupResistName(string raw)
+    {
+        var name = CleanupName(raw);
+        foreach (var sep in new[] { " cast a ", " casts ", " casting ", " spell ", " you " })
+        {
+            int cut;
+            while ((cut = name.LastIndexOf(sep, StringComparison.OrdinalIgnoreCase)) >= 0)
+            {
+                name = name[(cut + sep.Length)..];
+            }
+        }
+        return name.Trim();
+    }
+
+    private static string NormalizeTargetName(string name)
+    {
+        var trimmed = name.Trim();
+        return trimmed.StartsWith("the ", StringComparison.OrdinalIgnoreCase)
+            ? trimmed[4..].TrimStart()
+            : trimmed;
     }
 
     private static IReadOnlyList<SelfCcEvent> ParseSelfCcEvents(string ocrText)
@@ -318,6 +566,11 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
                 events.Add((index, new CastEvent(CastEventType.Interrupted, null)));
                 startIndex = index + marker.Length;
             }
+        }
+
+        foreach (Match match in AttackInterruptRegex.Matches(ocrText))
+        {
+            events.Add((match.Index, new CastEvent(CastEventType.Interrupted, null)));
         }
 
         if (events.Count == 0)

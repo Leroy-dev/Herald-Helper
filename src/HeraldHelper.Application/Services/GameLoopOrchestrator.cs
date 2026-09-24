@@ -39,6 +39,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     private readonly VisibleEventTracker _incomingAttackTracker = new();
     private readonly VisibleEventTracker _lifeEventTracker = new();
     private readonly VisibleEventTracker _realmAbilityTracker = new();
+    private readonly VisibleEventTracker _negationEventTracker = new();
     private SelfCcState? _selfCc;
     private readonly Dictionary<string, PeelEntry> _attackers = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<RealmAbilityActivation> _realmAbilityUses = [];
@@ -139,6 +140,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         ApplyCompletedTargetLookup(nowUtc);
         TrackTargetEvents(parseResult, shardType, nowUtc, cancellationToken);
         TrackAbilityHits(parseResult, resistPercent, nowUtc);
+        TrackNegationEvents(parseResult, nowUtc);
         TrackCombatEvents(parseResult, nowUtc);
         await RenderFrameAsync(frame.OcrText, nowUtc, cancellationToken);
         tickStopwatch.Stop();
@@ -449,6 +451,49 @@ public sealed class GameLoopOrchestrator : IDisposable
                 _diagnostics?.Log(
                     $"[CC] {hit.AbilityName} → {hit.TargetName} ({hit.EffectType}, {hit.BaseDurationSeconds}s)");
             }
+        }
+    }
+
+    /// <summary>Resists, immunity, and failed swings arrive in the same frame
+    /// as the "You cast/perform" line — or scroll in a tick later. Retract
+    /// only freshly created timers so an old immunity window survives a
+    /// brand-new resisted attempt.</summary>
+    private void TrackNegationEvents(ChatParseResult parseResult, DateTimeOffset nowUtc)
+    {
+        var newNegations = _negationEventTracker.ObserveFrame(
+            parseResult.NegationEvents ?? [],
+            static x => $"{x.Kind}|{x.TargetName ?? string.Empty}",
+            static x => x.OccurrenceOrdinal);
+        foreach (var negation in newNegations)
+        {
+            var names = new List<string>();
+            if (!string.IsNullOrWhiteSpace(negation.TargetName))
+            {
+                names.Add(negation.TargetName);
+            }
+            else
+            {
+                lock (_targetLock)
+                {
+                    if (!string.IsNullOrWhiteSpace(_currentTargetName))
+                    {
+                        names.Add(_currentTargetName);
+                    }
+                }
+            }
+            if (names.Count == 0)
+            {
+                continue;
+            }
+
+            // A resisted/immune spell can lag the cast line by a frame; a
+            // failed swing must only undo the timer its own perform created.
+            var maxAge = negation.Kind is NegationKind.SwingFailed or NegationKind.StyleFailed
+                ? TimeSpan.FromSeconds(3)
+                : TimeSpan.FromSeconds(8);
+            _ccImmunityTracker.RetractFreshEntries(names, nowUtc, maxAge);
+            _diagnostics?.Log(
+                $"[CC] {negation.Kind} → retracted fresh timers for {string.Join(", ", names)}");
         }
     }
 

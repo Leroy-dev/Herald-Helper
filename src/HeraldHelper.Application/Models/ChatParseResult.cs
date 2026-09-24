@@ -11,4 +11,5 @@ public sealed record ChatParseResult(
     IReadOnlyCollection<SelfCcEvent>? SelfCcEvents = null,
     IReadOnlyCollection<IncomingAttackEvent>? IncomingAttacks = null,
     IReadOnlyCollection<CombatLifeEvent>? LifeEvents = null,
-    IReadOnlyCollection<RealmAbilityEvent>? RealmAbilityEvents = null);
+    IReadOnlyCollection<RealmAbilityEvent>? RealmAbilityEvents = null,
+    IReadOnlyCollection<NegationEvent>? NegationEvents = null);

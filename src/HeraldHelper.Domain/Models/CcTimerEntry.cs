@@ -7,7 +7,8 @@ public sealed record CcTimerEntry(
     ControlEffectType EffectType,
     DateTimeOffset ExpiresAtUtc,
     IconSpriteRef? Icon = null,
-    string? TargetClass = null)
+    string? TargetClass = null,
+    DateTimeOffset? CreatedUtc = null)
 {
     public int RemainingSeconds(DateTimeOffset nowUtc)
     {

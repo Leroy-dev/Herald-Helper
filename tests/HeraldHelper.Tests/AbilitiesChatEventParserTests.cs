@@ -317,6 +317,159 @@ public sealed class AbilitiesChatEventParserTests
     }
 
     [Fact]
+    public void Parse_BeginCastingMentionDoesNotCreateHit()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Mesmerizing Gaze", "s", 30, HeraldHelper.Domain.Enums.ControlEffectType.Mezz)
+        ]);
+
+        var result = parser.Parse("You target [Alice]. You begin casting a Mesmerizing Gaze spell!");
+
+        Assert.Empty(result.AbilityHits);
+        Assert.NotNull(result.CastEvent);
+        Assert.Equal(CastEventType.Started, result.CastEvent!.EventType);
+    }
+
+    [Fact]
+    public void Parse_CompletedCastCreatesHit()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Mesmerizing Gaze", "s", 30, HeraldHelper.Domain.Enums.ControlEffectType.Mezz)
+        ]);
+
+        var result = parser.Parse("You target [Alice]. You cast a Mesmerizing Gaze spell!");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.True(hit.LandedSuccessfully);
+    }
+
+    [Fact]
+    public void Parse_CastResistedByTargetIsNotLandedAndEmitsNegation()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Mesmerizing Gaze", "s", 30, HeraldHelper.Domain.Enums.ControlEffectType.Mezz)
+        ]);
+
+        var result = parser.Parse("You target [Alice]. You cast a Mesmerizing Gaze spell! Alice resists the effect! (34.0%)");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.False(hit.LandedSuccessfully);
+        var negation = Assert.Single(result.NegationEvents!);
+        Assert.Equal(NegationKind.Resisted, negation.Kind);
+        Assert.Equal("Alice", negation.TargetName);
+    }
+
+    [Fact]
+    public void Parse_ImmuneTargetEmitsNegation()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Mesmerizing Gaze", "s", 30, HeraldHelper.Domain.Enums.ControlEffectType.Mezz)
+        ]);
+
+        var result = parser.Parse("You target [Alice]. You cast a Mesmerizing Gaze spell! Your target is immune to this effect!");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.False(hit.LandedSuccessfully);
+        var negation = Assert.Single(result.NegationEvents!);
+        Assert.Equal(NegationKind.Immune, negation.Kind);
+        Assert.Null(negation.TargetName);
+    }
+
+    [Fact]
+    public void Parse_StylePrepareDoesNotCreateHit()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "m", 9, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse("You target [Alice]. You prepare to perform a Slam!");
+
+        Assert.Empty(result.AbilityHits);
+    }
+
+    [Fact]
+    public void Parse_StylePerformCreatesLandedHit()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "m", 9, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse("You target [Alice]. You attack Alice with your mace and hit for 172 (-61) damage! You perform your Slam perfectly! (+67, GR: 0.573)");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.Equal("Slam", hit.AbilityName);
+        Assert.True(hit.LandedSuccessfully);
+    }
+
+    [Fact]
+    public void Parse_StyleFailProducesNoHitAndEmitsNegation()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "m", 9, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse("You target [Alice]. You fail to execute your Slam perfectly!");
+
+        Assert.Empty(result.AbilityHits);
+        var negation = Assert.Single(result.NegationEvents!);
+        Assert.Equal(NegationKind.StyleFailed, negation.Kind);
+    }
+
+    [Fact]
+    public void Parse_SwingDeflectedEmitsNegation()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "m", 9, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse("You target [Alice]. Alice evades your attack!");
+
+        var negation = Assert.Single(result.NegationEvents!);
+        Assert.Equal(NegationKind.SwingFailed, negation.Kind);
+        Assert.Equal("Alice", negation.TargetName);
+    }
+
+    [Fact]
+    public void Parse_SpellCancelledIsInterrupted()
+    {
+        var parser = new AbilitiesChatEventParser(NoAbilities);
+
+        var result = parser.Parse("Your spell is cancelled!");
+
+        Assert.NotNull(result.CastEvent);
+        Assert.Equal(CastEventType.Interrupted, result.CastEvent!.EventType);
+    }
+
+    [Fact]
+    public void Parse_AttackInterruptIsInterrupted()
+    {
+        var parser = new AbilitiesChatEventParser(NoAbilities);
+
+        var result = parser.Parse("The goborchend wounder is attacking you and your spellcast is interrupted!");
+
+        Assert.NotNull(result.CastEvent);
+        Assert.Equal(CastEventType.Interrupted, result.CastEvent!.EventType);
+    }
+
+    [Fact]
+    public void Parse_CancelYourEffectIsNotInterrupted()
+    {
+        var parser = new AbilitiesChatEventParser(NoAbilities);
+
+        var result = parser.Parse("You cancel your effect.");
+
+        Assert.True(result.CastEvent is null || result.CastEvent.EventType != CastEventType.Interrupted);
+    }
+
+    [Fact]
     public void Parse_DetectsBeginPlayingInsideMergedOcrBlob()
     {
         var parser = new AbilitiesChatEventParser(NoAbilities);

@@ -1336,6 +1336,10 @@ public sealed class GameLoopOrchestratorTests
             RegisteredHits.Add(hit);
         }
 
+        public void RetractFreshEntries(IEnumerable<string> targetNames, DateTimeOffset nowUtc, TimeSpan maxAge)
+        {
+        }
+
         public IReadOnlyCollection<CcTimerEntry> GetActiveTimers(DateTimeOffset nowUtc)
         {
             return [];

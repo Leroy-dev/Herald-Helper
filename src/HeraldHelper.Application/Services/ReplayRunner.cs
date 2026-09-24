@@ -127,6 +127,10 @@ public sealed class ReplayRunner : IOverlayRenderer, ICcImmunityTracker
     {
     }
 
+    public void RetractFreshEntries(IEnumerable<string> targetNames, DateTimeOffset nowUtc, TimeSpan maxAge)
+    {
+    }
+
     public IReadOnlyCollection<CcTimerEntry> GetActiveTimers(DateTimeOffset nowUtc)
     {
         return [];

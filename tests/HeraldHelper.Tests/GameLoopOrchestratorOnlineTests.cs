@@ -152,6 +152,8 @@ public sealed class GameLoopOrchestratorOnlineTests
     {
         public void RegisterSuccessfulHit(AbilityHit hit, string? targetClass, int resistPercent, DateTimeOffset nowUtc) { }
 
+        public void RetractFreshEntries(IEnumerable<string> targetNames, DateTimeOffset nowUtc, TimeSpan maxAge) { }
+
         public IReadOnlyCollection<CcTimerEntry> GetActiveTimers(DateTimeOffset nowUtc) => [];
     }
 

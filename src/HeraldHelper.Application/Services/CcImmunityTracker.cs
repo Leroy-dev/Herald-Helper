@@ -30,7 +30,33 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
         var immunitySeconds = CalculateImmunitySeconds(hit, targetClass, resistPercent);
         _entries.RemoveAll(x => x.TargetName == hit.TargetName && x.EffectType == hit.EffectType);
         var expiresAtUtc = nowUtc.AddSeconds(immunitySeconds);
-        _entries.Add(new CcTimerEntry(hit.TargetName, hit.EffectType, expiresAtUtc, hit.Icon, targetClass));
+        _entries.Add(new CcTimerEntry(hit.TargetName, hit.EffectType, expiresAtUtc, hit.Icon, targetClass, nowUtc));
+    }
+
+    public void RetractFreshEntries(IEnumerable<string> targetNames, DateTimeOffset nowUtc, TimeSpan maxAge)
+    {
+        var names = new HashSet<string>(
+            targetNames.Select(NormalizeTargetName).Where(x => x.Length > 0),
+            StringComparer.OrdinalIgnoreCase);
+        if (names.Count == 0)
+        {
+            return;
+        }
+
+        _entries.RemoveAll(x =>
+            x.CreatedUtc is { } created &&
+            nowUtc - created <= maxAge &&
+            names.Contains(NormalizeTargetName(x.TargetName)));
+    }
+
+    /// <summary>"The goborchend wounder" and "goborchend wounder" are the
+    /// same target — chat messages disagree on the leading article.</summary>
+    private static string NormalizeTargetName(string name)
+    {
+        var trimmed = name.Trim();
+        return trimmed.StartsWith("the ", StringComparison.OrdinalIgnoreCase)
+            ? trimmed[4..].TrimStart()
+            : trimmed;
     }
 
     public IReadOnlyCollection<CcTimerEntry> GetActiveTimers(DateTimeOffset nowUtc)
