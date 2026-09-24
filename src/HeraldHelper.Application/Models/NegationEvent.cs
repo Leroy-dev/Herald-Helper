@@ -12,7 +12,11 @@ public enum NegationKind
     SwingFailed,
     /// "You fail to execute your X perfectly!" — the swing hit but the
     /// style did not fire, or the style queue was cancelled.
-    StyleFailed
+    StyleFailed,
+    /// "{name} already has this effect!" / "can't have that effect again
+    /// yet!" — the attempt was rejected because the CC is already running;
+    /// the existing timer stays valid, only a brand-new one is wrong.
+    FailedApplication
 }
 
 /// <summary>A chat observation that can retract a CC timer which was

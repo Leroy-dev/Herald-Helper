@@ -18,7 +18,8 @@ public partial class AbilitiesView : System.Windows.Controls.UserControl
         {
             new { Code = "s", Label = "Stun (s)" },
             new { Code = "m", Label = "Mezz (m)" },
-            new { Code = "r", Label = "Root (r)" }
+            new { Code = "r", Label = "Root (r)" },
+            new { Code = "n", Label = "Nearsight (n)" }
         };
     }
 

@@ -50,10 +50,11 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
     }
 
     /// <summary>"The goborchend wounder" and "goborchend wounder" are the
-    /// same target — chat messages disagree on the leading article.</summary>
+    /// same target — chat messages disagree on the leading article. The
+    /// adapter layer also appends "---" to non-player target names.</summary>
     private static string NormalizeTargetName(string name)
     {
-        var trimmed = name.Trim();
+        var trimmed = name.Trim().TrimEnd('-').TrimEnd();
         return trimmed.StartsWith("the ", StringComparison.OrdinalIgnoreCase)
             ? trimmed[4..].TrimStart()
             : trimmed;
@@ -80,6 +81,13 @@ public sealed class CcImmunityTracker : ICcImmunityTracker
         var ccLength = hit.BaseDurationSeconds;
         var baseMultiplier = 0.74 - (resistPercent / 100.0);
         var ccLengthModifier = 10;
+
+        // Nearsight is a debuff, not hard CC — no immunity window, the
+        // timer just tracks the debuff duration itself.
+        if (hit.EffectType == ControlEffectType.Nearsight)
+        {
+            return Math.Max(1, ccLength);
+        }
 
         if (hit.EffectType == ControlEffectType.Mezz)
         {

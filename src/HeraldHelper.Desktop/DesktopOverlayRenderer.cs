@@ -303,6 +303,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             ControlEffectType.Stun => "STUNNED",
             ControlEffectType.Mezz => "MESMERIZED",
             ControlEffectType.Root => "ROOTED",
+            ControlEffectType.Nearsight => "NEARSIGHTED",
             _ => "CC'd"
         };
         return $"{label}  {elapsed:0.0}s";
@@ -530,6 +531,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             ControlEffectType.Mezz => MediaColor.FromRgb(0xDC, 0xD3, 0x35),
             ControlEffectType.Stun => MediaColor.FromRgb(0xCF, 0x33, 0xA4),
             ControlEffectType.Root => MediaColor.FromRgb(0xA8, 0x71, 0x30),
+            ControlEffectType.Nearsight => MediaColor.FromRgb(0x3E, 0xA4, 0xDC),
             _ => fallback
         };
 
@@ -547,6 +549,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             ControlEffectType.Mezz => "M",
             ControlEffectType.Stun => "S",
             ControlEffectType.Root => "R",
+            ControlEffectType.Nearsight => "N",
             _ => "?"
         };
     }

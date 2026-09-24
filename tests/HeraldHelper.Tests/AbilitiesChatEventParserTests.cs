@@ -612,4 +612,118 @@ public sealed class AbilitiesChatEventParserTests
         Assert.True(eden.FindBySpellName("Motivational Anthem", "Minstrel", 50)!.IsFixedCastTime);
         Assert.True(blackthorn.FindBySpellName("Motivational Anthem", "Minstrel", 50)!.IsFixedCastTime);
     }
+
+    [Fact]
+    public void Parse_BeginPlayingSongCreatesLandedHit()
+    {
+        // Minstrel mez is a song — "You begin playing X!" IS the
+        // application; the client prints no "You cast" line for songs.
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Mesmerizing Melody", "m", 30, HeraldHelper.Domain.Enums.ControlEffectType.Mezz)
+        ]);
+
+        var result = parser.Parse("You target [Alice]. You begin playing Mesmerizing Melody!");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.True(hit.LandedSuccessfully);
+    }
+
+    [Fact]
+    public void Parse_CantHaveEffectAgainSuppressesCastHit()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Stunning Bellow", "s", 9, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse(
+            "You target [Level 50 Training Dummy]. " +
+            "You cast a Stunning Bellow spell! " +
+            "Level 50 Training Dummy can't have that effect again yet!");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.False(hit.LandedSuccessfully);
+        Assert.Contains(result.NegationEvents!, x => x.Kind == NegationKind.FailedApplication);
+    }
+
+    [Fact]
+    public void Parse_AlreadyHasThisEffectSuppressesStyleHit()
+    {
+        // Live log: "You perform your Slam perfectly!" + "X already has
+        // this effect!" — the swing landed but the stun was rejected.
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "s", 9, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse(
+            "You target [Level 1 Training Dummy]. " +
+            "You perform your Slam perfectly! (+97, Growth Rate: 0.78) " +
+            "You attack Level 1 Training Dummy with your Brimstone Shield of Anarchy and hit for 297 damage! " +
+            "Level 1 Training Dummy already has this effect!");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.False(hit.LandedSuccessfully);
+    }
+
+    [Fact]
+    public void Parse_YourTargetAlreadyHasThatEffectSuppressesHit()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "s", 9, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse(
+            "You target [Alice]. You perform your Slam perfectly! " +
+            "Your target already has that effect! Wait until it expires. Spell failed.");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.False(hit.LandedSuccessfully);
+    }
+
+    [Fact]
+    public void Parse_EnterCombatModeTargetResolvesStyleHit()
+    {
+        // Melee swings print "You enter combat mode and target [X]" —
+        // without it the parser fell back to a stale adapter target and
+        // attributed the CC to the wrong name.
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "s", 9, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse(
+            "You enter combat mode and target [Level 50 Training Dummy]. " +
+            "You perform your Slam perfectly! (+29, Growth Rate: 0.78)",
+            fallbackTargetName: "Camelot Cleric");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.Equal("Level 50 Training Dummy", hit.TargetName);
+        Assert.True(hit.LandedSuccessfully);
+    }
+
+    [Fact]
+    public void Parse_FallbackTargetTrailingDashesAreStripped()
+    {
+        // The adapter layer appends "---" to non-player target names.
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "s", 9, HeraldHelper.Domain.Enums.ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse("Slam hits the dummy.", fallbackTargetName: "Level 1 Training Dummy---");
+
+        var hit = Assert.Single(result.AbilityHits);
+        Assert.Equal("Level 1 Training Dummy", hit.TargetName);
+    }
+
+    [Fact]
+    public void Parse_NearsightEffectCodeResolves()
+    {
+        Assert.Equal(
+            HeraldHelper.Domain.Enums.ControlEffectType.Nearsight,
+            AbilitiesChatEventParser.ParseEffectTypeCode("n"));
+    }
 }

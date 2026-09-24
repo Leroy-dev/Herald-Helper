@@ -488,9 +488,15 @@ public sealed class GameLoopOrchestrator : IDisposable
 
             // A resisted/immune spell can lag the cast line by a frame; a
             // failed swing must only undo the timer its own perform created.
-            var maxAge = negation.Kind is NegationKind.SwingFailed or NegationKind.StyleFailed
-                ? TimeSpan.FromSeconds(3)
-                : TimeSpan.FromSeconds(8);
+            // A rejected application ("already has this effect") means the
+            // prior timer is still valid — only a timer created by this
+            // exact attempt (a frame earlier) may be retracted.
+            var maxAge = negation.Kind switch
+            {
+                NegationKind.SwingFailed or NegationKind.StyleFailed => TimeSpan.FromSeconds(3),
+                NegationKind.FailedApplication => TimeSpan.FromSeconds(1.5),
+                _ => TimeSpan.FromSeconds(8)
+            };
             _ccImmunityTracker.RetractFreshEntries(names, nowUtc, maxAge);
             _diagnostics?.Log(
                 $"[CC] {negation.Kind} → retracted fresh timers for {string.Join(", ", names)}");

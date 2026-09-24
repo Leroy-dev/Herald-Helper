@@ -121,4 +121,34 @@ public sealed class CcImmunityTrackerTests
 
         Assert.Empty(tracker.GetActiveTimers(now.AddSeconds(1)));
     }
+
+    [Fact]
+    public void RetractFreshEntries_MatchesAcrossAdapterDashSuffix()
+    {
+        var tracker = new CcImmunityTracker();
+        var now = DateTimeOffset.UtcNow;
+        tracker.RegisterSuccessfulHit(
+            new AbilityHit("Level 1 Training Dummy---", "Slam", "s", ControlEffectType.Stun, 9, true),
+            null, 0, now);
+
+        tracker.RetractFreshEntries(["Level 1 Training Dummy"], now.AddSeconds(1), TimeSpan.FromSeconds(3));
+
+        Assert.Empty(tracker.GetActiveTimers(now.AddSeconds(1)));
+    }
+
+    [Fact]
+    public void RegisterSuccessfulHit_NearsightTracksDebuffDurationOnly()
+    {
+        var tracker = new CcImmunityTracker();
+        var now = DateTimeOffset.UtcNow;
+        tracker.RegisterSuccessfulHit(
+            new AbilityHit("Alice", "Nearsight", "n", ControlEffectType.Nearsight, 20, true),
+            null, 0, now);
+
+        var timer = Assert.Single(tracker.GetActiveTimers(now));
+        // No immunity multiplier — nearsight is a debuff, not hard CC.
+        Assert.InRange(timer.RemainingSeconds(now), 18, 20);
+        Assert.True(timer.RemainingSeconds(now.AddSeconds(19)) > 0);
+        Assert.Empty(tracker.GetActiveTimers(now.AddSeconds(21)));
+    }
 }

@@ -10,9 +10,12 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
 {
     private const int MaxAbilityTargetDistanceChars = 180;
     private const string NextMessageBoundary = @"(?=(?:\s+you\s+(?:exam\w*|begin|cast|attempt|move|prepare|target|resist|hit)\b)|(?:\s+[A-Z][A-Za-z'\-]+\s+casts?\s+a\s+spell\b)|[\r\n\.\!\?\:\;\]\[]|$)";
-    private static readonly Regex TargetBracketRegex = new(@"you\s+target\s*\[(?<name>[^\]\r\n]+)\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    /// "You target [X]" and "You enter combat mode and target [X]" both
+    /// name the current target — the combat-mode variant is what melee
+    /// swings print, so it must drive CC attribution too.
+    private static readonly Regex TargetBracketRegex = new(@"you\s+(?:enter\s+combat\s+mode\s+and\s+)?target\s*\[(?<name>[^\]\r\n]+)\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex TargetPlainRegex = new(
-        @"you\s+target\s+(?<name>(?!\[).*?)" + NextMessageBoundary,
+        @"you\s+(?:enter\s+combat\s+mode\s+and\s+)?target\s+(?<name>(?!\[).*?)" + NextMessageBoundary,
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex BeginCastingRegex = new(
         @"you\s+begin\s+casting\s+(?<name>(?:a|an|the)\s+.+?|.+?)\s+spell" + NextMessageBoundary,
@@ -60,7 +63,8 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         ("you are snared", ControlEffectType.Root),
         ("you cannot move", ControlEffectType.Stun),
         ("you are entangled", ControlEffectType.Root),
-        ("you are paralyzed", ControlEffectType.Stun)
+        ("you are paralyzed", ControlEffectType.Stun),
+        ("you are nearsighted", ControlEffectType.Nearsight)
     ];
     private static readonly string[] CastInterruptedMarkers =
     [
@@ -98,6 +102,16 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         "your target is enraged and resists the spell",
         "your item effect intercepts the",
         "ceremonial bracer intercept"
+    ];
+    /// "{name} can't have that effect again yet!" (Eden immunity) and
+    /// "{name} already has this effect!" — the application was rejected
+    /// because the CC is still running; the prior timer stays valid.
+    private static readonly Regex FailedApplicationNamedRegex = new(
+        @"(?<name>[A-Za-z][A-Za-z0-9'\- ]{1,40}?)\s+(?:can't\s+have\s+that\s+effect\s+again|already\s+has\s+(?:this|that)\s+effect)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly string[] FailedApplicationMarkers =
+    [
+        "your target already has that effect"
     ];
     /// Style lifecycle (server sends these only in the named phases):
     ///   prepare → button press queues the style (no swing yet)
@@ -185,7 +199,12 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
             negationEvents.Where(x => x.Kind == NegationKind.Resisted && x.TargetName is not null)
                           .Select(x => NormalizeTargetName(x.TargetName!)),
             StringComparer.OrdinalIgnoreCase);
+        var failedAppNames = new HashSet<string>(
+            negationEvents.Where(x => x.Kind == NegationKind.FailedApplication && x.TargetName is not null)
+                          .Select(x => NormalizeTargetName(x.TargetName!)),
+            StringComparer.OrdinalIgnoreCase);
         var spellNegated = negationEvents.Any(x => x.Kind == NegationKind.Immune);
+        var failedAppUnnamed = negationEvents.Any(x => x.Kind == NegationKind.FailedApplication && x.TargetName is null);
         var hitOrdinals = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var mention in hitMentions)
         {
@@ -209,20 +228,27 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
                 continue;
             }
 
+            targetName = NormalizeTargetName(targetName);
+
             var landed = context switch
             {
-                // "You perform your X perfectly!" only fires on a resolved hit.
-                MentionContext.StyleExecute => true,
-                // "You cast a X spell!" — landed unless a resist/immune line
-                // names this target in the same frame.
-                MentionContext.CastComplete =>
-                    !spellNegated && !resistedNames.Contains(NormalizeTargetName(targetName)),
+                // "You perform your X perfectly!" only fires on a resolved
+                // hit — but "already has this effect" means the CC itself
+                // was rejected even though the swing landed.
+                MentionContext.StyleExecute => !failedAppUnnamed,
+                // "You cast a X spell!" — landed unless a resist/immune
+                // line names this target in the same frame.
+                // "You begin playing X!" — a song IS the application; the
+                // client prints no completion line for it.
+                MentionContext.CastComplete or MentionContext.SongStart =>
+                    !spellNegated && !failedAppUnnamed && !resistedNames.Contains(NormalizeTargetName(targetName)),
                 // Failure text lives in the mention's own sentence or the ones
                 // after it ("Foo resists your Slam!") — a "must wait … again"
                 // line from an earlier attempt must not suppress a landed hit.
-                _ => !ContainsFailureKeyword(WindowFromLineStart(normalizedOcrText, mention.Index, mention.Ability.Name.Length))
+                _ => !failedAppUnnamed && !ContainsFailureKeyword(WindowFromLineStart(normalizedOcrText, mention.Index, mention.Ability.Name.Length))
             };
-            if (resistedNames.Contains(NormalizeTargetName(targetName)))
+            if (resistedNames.Contains(NormalizeTargetName(targetName)) ||
+                failedAppNames.Contains(NormalizeTargetName(targetName)))
             {
                 landed = false;
             }
@@ -259,6 +285,7 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         Bare,
         CastStart,
         CastComplete,
+        SongStart,
         StylePrepare,
         StyleExecute,
         StyleFail,
@@ -277,7 +304,7 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         }
         foreach (Match m in BeginPlayingRegex.Matches(text))
         {
-            spans.Add((m.Index, m.Index + m.Length, MentionContext.CastStart));
+            spans.Add((m.Index, m.Index + m.Length, MentionContext.SongStart));
         }
         foreach (Match m in CastCompletedRegex.Matches(text))
         {
@@ -366,6 +393,19 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         {
             events.Add((m.Index, new NegationEvent(NegationKind.SwingFailed, CleanupResistName(m.Groups["name"].Value))));
         }
+        foreach (Match m in FailedApplicationNamedRegex.Matches(ocrText))
+        {
+            events.Add((m.Index, new NegationEvent(NegationKind.FailedApplication, CleanupResistName(m.Groups["name"].Value))));
+        }
+        foreach (var marker in FailedApplicationMarkers)
+        {
+            var startIndex = 0;
+            while ((startIndex = lowered.IndexOf(marker, startIndex, StringComparison.Ordinal)) >= 0)
+            {
+                events.Add((startIndex, new NegationEvent(NegationKind.FailedApplication, null)));
+                startIndex += marker.Length;
+            }
+        }
         foreach (var marker in SwingFailedMarkers)
         {
             var startIndex = 0;
@@ -405,9 +445,11 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         return name.Trim();
     }
 
+    /// "the goborchend wounder"/"goborchend wounder" and the "---" suffix the
+    /// adapter layer appends to non-player targets must all fold to one name.
     private static string NormalizeTargetName(string name)
     {
-        var trimmed = name.Trim();
+        var trimmed = name.Trim().TrimEnd('-').TrimEnd();
         return trimmed.StartsWith("the ", StringComparison.OrdinalIgnoreCase)
             ? trimmed[4..].TrimStart()
             : trimmed;
@@ -871,6 +913,7 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
             "m" => ControlEffectType.Mezz,
             "s" => ControlEffectType.Stun,
             "r" => ControlEffectType.Root,
+            "n" => ControlEffectType.Nearsight,
             _ => ControlEffectType.Stun
         };
     }
