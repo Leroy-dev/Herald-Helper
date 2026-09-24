@@ -9,11 +9,11 @@ using HeraldHelper.Desktop.Models;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 using MaterialDesignThemes.Wpf;
+using MediaColor = System.Windows.Media.Color;
 using WpfButton = System.Windows.Controls.Button;
 using WpfCheckBox = System.Windows.Controls.CheckBox;
 using WpfComboBox = System.Windows.Controls.ComboBox;
 using WpfTextBox = System.Windows.Controls.TextBox;
-using MediaColor = System.Windows.Media.Color;
 
 namespace HeraldHelper.Desktop;
 
