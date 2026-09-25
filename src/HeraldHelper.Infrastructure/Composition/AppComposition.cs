@@ -118,7 +118,9 @@ public static class AppComposition
         {
             ShardType.Eden => new EdenCastSpellCatalog(),
             ShardType.Blackthorn => new BlackthornCastSpellCatalog(),
-            _ => new EmptyCastSpellCatalog()
+            // Other shards get the server's own Spell table (authoritative
+            // for the local OpenDAoC server; empty when the CSV is absent).
+            _ => new ServerCastSpellCatalog()
         };
         if (getCastSpellOverrides is not null && settings.ShardType is ShardType.Eden or ShardType.Blackthorn)
         {

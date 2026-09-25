@@ -57,7 +57,7 @@ public sealed class EdenCastSpellCatalog : ICastSpellCatalog
             return new Dictionary<string, IReadOnlyList<CastSpellInfo>>(StringComparer.OrdinalIgnoreCase);
         }
 
-        var iconIndex = LoadIconIndex(Path.Combine(dataRoot, "generated", "icon-configs.json"));
+        var iconIndex = CatalogIconIndex.Load(Path.Combine(dataRoot, "generated", "icon-configs.json"));
         var classesDir = Path.Combine(dataRoot, "generated", "classes");
         if (!Directory.Exists(classesDir))
         {
@@ -85,68 +85,11 @@ public sealed class EdenCastSpellCatalog : ICastSpellCatalog
             StringComparer.OrdinalIgnoreCase);
     }
 
-    private static Dictionary<int, IndexedIcon> LoadIconIndex(string path)
-    {
-        var icons = new Dictionary<int, IndexedIcon>();
-        if (!File.Exists(path))
-        {
-            return icons;
-        }
-
-        using var stream = File.OpenRead(path);
-        using var document = JsonDocument.Parse(stream);
-        foreach (var item in document.RootElement.EnumerateArray())
-        {
-            if (!item.TryGetProperty("requestedIconId", out var idElement) || !idElement.TryGetInt32(out var iconId))
-            {
-                continue;
-            }
-
-            if (!item.TryGetProperty("spriteSheet", out var sheetElement) || !item.TryGetProperty("sprite", out var spriteElement))
-            {
-                continue;
-            }
-
-            var spriteSheet = sheetElement.GetString();
-            if (string.IsNullOrWhiteSpace(spriteSheet))
-            {
-                continue;
-            }
-
-            var candidate = new IconSpriteRef(
-                spriteSheet,
-                ReadInt(spriteElement, "x"),
-                ReadInt(spriteElement, "y"),
-                ReadInt(spriteElement, "width"),
-                ReadInt(spriteElement, "height"),
-                ReadNestedInt(item, "overlays", "border"),
-                ReadNestedInt(item, "overlays", "spellBadge"),
-                ReadCornerIndex(item, "upLeft"),
-                ReadCornerIndex(item, "up"),
-                ReadCornerIndex(item, "upRight"),
-                ReadCornerIndex(item, "right"),
-                ReadCornerIndex(item, "downRight"),
-                ReadCornerIndex(item, "down"),
-                ReadCornerIndex(item, "left"));
-            var mappingType = item.TryGetProperty("mappingType", out var mappingTypeElement)
-                ? mappingTypeElement.GetString() ?? string.Empty
-                : string.Empty;
-
-            if (!icons.TryGetValue(iconId, out var existing)
-                || MappingPriority(mappingType) > MappingPriority(existing.MappingType))
-            {
-                icons[iconId] = new IndexedIcon(candidate, mappingType);
-            }
-        }
-
-        return icons;
-    }
-
     private static void CollectEntries(
         JsonElement element,
         string className,
         Dictionary<string, List<CastSpellInfo>> result,
-        IReadOnlyDictionary<int, IndexedIcon> iconIndex)
+        IReadOnlyDictionary<int, CatalogIconIndex.IndexedIcon> iconIndex)
     {
         switch (element.ValueKind)
         {
@@ -170,7 +113,7 @@ public sealed class EdenCastSpellCatalog : ICastSpellCatalog
         JsonElement element,
         string className,
         Dictionary<string, List<CastSpellInfo>> result,
-        IReadOnlyDictionary<int, IndexedIcon> iconIndex)
+        IReadOnlyDictionary<int, CatalogIconIndex.IndexedIcon> iconIndex)
     {
         if (!TryReadString(element, "name", out var name))
         {
@@ -468,13 +411,6 @@ public sealed class EdenCastSpellCatalog : ICastSpellCatalog
         return raw.Contains("min", StringComparison.OrdinalIgnoreCase) ? value * 60 : value;
     }
 
-    private static int ReadInt(JsonElement element, string propertyName)
-    {
-        return element.TryGetProperty(propertyName, out var property) && property.TryGetInt32(out var value)
-            ? value
-            : 0;
-    }
-
     private static IconSpriteRef? ParseIconRef(JsonElement element)
     {
         if (element.ValueKind != JsonValueKind.Object)
@@ -490,49 +426,19 @@ public sealed class EdenCastSpellCatalog : ICastSpellCatalog
 
         return new IconSpriteRef(
             spriteSheet,
-            ReadInt(sprite, "x"),
-            ReadInt(sprite, "y"),
-            ReadInt(sprite, "width"),
-            ReadInt(sprite, "height"),
-            ReadNestedInt(element, "overlays", "border"),
-            ReadNestedInt(element, "overlays", "spellBadge"),
-            ReadCornerIndex(element, "upLeft"),
-            ReadCornerIndex(element, "up"),
-            ReadCornerIndex(element, "upRight"),
-            ReadCornerIndex(element, "right"),
-            ReadCornerIndex(element, "downRight"),
-            ReadCornerIndex(element, "down"),
-            ReadCornerIndex(element, "left"));
-    }
-
-    private static int ReadNestedInt(JsonElement element, string objectName, string propertyName)
-    {
-        return element.TryGetProperty(objectName, out var nested) &&
-               nested.TryGetProperty(propertyName, out var property) &&
-               property.TryGetInt32(out var value)
-            ? value
-            : 0;
-    }
-
-    private static int ReadCornerIndex(JsonElement element, string propertyName)
-    {
-        return element.TryGetProperty("overlays", out var overlays) &&
-               overlays.TryGetProperty("corners", out var corners) &&
-               corners.TryGetProperty(propertyName, out var property) &&
-               property.TryGetInt32(out var value)
-            ? value
-            : 0;
-    }
-
-    private static int MappingPriority(string mappingType)
-    {
-        return mappingType.ToLowerInvariant() switch
-        {
-            "spell" => 3,
-            "direct" => 2,
-            "style" => 1,
-            _ => 0
-        };
+            CatalogIconIndex.ReadInt(sprite, "x"),
+            CatalogIconIndex.ReadInt(sprite, "y"),
+            CatalogIconIndex.ReadInt(sprite, "width"),
+            CatalogIconIndex.ReadInt(sprite, "height"),
+            CatalogIconIndex.ReadNestedInt(element, "overlays", "border"),
+            CatalogIconIndex.ReadNestedInt(element, "overlays", "spellBadge"),
+            CatalogIconIndex.ReadCornerIndex(element, "upLeft"),
+            CatalogIconIndex.ReadCornerIndex(element, "up"),
+            CatalogIconIndex.ReadCornerIndex(element, "upRight"),
+            CatalogIconIndex.ReadCornerIndex(element, "right"),
+            CatalogIconIndex.ReadCornerIndex(element, "downRight"),
+            CatalogIconIndex.ReadCornerIndex(element, "down"),
+            CatalogIconIndex.ReadCornerIndex(element, "left"));
     }
 
     private static string NormalizeName(string value)
@@ -555,6 +461,4 @@ public sealed class EdenCastSpellCatalog : ICastSpellCatalog
     {
         return (info.Icon is null ? 0 : 10) + (int)Math.Round(info.CastTimeSeconds);
     }
-
-    private sealed record IndexedIcon(IconSpriteRef Icon, string MappingType);
 }
