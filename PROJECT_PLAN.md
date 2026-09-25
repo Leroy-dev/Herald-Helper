@@ -17,26 +17,32 @@ The C# application is the implementation to extend and validate. New work should
 - .NET 10 WPF desktop application split into Domain, Application, Infrastructure, Desktop, and xUnit test projects.
 - Configurable OCR/game loop running at approximately 350 ms with overlap protection.
 - Region-based chat OCR plus direct DAoC bitmap-font glyph reading for supported attribute and resistance windows.
-- English chat parsing for player targets, friendly/enemy membership, cast start/completion/interruption, repeated casts, and ability hits.
+- English chat parsing for player targets, friendly/enemy membership, cast start/completion/interruption, repeated casts, ability hits, self-CC apply/expire, realm-ability activations, negation lines, kills/deaths, incoming attacks, and broadcast effect lines (Message2/4).
 - Eden and Blackthorn herald lookups with cancellation, retry behavior, background refresh, and a shard-separated SQLite target cache.
-- CC immunity calculations with class-sensitive Determination and light-Determination rules.
-- Eden/Blackthorn class-aware cast catalogs, rank selection by level, official icon lookup, and local metadata/icon overrides.
+- CC immunity calculations with server-verified shard rules: OpenDAoC flat 60s post-effect immunity (adaptive off — Slam = 69s), Eden live-era 5x melee rule (Slam = 54s), class-sensitive Determination, no-immunity DamageSpeedDecrease, resist/reject retractions.
+- Eden/Blackthorn class-aware cast catalogs plus a server spell-table catalog for other shards (real cast times, recasts, damage, icons).
 - Per-server, per-class, and per-character ability profiles with aliases and enabled/disabled overrides.
-- Cast metrics using OCR-read dexterity, acuity, casting speed, spell damage, fixed-cast metadata, and a two-second minimum for adjustable casts.
-- Target, CC timer, and cast-bar overlays; non-player targets preserve the last displayed player.
+- Cast metrics using OCR-read dexterity, acuity, casting speed, spell damage, fixed-cast metadata, and a two-second minimum for adjustable casts; adapter `stats_dexterity` merges into cast speed when memory reads are on.
+- Target, CC timer, cast-bar, group, pet, self-buffs, resists, and cooldown overlay windows; non-player targets preserve the last displayed player; pending players render `Name + Loading...`.
+- Per-category READY lines (Stun/Mezz/Root/Nearsight) on the current target and an optional sound when a category opens.
+- Self-CC banner that clears at the real effect-expire message; "who is peeling me" attacker list.
+- Group frames show vitals, buff icons, and CC badges driven by broadcast effect lines; a broadcast stun on the current target synthesizes an immunity timer.
+- Cooldowns window for spell recasts (server recast table) and realm abilities (mined `GetReUseDelay` values — Purge 1800s, Vanish 1800s, Battle Yell 900s…).
 - Searchable, virtualized Eden/Blackthorn spell browser with hover details, entry editor, and icon chooser.
 - Catalog updater with staging, validation, backup, publish, and rollback behavior.
 - SQLite configuration and profiles, one-time legacy config import, DPAPI protection for local secrets, and secret-free JSON export.
-- OCR replay capture under `%LocalAppData%\HeraldHelper\ocr-replay`.
+- OCR replay capture under `%LocalAppData%\HeraldHelper\ocr-replay` plus a headless `ReplayRunner` fixture diff.
+- Chatlog file-tail, chat-log FILE* memory read, and scrollback-arena chat sources layered behind OCR; adapter-map memory reads feed vitals/resists/group/pet/self-effects.
+- CI: build+test+catalog-validation+Playwright check on push; release workflow publishes the portable build.
 
 ### Partial or intentionally limited
 
-- Eden and Blackthorn are the primary complete profiles. Other shard clients can resolve players but have no equivalent generated cast catalog.
+- Eden and Blackthorn have herald-backed class catalogs; other shards use the server spell table (no per-class rank/level gating).
 - Damage output is an estimate, not a server-authoritative combat simulator.
-- OCR replay data is captured, but there is no complete headless replay-to-regression-test runner.
-- The resistance toggle is persisted and read by the renderer, but there is no dedicated resistance overlay surface yet.
-- A newly seen uncached player gets a pending name-only profile, but the current renderer suppresses it until herald details arrive.
+- The scrollback-arena chat source is opt-in: it wraps and mangles lines under heavy chat spam.
+- Broadcast-CC durations are unknowable — group badges are boolean markers (~12s cap); only the tight-banded stun (3-11s) is safe to synthesize as a target timer.
 - Mauler is intentionally excluded from Eden generation because Eden does not provide that class.
+- Game-vs-gamedata.mpk mismatches for AC/resist materialize as data staleness, not code errors.
 
 ## 3. Architecture deep-dive
 
@@ -306,9 +312,11 @@ The recent known-good baseline is 97 passing tests. Close a running Desktop inst
 
 | Area | Primary tests | Current guarantees |
 | --- | --- | --- |
-| Chat parsing and cast catalogs | `AbilitiesChatEventParserTests.cs` | Phrases, merged OCR blobs, newest-target selection, enemy players, ordinals, aliases, bounded fuzzy matching, class/level resolution, icons, and fixed casts. |
-| Loop state and target concurrency | `GameLoopOrchestratorTests.cs` | Non-members, last-player preservation, retries, async/stale lookup handling, cache-first display, target ordering, cast lifecycle, repeated casts, stable stats, and cancellation. |
-| CC tracking | `CcImmunityTrackerTests.cs` | Registration and expiration of timers. Expand when class formulas change. |
+| Chat parsing and cast catalogs | `AbilitiesChatEventParserTests.cs`, `CombatEventParsingTests.cs` | Phrases, merged OCR blobs, newest-target selection, enemy players, ordinals, aliases, bounded fuzzy matching, class/level resolution, icons, fixed casts; self-CC apply/expire, kills/deaths, incoming attacks, broadcast CC lines, realm-ability activations, negations. |
+| Server catalogs | `ServerCastSpellCatalogTests.cs`, `CatalogIconIndexTests.cs` | Name/icon resolution from the deployed spell table, recast parsing, shared icon index. |
+| Realm-ability cooldowns | `RealmAbilityCooldownTableTests.cs` | Delve parsing plus the server-mined CSV fallback for non-Eden/Blackthorn shards. |
+| Loop state and target concurrency | `GameLoopOrchestratorTests.cs` | Non-members, last-player preservation, retries, async/stale lookup handling, cache-first display, target ordering, cast lifecycle, repeated casts, stable stats, broadcast-CC timers, READY lines, cancellation. |
+| CC tracking | `CcImmunityTrackerTests.cs`, `OverlayTimerLineTests.cs` | Registration and expiration of timers; READY-line composition per category and shard model. Expand when class formulas change. |
 | Character stats, metrics, replay, icons | `CharacterStatsAndReplayTests.cs` | Compact stat parsing, OCR substitutions, acuity mapping, two-second minimum, fixed casts, changed-frame replay, icon cropping, and runtime regions. |
 | Bitmap glyph infrastructure | `DaocBitmapFontInfrastructureTests.cs` | TGA origin/RLE/bounds, marker atlas parsing, glyph values, row spacing, capture width, and batch diagnostics. |
 | DAoC window geometry | `DaocWindowParsingTests.cs` | XML dimensions, INI fallback, marked custom windows, and chat rectangle behavior. |
@@ -321,15 +329,12 @@ The recent known-good baseline is 97 passing tests. Close a running Desktop inst
 Important gaps in automated coverage:
 
 - No WPF UI automation for opening/closing the spell browser, editor, icon browser, or overlay windows.
-- No full replay runner that feeds recorded image/text sequences through capture/parser/orchestrator expectations.
 - No dedicated Eden HTTP contract test independent of live auth.
-- No tests for target-cache expiry/eviction because no retention policy exists yet.
 - Limited failure-injection coverage for catalog publish/rollback and corrupt generated data.
 - No performance budget test for per-region capture or end-to-end target display.
 
 ## 10. Current feature gaps and technical debt
 
-- First-time uncached player display can exceed one second. `SetPendingPlayerTargetLocked` creates the name-only profile, but `DesktopOverlayRenderer.IsRealPlayerTarget` suppresses it.
 - All OCR windows are captured sequentially. Stats/resistance capture can delay chat parsing even though target text is more latency-sensitive.
 - The dispatcher loop skips overlapping ticks. Slow OCR is safe for state but can miss short-lived repeated lines.
 - Replay writes occur inline and can add disk latency when enabled.
@@ -338,8 +343,8 @@ Important gaps in automated coverage:
 - Fixed-cast behavior is inferred from catalog attributes/categories. It should become explicit versioned server/class metadata.
 - Fuzzy matching remains a correctness risk because both supported catalogs contain duplicate names. Never broaden it globally.
 - Damage estimates omit specialization, target resistance, variance, critical hits, buffs/debuffs, and shard-specific formulas.
-- `overlayShowResist` is loaded, but no resistance text/window is rendered.
-- Target cache has no TTL, size bound, clear UI, or in-memory front layer. SQLite reads occur while target state is locked.
+- Group CC badges need the stats adapter for group-member names — conservative mode sees the broadcast events but has no member list to badge.
+- Broadcast-apply lines could feed non-stun timers only if per-spell durations were inferable; mez/root/snare ranges are too wide to guess.
 - `MainWindow.xaml.cs`, `AppDataStore.cs`, and `GameLoopOrchestrator.cs` are large and mix responsibilities. Refactoring must follow characterization tests, not precede them.
 - Browser/editor classes use Eden-specific names while serving both supported shards.
 - Catalog crawlers depend on changing public frontend schemas; Blackthorn parsing is especially coupled to its deployed Next.js structure.
@@ -348,69 +353,35 @@ Important gaps in automated coverage:
 
 ## 11. Immediate priorities and acceptance criteria
 
-### P0.1: target latency and pending display
+The original P0 block (pending-player display, repeated/fixed casts, replay
+runner) and the P1 cache/catalog items are all shipped — `[Timing]`
+diagnostics per stage, `TargetProfile.IsLoading` renders instantly, the
+`ReplayRunner` diff exists, `CatalogUpdateService.PreviewAsync` exists,
+`DatabaseMigrationVersion`/`BackupFormatVersion` are separate, and the
+resist window renders real adapter values.
 
-Work:
+Current priorities, ordered by value-per-effort:
 
-- Add structured per-stage timing for every capture region, parse, replay write, cache read, HTTP lookup, and render.
-- Allow a confirmed member's name-only pending profile to render as `Name` plus a loading indicator.
-- Keep non-player behavior and generation-based stale-response protection unchanged.
+### Live verification (Eden, real fights)
 
-Done when:
+- Confirm the 5x style-stun immunity (Slam ≈ 54s) against a real slam+restun —
+  current Eden model is user-measured, not server-verified.
+- Confirm `READY:` categories light at the right moments in a group fight and
+  that groupmate CC badges fire on broadcast lines.
 
-- An uncached confirmed player name appears in the first render after its target event is parsed, without waiting for HTTP.
-- A cached profile appears in that same tick with full cached details.
-- Targeting a dummy/monster leaves the last player visible.
-- Switching A to B cannot be reverted by A's late response.
-- Diagnostics expose stage durations without secrets, and focused orchestrator tests cover all four cases.
+### Coverage polish
 
-### P0.2: repeated and fixed casts
+- Consider a per-member CC chip color/badge style pass on the group frame once
+  the badges are confirmed in play.
+- Any OCR/parser misses reported by real replays.
 
-Work:
+### Debt worth retiring
 
-- Convert real long-session replays into tests for repeated identical casts, reappearing lines, completion, interruption, and song starts.
-- Make fixed/minimum cast behavior explicit in catalog/profile metadata where possible.
-
-Done when:
-
-- One continuously visible start line starts exactly one bar.
-- A genuine second occurrence of the same spell starts a second bar.
-- Completion/interruption prevents an old visible line from restarting the bar.
-- Minstrel speed metadata produces a fixed three-second bar on the intended shards/classes.
-- Adjustable casts never calculate below two seconds unless the catalog base time itself is shorter.
-
-### P0.3: replay regression runner
-
-Work:
-
-- Define a stable replay fixture format derived from `record.json`.
-- Add a headless runner that compares expected OCR/parser events across ordered frames.
-- Keep large private gameplay screenshots outside normal source unless sanitized/minimized.
-
-Done when:
-
-- A developer can run one command against a replay fixture and receive a deterministic event diff.
-- Parser fixes include a fixture that failed before the fix.
-- Replays can validate repeated events across frames, not only a single text snapshot.
-
-### P1: data and persistence reliability
-
-- Add an in-memory target-cache front layer, explicit retention policy, diagnostics, and asynchronous SQLite writes.
-- Add catalog update previews for class/spell/icon additions, removals, conflicts, and schema changes.
-- Separate `DatabaseMigrationVersion` from `BackupFormatVersion` and add real old-database fixtures.
-- Add publish/rollback failure-injection tests and catalog schema validation before replacement.
-- Implement a real resistance overlay or remove/disable its misleading toggle until supported.
-
-### P2: maintainability
-
-- Extract runtime/settings/character/profile controllers from `MainWindow`.
-- Split `AppDataStore` into settings (including auth), backup, ability profile, catalog override, stats, target-cache, and database-migrations repositories behind interfaces.
-  - Done: all repositories.
-- Extract runtime/settings/character/profile controllers from `MainWindow`.
-  - Done: `SettingsController`, `OverlaySettingsController`, `RuntimeController`, `AuthController`, `AbilityProfileController`, `DaocCharacterController`.
-- Split loop capture/parse processing from target-resolution state only after stage timings and characterization tests exist.
-- Rename shared browser/editor classes away from Eden-specific names.
-- Add CI for clean build, all tests, generated manifest validation.
+- `MainWindow`/`AppDataStore`/`GameLoopOrchestrator` splits — only with
+  characterization tests first.
+- Rename the Eden-named shared browser/editor classes.
+- `softprops/action-gh-release` runs on deprecated Node 20 — bump when a
+  maintained fork/tag exists.
 
 ## 12. Open questions for the project owner
 
