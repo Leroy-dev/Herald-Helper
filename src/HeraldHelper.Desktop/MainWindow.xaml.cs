@@ -82,6 +82,7 @@ public partial class MainWindow : Window
     private System.Windows.Controls.CheckBox SoundSelfCcCheckbox => OverlayView!.SoundSelfCcCheckbox;
     private System.Windows.Controls.CheckBox SoundPeelCheckbox => OverlayView!.SoundPeelCheckbox;
     private System.Windows.Controls.CheckBox SoundInterruptCheckbox => OverlayView!.SoundInterruptCheckbox;
+    private System.Windows.Controls.CheckBox SoundReadyCheckbox => OverlayView!.SoundReadyCheckbox;
     private System.Windows.Controls.TextBox OverlayOpacityText => OverlayView!.OverlayOpacityText;
     private System.Windows.Controls.TextBox TargetColorText => OverlayView!.TargetColorText;
     private System.Windows.Controls.CheckBox UseRealmColorsCheckbox => OverlayView!.UseRealmColorsCheckbox;
@@ -983,6 +984,7 @@ public partial class MainWindow : Window
             SoundSelfCcCheckbox.IsChecked = _overlaySettings.SoundSelfCc;
             SoundPeelCheckbox.IsChecked = _overlaySettings.SoundPeel;
             SoundInterruptCheckbox.IsChecked = _overlaySettings.SoundInterrupt;
+            SoundReadyCheckbox.IsChecked = _overlaySettings.SoundCcReady;
             DynamicCastSpeedCheckbox.IsChecked = _overlaySettings.DynamicCastSpeedEnabled;
             EstimatedSpellDamageCheckbox.IsChecked = _overlaySettings.EstimatedSpellDamageEnabled;
             OcrReplayCheckbox.IsChecked = _overlaySettings.OcrReplayEnabled;

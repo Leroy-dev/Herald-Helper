@@ -52,6 +52,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private bool _soundSelfCc = true;
     private bool _soundPeel = true;
     private bool _soundInterrupt = true;
+    private bool _soundCcReady = true;
     private double _overlayOpacity = 1.0;
     private bool _showGuild = true;
     private bool _showClass = true;
@@ -125,6 +126,7 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public bool SoundSelfCc { get => _soundSelfCc; set { _soundSelfCc = value; OnPropertyChanged(nameof(SoundSelfCc)); } }
     public bool SoundPeel { get => _soundPeel; set { _soundPeel = value; OnPropertyChanged(nameof(SoundPeel)); } }
     public bool SoundInterrupt { get => _soundInterrupt; set { _soundInterrupt = value; OnPropertyChanged(nameof(SoundInterrupt)); } }
+    public bool SoundCcReady { get => _soundCcReady; set { _soundCcReady = value; OnPropertyChanged(nameof(SoundCcReady)); } }
     public double OverlayOpacity { get => _overlayOpacity; set { _overlayOpacity = Math.Clamp(value, 0.3, 1.0); OnPropertyChanged(nameof(OverlayOpacity)); } }
     public bool ShowGuild { get => _showGuild; set { _showGuild = value; OnPropertyChanged(nameof(ShowGuild)); } }
     public bool ShowClass { get => _showClass; set { _showClass = value; OnPropertyChanged(nameof(ShowClass)); } }

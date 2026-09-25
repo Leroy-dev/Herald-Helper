@@ -28,6 +28,7 @@ public sealed class AlertSoundService : IAlertSound
             AlertKind.SelfCc => (overlay.SoundSelfCc, SystemSounds.Hand),
             AlertKind.IncomingAttack => (overlay.SoundPeel, SystemSounds.Exclamation),
             AlertKind.CastInterrupted => (overlay.SoundInterrupt, SystemSounds.Asterisk),
+            AlertKind.CcReady => (overlay.SoundCcReady, SystemSounds.Question),
             _ => (false, SystemSounds.Beep)
         };
 

@@ -588,6 +588,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     private async Task RenderFrameAsync(string ocrText, DateTimeOffset nowUtc, CancellationToken cancellationToken)
     {
         var timers = _ccImmunityTracker.GetActiveTimers(nowUtc);
+        UpdateReadyAlert(timers, nowUtc);
         if (_activeCast is not null && !_activeCast.IsActive(nowUtc))
         {
             _activeCast = null;
@@ -630,6 +631,55 @@ public sealed class GameLoopOrchestrator : IDisposable
         await _overlayRenderer.RenderAsync(snapshot, cancellationToken);
         renderStopwatch.Stop();
         _diagnostics?.Log($"[Timing] render: {renderStopwatch.ElapsedMilliseconds} ms");
+    }
+
+    private static readonly ControlEffectType[] ReadinessCategories =
+        [ControlEffectType.Stun, ControlEffectType.Mezz, ControlEffectType.Root];
+    private readonly HashSet<ControlEffectType> _readyCategories = [];
+    private string? _readyTarget;
+
+    /// <summary>Ping when a CC category's immunity expires on the current
+    /// target — only fires on immune→ready transitions for the same target,
+    /// so retargeting doesn't spam the alert.</summary>
+    private void UpdateReadyAlert(IReadOnlyCollection<CcTimerEntry> timers, DateTimeOffset nowUtc)
+    {
+        if (string.IsNullOrWhiteSpace(_currentTargetName))
+        {
+            _readyCategories.Clear();
+            _readyTarget = null;
+            return;
+        }
+
+        var normalized = NormalizeTimerTargetName(_currentTargetName);
+        var ready = ReadinessCategories
+            .Where(c => !timers.Any(t => t.EffectType == c && t.RemainingSeconds(nowUtc) > 0 &&
+                string.Equals(NormalizeTimerTargetName(t.TargetName), normalized,
+                    StringComparison.OrdinalIgnoreCase)))
+            .ToHashSet();
+
+        if (string.Equals(normalized, _readyTarget, StringComparison.OrdinalIgnoreCase))
+        {
+            var newlyReady = ready.Except(_readyCategories).ToList();
+            if (newlyReady.Count > 0)
+            {
+                _alertSound?.Play(AlertKind.CcReady);
+                _diagnostics?.Log($"[Ready] {string.Join('+', newlyReady)} on {normalized}");
+            }
+        }
+
+        _readyCategories.Clear();
+        _readyCategories.UnionWith(ready);
+        _readyTarget = normalized;
+    }
+
+    /// <summary>Same normalization as CcImmunityTracker/DesktopOverlayRenderer —
+    /// adapter and chat names disagree on "the " prefixes and "---" suffixes.</summary>
+    private static string NormalizeTimerTargetName(string name)
+    {
+        var trimmed = name.Trim().TrimEnd('-').TrimEnd();
+        return trimmed.StartsWith("the ", StringComparison.OrdinalIgnoreCase)
+            ? trimmed[4..].TrimStart()
+            : trimmed;
     }
 
     /// <summary>RA activations + spell recasts as one countdown list —

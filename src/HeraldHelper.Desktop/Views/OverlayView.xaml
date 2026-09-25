@@ -59,6 +59,8 @@
                                           ToolTip="Alert when an enemy first enters the peel list." />
                                 <CheckBox x:Name="SoundInterruptCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Interrupt"
                                           ToolTip="Alert when your cast is interrupted." />
+                                <CheckBox x:Name="SoundReadyCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="CC ready"
+                                          ToolTip="Alert when a CC immunity expires on the current target and the category is open again." />
                                 <TextBox Width="70" x:Name="OverlayOpacityText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Opacity %"
                                          ToolTip="Overlay opacity 30–100 (100 = fully opaque)." />
                             </WrapPanel>

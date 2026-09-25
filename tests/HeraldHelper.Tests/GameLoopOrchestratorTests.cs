@@ -102,6 +102,47 @@ public sealed class GameLoopOrchestratorTests
     }
 
     [Fact]
+    public async Task TickAsync_AlertsOnceWhenCcImmunityExpires()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var capture = new FakeChatCaptureService("ignored");
+        var parser = new FakeChatEventParser(new ChatParseResult(
+            new TargetEvent("Alice", IsMemberTarget: true),
+            []));
+        var tracker = new CcImmunityTracker();
+        var overlay = new RecordingOverlayRenderer();
+        var alerts = new RecordingAlertSound();
+        var orchestrator = new GameLoopOrchestrator(
+            capture, parser, new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            tracker, overlay, alertSound: alerts);
+
+        // Establish the target — all categories open, baseline recorded.
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now, CancellationToken.None);
+
+        // Stun lands on Alice (1s stun + 60s flat immunity on non-Eden).
+        tracker.RegisterSuccessfulHit(
+            new AbilityHit("Alice", "Slam", "m", ControlEffectType.Stun, 1, true, IsMeleeStyle: true),
+            null, 0, now, ShardType.Default);
+
+        // While immune the ready set loses Stun — a baseline shift, not an alert.
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now.AddSeconds(1), CancellationToken.None);
+        Assert.Empty(alerts.Kinds);
+
+        // Immunity expired (61s total) — Stun flips back to ready: one ping.
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now.AddSeconds(62), CancellationToken.None);
+        Assert.Single(alerts.Kinds, AlertKind.CcReady);
+
+        // Nothing changed on the next tick — no repeat.
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now.AddSeconds(63), CancellationToken.None);
+        Assert.Single(alerts.Kinds);
+    }
+
+    [Fact]
     public async Task TickAsync_KeepsPreviousProfileWhenNewestTargetIsNonMember()
     {
         var now = DateTimeOffset.UtcNow;
@@ -1200,6 +1241,12 @@ public sealed class GameLoopOrchestratorTests
         {
             return _result;
         }
+    }
+
+    private sealed class RecordingAlertSound : IAlertSound
+    {
+        public List<AlertKind> Kinds { get; } = [];
+        public void Play(AlertKind kind) => Kinds.Add(kind);
     }
 
     private sealed class FakeHeraldClientFactory : IHeraldClientFactory

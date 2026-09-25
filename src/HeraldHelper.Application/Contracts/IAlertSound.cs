@@ -9,7 +9,11 @@ public enum AlertKind
     IncomingAttack,
 
     /// <summary>Your cast got interrupted.</summary>
-    CastInterrupted
+    CastInterrupted,
+
+    /// <summary>A CC category became usable on the current target
+    /// (its immunity timer expired).</summary>
+    CcReady
 }
 
 /// <summary>Optional audible alerts — desktop plays system sounds; tests stay

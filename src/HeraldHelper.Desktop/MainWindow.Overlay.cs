@@ -414,6 +414,7 @@ public partial class MainWindow : Window
         HookOverlayCheck(SoundSelfCcCheckbox, (s, v) => s.SoundSelfCc = v);
         HookOverlayCheck(SoundPeelCheckbox, (s, v) => s.SoundPeel = v);
         HookOverlayCheck(SoundInterruptCheckbox, (s, v) => s.SoundInterrupt = v);
+        HookOverlayCheck(SoundReadyCheckbox, (s, v) => s.SoundCcReady = v);
         HookOverlayCheck(DynamicCastSpeedCheckbox, (s, v) => s.DynamicCastSpeedEnabled = v);
         HookOverlayCheck(EstimatedSpellDamageCheckbox, (s, v) => s.EstimatedSpellDamageEnabled = v);
         HookOverlayCheck(OcrReplayCheckbox, (s, v) => s.OcrReplayEnabled = v);
