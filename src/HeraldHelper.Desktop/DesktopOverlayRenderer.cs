@@ -591,7 +591,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             var ready = ReadinessCategories.Where(c => !immune.Contains(c)).ToList();
             lines.Add((
                 ready.Count == ReadinessCategories.Length
-                    ? "READY: Stun Mezz Root"
+                    ? $"READY: {string.Join(' ', ReadinessCategories.Select(ReadinessType))}"
                     : ready.Count == 0
                         ? "READY: none"
                         : $"READY: {string.Join(' ', ready.Select(ReadinessType))}",
@@ -603,7 +603,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     }
 
     private static readonly ControlEffectType[] ReadinessCategories =
-        [ControlEffectType.Stun, ControlEffectType.Mezz, ControlEffectType.Root];
+        [ControlEffectType.Stun, ControlEffectType.Mezz, ControlEffectType.Root, ControlEffectType.Nearsight];
 
     /// <summary>Same normalization as CcImmunityTracker — chat lines and the
     /// target adapter disagree on "the " prefixes and "---" suffixes.</summary>
@@ -668,6 +668,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             ControlEffectType.Mezz => "Mezz",
             ControlEffectType.Stun => "Stun",
             ControlEffectType.Root => "Root",
+            ControlEffectType.Nearsight => "Nearsight",
             _ => type.ToString()
         };
 

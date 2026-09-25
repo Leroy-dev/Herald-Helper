@@ -113,6 +113,15 @@ public static class AppComposition
                 diagnostics);
         }
         IChatCaptureService captureService = (IChatCaptureService)windowAwareCapture;
+        var layers = new List<string> { "ocr" };
+        if (settings.ChatLogCaptureEnabled) layers.Insert(0, "chat.log");
+        if (settings.BlackthornRelayEnabled) layers.Insert(0, "relay");
+        if (settings.EffectiveChatMemReadEnabled)
+        {
+            layers.Insert(0, settings.ScrollbackChatEnabled ? "scrollback+chat-mem" : "chat-mem");
+        }
+        if (settings.EffectiveStatsMemReadEnabled) layers.Insert(0, "stats-mem");
+        diagnostics?.Log($"[Capture] chat chain: {string.Join(" -> ", layers)}");
         IChatEventParser parser = new AbilitiesChatEventParser(abilities);
         ICastSpellCatalog castSpellCatalog = settings.ShardType switch
         {

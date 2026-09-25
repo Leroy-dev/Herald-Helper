@@ -634,7 +634,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     }
 
     private static readonly ControlEffectType[] ReadinessCategories =
-        [ControlEffectType.Stun, ControlEffectType.Mezz, ControlEffectType.Root];
+        [ControlEffectType.Stun, ControlEffectType.Mezz, ControlEffectType.Root, ControlEffectType.Nearsight];
     private readonly HashSet<ControlEffectType> _readyCategories = [];
     private string? _readyTarget;
 

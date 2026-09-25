@@ -71,7 +71,8 @@ public sealed class OverlayTimerLineTests
         {
             new CcTimerEntry("the goborchend wounder", ControlEffectType.Stun, now.AddSeconds(60)),
             new CcTimerEntry("the goborchend wounder", ControlEffectType.Mezz, now.AddSeconds(60)),
-            new CcTimerEntry("the goborchend wounder", ControlEffectType.Root, now.AddSeconds(60))
+            new CcTimerEntry("the goborchend wounder", ControlEffectType.Root, now.AddSeconds(60)),
+            new CcTimerEntry("the goborchend wounder", ControlEffectType.Nearsight, now.AddSeconds(60))
         };
 
         var lines = DesktopOverlayRenderer.BuildTimerLines(
