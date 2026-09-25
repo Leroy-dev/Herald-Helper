@@ -313,7 +313,7 @@ The recent known-good baseline is 97 passing tests. Close a running Desktop inst
 | Area | Primary tests | Current guarantees |
 | --- | --- | --- |
 | Chat parsing and cast catalogs | `AbilitiesChatEventParserTests.cs`, `CombatEventParsingTests.cs` | Phrases, merged OCR blobs, newest-target selection, enemy players, ordinals, aliases, bounded fuzzy matching, class/level resolution, icons, fixed casts; self-CC apply/expire, kills/deaths, incoming attacks, broadcast CC lines, realm-ability activations, negations. |
-| Server catalogs | `ServerCastSpellCatalogTests.cs`, `CatalogIconIndexTests.cs` | Name/icon resolution from the deployed spell table, recast parsing, shared icon index. |
+| Server catalogs | `ServerCastSpellCatalogTests.cs` | Name/icon resolution from the deployed spell table, recast parsing, shared icon index. |
 | Realm-ability cooldowns | `RealmAbilityCooldownTableTests.cs` | Delve parsing plus the server-mined CSV fallback for non-Eden/Blackthorn shards. |
 | Loop state and target concurrency | `GameLoopOrchestratorTests.cs` | Non-members, last-player preservation, retries, async/stale lookup handling, cache-first display, target ordering, cast lifecycle, repeated casts, stable stats, broadcast-CC timers, READY lines, cancellation. |
 | CC tracking | `CcImmunityTrackerTests.cs`, `OverlayTimerLineTests.cs` | Registration and expiration of timers; READY-line composition per category and shard model. Expand when class formulas change. |
