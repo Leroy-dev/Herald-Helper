@@ -145,7 +145,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         TrackTargetEvents(parseResult, shardType, nowUtc, cancellationToken);
         TrackAbilityHits(parseResult, shardType, resistPercent, nowUtc);
         TrackNegationEvents(parseResult, nowUtc);
-        TrackCombatEvents(parseResult, nowUtc);
+        TrackCombatEvents(parseResult, shardType, nowUtc);
         await RenderFrameAsync(frame.OcrText, nowUtc, cancellationToken);
         tickStopwatch.Stop();
         _diagnostics?.Log($"[Timing] tick: {tickStopwatch.ElapsedMilliseconds} ms");
@@ -510,7 +510,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     /// <summary>Self-CC, incoming attacks, kills/deaths, and realm-ability
     /// activations — deduped like the other chat events so a line that stays
     /// on screen doesn't re-fire every tick.</summary>
-    private void TrackCombatEvents(ChatParseResult parseResult, DateTimeOffset nowUtc)
+    private void TrackCombatEvents(ChatParseResult parseResult, ShardType shardType, DateTimeOffset nowUtc)
     {
         foreach (var cc in _selfCcTracker.ObserveFrame(
                      parseResult.SelfCcEvents ?? [],
@@ -552,6 +552,7 @@ public sealed class GameLoopOrchestrator : IDisposable
             if (bc.Applied)
             {
                 _broadcastCc[bc.Name] = (bc.Effect, nowUtc.AddSeconds(12));
+                RegisterBroadcastHit(bc, shardType, nowUtc);
             }
             else
             {
@@ -708,6 +709,46 @@ public sealed class GameLoopOrchestrator : IDisposable
             ? trimmed[4..].TrimStart()
             : trimmed;
     }
+
+    /// <summary>A broadcast apply naming the current target = another
+    /// player's CC landed when we never saw the cast line. Synthesize the
+    /// tracker hit so timers + READY reflect it. Stun only: its duration
+    /// band is tight (3-11s on this server) while mez/root/snare durations
+    /// vary too much to guess honestly — a wrong READY is worse than none.
+    /// Only when no active stun timer already covers it (dedupes the
+    /// broadcast of our own hit).</summary>
+    private void RegisterBroadcastHit(BroadcastCcEvent bc, ShardType shardType, DateTimeOffset nowUtc)
+    {
+        if (bc.Effect != ControlEffectType.Stun || _currentTargetName is not { } target)
+        {
+            return;
+        }
+
+        var normalized = NormalizeTimerTargetName(target);
+        if (!string.Equals(normalized, NormalizeTimerTargetName(bc.Name), StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var alreadyTracked = _ccImmunityTracker.GetActiveTimers(nowUtc)
+            .Any(x => x.EffectType == ControlEffectType.Stun &&
+                      string.Equals(NormalizeTimerTargetName(x.TargetName), normalized,
+                          StringComparison.OrdinalIgnoreCase));
+        if (alreadyTracked)
+        {
+            return;
+        }
+
+        // Casted-stun math (duration + flat immunity) — melee stuns cap at
+        // ~9s anyway, so the flat model stays conservative on both shards.
+        _ccImmunityTracker.RegisterSuccessfulHit(
+            new AbilityHit(target, "broadcast", "s", ControlEffectType.Stun,
+                BroadcastStunDurationSeconds, true, bc.OccurrenceOrdinal, null, false),
+            GetTargetClass(target), 0, nowUtc, shardType);
+        _diagnostics?.Log($"[Broadcast] stun applied to target — synthesized timer");
+    }
+
+    private const int BroadcastStunDurationSeconds = 11;
 
     /// <summary>Broadcast-CC (Message2) badges joined onto group members:
     /// name match attaches the active broadcast effect to that member's

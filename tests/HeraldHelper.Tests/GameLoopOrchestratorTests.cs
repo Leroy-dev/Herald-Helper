@@ -1202,6 +1202,56 @@ public sealed class GameLoopOrchestratorTests
         Assert.Null(cleared.ActiveCc);
     }
 
+    [Fact]
+    public async Task TickAsync_BroadcastStunOnTarget_SynthesizesTimer()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var capture = new FakeChatCaptureService("ignored");
+        // Target line first, then a broadcast stun apply on that same name —
+        // we never saw the cast, but the broadcast confirms the CC landed.
+        var parser = new FakeChatEventParser(new ChatParseResult(
+            new TargetEvent("Alice", IsMemberTarget: true),
+            [],
+            BroadcastCcEvents: [new BroadcastCcEvent("Alice", ControlEffectType.Stun, true, 1)]));
+        var tracker = new RecordingCcImmunityTracker();
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            capture, parser, new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            tracker, overlay);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now, CancellationToken.None);
+
+        var hit = Assert.Single(tracker.RegisteredHits);
+        Assert.Equal("Alice", hit.TargetName);
+        Assert.Equal(ControlEffectType.Stun, hit.EffectType);
+    }
+
+    [Fact]
+    public async Task TickAsync_BroadcastStunOnGroupmate_SynthesizesNothing()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var capture = new FakeChatCaptureService("ignored");
+        // Broadcast apply on a DIFFERENT name — a groupmate's stun must not
+        // create a target immunity timer.
+        var parser = new FakeChatEventParser(new ChatParseResult(
+            new TargetEvent("Alice", IsMemberTarget: true),
+            [],
+            BroadcastCcEvents: [new BroadcastCcEvent("Bobby", ControlEffectType.Stun, true, 1)]));
+        var tracker = new RecordingCcImmunityTracker();
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            capture, parser, new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            tracker, overlay);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now, CancellationToken.None);
+
+        Assert.Empty(tracker.RegisteredHits);
+    }
+
     private sealed class FakeChatCaptureService : IChatCaptureService
     {
         private readonly string _text;
