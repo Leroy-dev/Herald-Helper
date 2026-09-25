@@ -94,6 +94,39 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         ("you can move normally again", ControlEffectType.Snare),
         ("the energy hindering you dissipates", ControlEffectType.Snare)
     ];
+    /// Broadcast effect lines (spell Message2) — a NEARBY player's name in
+    /// third person. Same strings as SelfCcMarkers but with "{0} is …" —
+    /// these fire for groupmates and enemies alike; the consumer resolves
+    /// the name. Longer variants share the base pattern ("is stunned by a
+    /// barrage of color" still matches "is stunned").
+    private static readonly (Regex Pattern, ControlEffectType Effect)[] BroadcastCcApplyPatterns =
+    [
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) begins moving more slowly", ControlEffectType.Snare),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) cannot seem to move", ControlEffectType.Stun),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) is entranced", ControlEffectType.Mezz),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) is mesmerized", ControlEffectType.Mezz),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) is stunned", ControlEffectType.Stun),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) is surrounded by constricting bonds", ControlEffectType.Snare),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) stumbles, unable to see", ControlEffectType.Nearsight),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?)'s feet are frozen to the ground", ControlEffectType.Root),
+        BroadcastRegex(@"rocks rise from the ground and trip (?<name>[^.!\r\n]+)", ControlEffectType.Root),
+    ];
+    /// Broadcast expire lines (spell Message4) — "{Name} recovers from…".
+    /// "{0}'s attacks return to normal" is MeleeHasteDebuff (not CC) and
+    /// is deliberately absent.
+    private static readonly (Regex Pattern, ControlEffectType Effect)[] BroadcastCcExpirePatterns =
+    [
+        BroadcastRegex(@"the blindness recedes from (?<name>[^.!\r\n]+)", ControlEffectType.Nearsight),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) can move normally again", ControlEffectType.Snare),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) is no longer entranced", ControlEffectType.Mezz),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) recovers from the mesmerize", ControlEffectType.Mezz),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) recovers from the stun", ControlEffectType.Stun),
+    ];
+    private static (Regex Pattern, ControlEffectType Effect) BroadcastRegex(string pattern, ControlEffectType effect)
+    {
+        return (new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase), effect);
+    }
+
     private static readonly string[] CastInterruptedMarkers =
     [
         "you move and interrupt your spellcast",
@@ -328,7 +361,8 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
             ParseIncomingAttacks(normalizedOcrText),
             ParseLifeEvents(normalizedOcrText),
             ParseRealmAbilityEvents(normalizedOcrText),
-            negationEvents);
+            negationEvents,
+            ParseBroadcastCcEvents(normalizedOcrText));
     }
 
     private enum MentionContext
@@ -561,6 +595,40 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         }
 
         return events;
+    }
+
+    private static IReadOnlyList<BroadcastCcEvent> ParseBroadcastCcEvents(string ocrText)
+    {
+        var ordinals = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var events = new List<BroadcastCcEvent>();
+        CollectBroadcast(events, ordinals, BroadcastCcApplyPatterns, ocrText, applied: true);
+        CollectBroadcast(events, ordinals, BroadcastCcExpirePatterns, ocrText, applied: false);
+        return events;
+    }
+
+    private static void CollectBroadcast(
+        List<BroadcastCcEvent> events,
+        Dictionary<string, int> ordinals,
+        (Regex Pattern, ControlEffectType Effect)[] patterns,
+        string ocrText,
+        bool applied)
+    {
+        foreach (var (pattern, effect) in patterns)
+        {
+            foreach (Match match in pattern.Matches(ocrText))
+            {
+                var name = CleanupName(match.Groups["name"].Value);
+                // "You can move normally again" is the self-expire line —
+                // the broadcast form names a third person.
+                if (name.Equals("you", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                ordinals.TryGetValue(name, out var ord);
+                ordinals[name] = ++ord;
+                events.Add(new BroadcastCcEvent(name, effect, applied, ord));
+            }
+        }
     }
 
     private static IReadOnlyList<IncomingAttackEvent> ParseIncomingAttacks(string ocrText)

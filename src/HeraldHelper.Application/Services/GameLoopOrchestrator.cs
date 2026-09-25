@@ -37,6 +37,9 @@ public sealed class GameLoopOrchestrator : IDisposable
     private readonly VisibleEventTracker _abilityEventTracker = new();
     private readonly VisibleEventTracker _selfCcTracker = new();
     private readonly VisibleEventTracker _selfCcExpireTracker = new();
+    private readonly VisibleEventTracker _broadcastCcTracker = new();
+    private readonly Dictionary<string, (ControlEffectType Effect, DateTimeOffset UntilUtc)> _broadcastCc =
+        new(StringComparer.OrdinalIgnoreCase);
     private readonly VisibleEventTracker _incomingAttackTracker = new();
     private readonly VisibleEventTracker _lifeEventTracker = new();
     private readonly VisibleEventTracker _realmAbilityTracker = new();
@@ -538,6 +541,25 @@ public sealed class GameLoopOrchestrator : IDisposable
             }
         }
 
+        // Broadcast effect lines (Message2/4) name a nearby player — applied
+        // keeps the badge for 12s max (the line carries no duration; longest
+        // real CC is ~9s), expired removes it immediately.
+        foreach (var bc in _broadcastCcTracker.ObserveFrame(
+                     parseResult.BroadcastCcEvents ?? [],
+                     static x => $"{x.Name}|{x.Effect}|{x.Applied}",
+                     static x => x.OccurrenceOrdinal))
+        {
+            if (bc.Applied)
+            {
+                _broadcastCc[bc.Name] = (bc.Effect, nowUtc.AddSeconds(12));
+            }
+            else
+            {
+                _broadcastCc.Remove(bc.Name);
+            }
+            _diagnostics?.Log($"[Broadcast] {bc.Name} {(bc.Applied ? bc.Effect.ToString() : "expired")}");
+        }
+
         foreach (var attack in _incomingAttackTracker.ObserveFrame(
                      parseResult.IncomingAttacks ?? [],
                      static x => x.Attacker,
@@ -615,6 +637,11 @@ public sealed class GameLoopOrchestrator : IDisposable
         {
             _spellCooldowns.Remove(ready);
         }
+        foreach (var stale in _broadcastCc.Where(x => x.Value.UntilUtc <= nowUtc)
+                     .Select(x => x.Key).ToList())
+        {
+            _broadcastCc.Remove(stale);
+        }
 
         var snapshot = new OverlaySnapshot(
             GetLastTarget(),
@@ -624,7 +651,7 @@ public sealed class GameLoopOrchestrator : IDisposable
             _selfCc,
             _attackers.Values.OrderByDescending(x => x.LastSeenUtc).Take(6).ToList(),
             BuildCooldownLines(),
-            ClientStateExtractor.Extract(_adapterValueSource?.LatestAdapterValues),
+            ApplyBroadcastCc(ClientStateExtractor.Extract(_adapterValueSource?.LatestAdapterValues), nowUtc),
             _castInterruptedUntil > nowUtc ? _castInterruptedUntil : null);
 
         var renderStopwatch = Stopwatch.StartNew();
@@ -680,6 +707,34 @@ public sealed class GameLoopOrchestrator : IDisposable
         return trimmed.StartsWith("the ", StringComparison.OrdinalIgnoreCase)
             ? trimmed[4..].TrimStart()
             : trimmed;
+    }
+
+    /// <summary>Broadcast-CC (Message2) badges joined onto group members:
+    /// name match attaches the active broadcast effect to that member's
+    /// adapter row so the group frame can show it.</summary>
+    private ClientStateSnapshot? ApplyBroadcastCc(ClientStateSnapshot? state, DateTimeOffset nowUtc)
+    {
+        if (state?.GroupMembers is not { Count: > 0 } members)
+        {
+            return state;
+        }
+
+        var changed = false;
+        var joined = new List<GroupMemberState>(members.Count);
+        foreach (var m in members)
+        {
+            if (_broadcastCc.TryGetValue(m.Name, out var entry) && entry.UntilUtc > nowUtc)
+            {
+                joined.Add(m with { ActiveCc = entry.Effect });
+                changed = true;
+            }
+            else
+            {
+                joined.Add(m);
+            }
+        }
+
+        return changed ? state with { GroupMembers = joined } : state;
     }
 
     /// <summary>RA activations + spell recasts as one countdown list —

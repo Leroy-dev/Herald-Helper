@@ -107,6 +107,22 @@ diminishing returns (`NpcImmunityEffect`), not the player flat timer.
   pet resists, no-effect, and cast-reject phrases (commit `d00ab48`).
 - Songs apply on *begin-playing*, not per-pulse; failed applications are
   suppressed (commit `8cd9874`).
+- **Message coverage is complete** against the deployed `Spell` table:
+  Message1 (self-apply) and Message3 (self-expire) strings for all
+  CC-producing types are in `SelfCcMarkers`/`SelfCcExpireMarkers`. The
+  only intentionally-skipped strings are `CombatSpeedDebuff`/`StyleCombatSpeedDebuff`
+  ("attacks are being slowed by an invisible force" / "attacks return to
+  normal") — `EffectHelper` maps them to `MeleeHasteDebuff`, an attack-
+  speed debuff with NO immunity, not crowd control.
+- **Message2/4 broadcasts** parse as `BroadcastCcEvent` — third-person
+  lines for NEARBY players: "{name} is stunned/entranced/mesmerized/
+  surrounded by constricting bonds/cannot seem to move/'s feet are
+  frozen", "rocks rise and trip {name}", "{name} stumbles, unable to see",
+  "{name} begins moving more slowly", plus expire forms. The orchestrator
+  joins them onto group members (adapter `group_nameN`) — the group
+  frame shows a `·S/·M/·R/·Sn/·NS` badge for ≤12 s (broadcast lines carry
+  no duration). Enemy names also parse but only badge if they match a
+  group member — no member list, no display.
 
 ## Cooldowns vs CC timers
 

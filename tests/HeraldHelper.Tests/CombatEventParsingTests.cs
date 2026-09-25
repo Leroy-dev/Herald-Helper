@@ -54,6 +54,61 @@ public sealed class CombatEventParsingTests
     }
 
     [Fact]
+    public void Broadcast_ApplyLines_NameAndEffect()
+    {
+        // Message2 (third-person broadcast) strings from the deployed spell
+        // table — these mark a NEARBY player's CC, used for group badges.
+        var result = Parse("Bobby is stunned! Walter is entranced. Rocks rise from the ground and trip Merlin! Clyde's feet are frozen to the ground!");
+
+        var applied = result.BroadcastCcEvents!;
+        Assert.Contains(applied, x => x.Name == "Bobby" && x.Effect == ControlEffectType.Stun && x.Applied);
+        Assert.Contains(applied, x => x.Name == "Walter" && x.Effect == ControlEffectType.Mezz && x.Applied);
+        Assert.Contains(applied, x => x.Name == "Merlin" && x.Effect == ControlEffectType.Root && x.Applied);
+        Assert.Contains(applied, x => x.Name == "Clyde" && x.Effect == ControlEffectType.Root && x.Applied);
+    }
+
+    [Fact]
+    public void Broadcast_ExpireLines_EmitNotApplied()
+    {
+        var result = Parse("Bobby recovers from the stun. Walter is no longer entranced. Clyde can move normally again.");
+
+        var expired = result.BroadcastCcEvents!;
+        Assert.All(expired, x => Assert.False(x.Applied));
+        Assert.Contains(expired, x => x.Name == "Bobby" && x.Effect == ControlEffectType.Stun);
+        Assert.Contains(expired, x => x.Name == "Walter" && x.Effect == ControlEffectType.Mezz);
+        Assert.Contains(expired, x => x.Name == "Clyde");
+    }
+
+    [Fact]
+    public void Broadcast_SelfExpireLine_NotABroadcast()
+    {
+        // "You can move normally again." is the self-expire Message3 — it
+        // must NOT produce a broadcast event for a fictitious "You" player.
+        var result = Parse("You can move normally again.");
+
+        Assert.Empty(result.BroadcastCcEvents ?? []);
+        Assert.Single(result.SelfCcExpiredEvents!, x => x.Effect == ControlEffectType.Snare);
+    }
+
+    [Fact]
+    public void Broadcast_YouStunned_NotABroadcast()
+    {
+        var result = Parse("You are stunned!");
+
+        Assert.Empty(result.BroadcastCcEvents ?? []);
+        Assert.Single(result.SelfCcEvents!, x => x.Effect == ControlEffectType.Stun);
+    }
+
+    [Fact]
+    public void Broadcast_HasteDebuffLine_NotCc()
+    {
+        // MeleeHasteDebuff (attack speed) is not crowd control — no event.
+        var result = Parse("Your attacks are being slowed by an invisible force! Bobby's attacks return to normal.");
+
+        Assert.Empty(result.BroadcastCcEvents ?? []);
+    }
+
+    [Fact]
     public void SelfCc_SleepVariants_MapToMezz()
     {
         var result = Parse("You fall into a deep sleep!");

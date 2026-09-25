@@ -1162,6 +1162,46 @@ public sealed class GameLoopOrchestratorTests
         Assert.Equal(200, saved.Dexterity);
     }
 
+    [Fact]
+    public async Task TickAsync_BroadcastCc_BadgesGroupMemberUntilExpire()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var capture = new FakeChatCaptureService("ignored");
+        var apply = new ChatParseResult(null, [], BroadcastCcEvents:
+            [new BroadcastCcEvent("Bobby", ControlEffectType.Stun, true, 1)]);
+        var expire = new ChatParseResult(null, [], BroadcastCcEvents:
+            [new BroadcastCcEvent("Bobby", ControlEffectType.Stun, false, 1)]);
+        var parser = new FakeChatEventParser(apply);
+        var adapters = new FakeAdapterValueSource
+        {
+            LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["group_name0"] = "Bobby",
+                ["group_class0"] = "Hero",
+                ["group_health0"] = "80"
+            }
+        };
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            capture, parser, new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(), overlay,
+            adapterValueSource: adapters);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now, CancellationToken.None);
+
+        var bobby = Assert.Single(overlay.LastSnapshot!.ClientState!.GroupMembers);
+        Assert.Equal(ControlEffectType.Stun, bobby.ActiveCc);
+
+        parser.NextResult = expire;
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now.AddSeconds(2), CancellationToken.None);
+
+        var cleared = Assert.Single(overlay.LastSnapshot!.ClientState!.GroupMembers);
+        Assert.Null(cleared.ActiveCc);
+    }
+
     private sealed class FakeChatCaptureService : IChatCaptureService
     {
         private readonly string _text;
@@ -1230,12 +1270,14 @@ public sealed class GameLoopOrchestratorTests
 
     private sealed class FakeChatEventParser : IChatEventParser
     {
-        private readonly ChatParseResult _result;
+        private ChatParseResult _result;
 
         public FakeChatEventParser(ChatParseResult result)
         {
             _result = result;
         }
+
+        public ChatParseResult NextResult { set => _result = value; }
 
         public ChatParseResult Parse(string ocrText, string? fallbackTargetName = null)
         {

@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
+using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 using FontFamily = System.Windows.Media.FontFamily;
 using MediaBrushes = System.Windows.Media.Brushes;
@@ -211,9 +212,16 @@ public sealed class GroupOverlayWindow : Window
         {
             _nameText.FontSize = fontSize;
             _nameText.FontFamily = family;
-            _nameText.Text = string.IsNullOrWhiteSpace(member.Class)
+            var nameLine = string.IsNullOrWhiteSpace(member.Class)
                 ? member.Name
                 : $"{member.Name} ·{member.Class[..Math.Min(3, member.Class.Length)]}";
+            if (member.ActiveCc is { } cc)
+            {
+                nameLine += CcTag(cc);
+            }
+            _nameText.Text = nameLine;
+            _nameText.Foreground = new SolidColorBrush(
+                member.ActiveCc is null ? Colors.White : MediaColor.FromRgb(0xE0, 0x8C, 0x64));
 
             _zoneText.Text = member.Zone ?? string.Empty;
             _zoneText.Visibility = string.IsNullOrWhiteSpace(member.Zone)
@@ -239,6 +247,16 @@ public sealed class GroupOverlayWindow : Window
             < 35 => MediaColor.FromRgb(0xE0, 0x5D, 0x65),
             < 70 => MediaColor.FromRgb(0xE7, 0xA9, 0x3A),
             _ => MediaColor.FromRgb(0x45, 0xB9, 0x7C)
+        };
+
+        private static string CcTag(ControlEffectType effect) => effect switch
+        {
+            ControlEffectType.Stun => " ·S",
+            ControlEffectType.Mezz => " ·M",
+            ControlEffectType.Root => " ·R",
+            ControlEffectType.Snare => " ·Sn",
+            ControlEffectType.Nearsight => " ·NS",
+            _ => string.Empty
         };
 
         private static TextBlock MakeText(double size, FontWeight weight, MediaColor color) => new()

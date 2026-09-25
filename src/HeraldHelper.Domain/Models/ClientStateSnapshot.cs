@@ -1,3 +1,5 @@
+using HeraldHelper.Domain.Enums;
+
 namespace HeraldHelper.Domain.Models;
 
 /// <summary>
@@ -50,7 +52,8 @@ public sealed record GroupMemberState(
     double? X,
     double? Y,
     double? Z,
-    IReadOnlyList<string> BuffIcons);
+    IReadOnlyList<string> BuffIcons,
+    ControlEffectType? ActiveCc = null);
 
 public sealed record PetState(
     string? Title,
