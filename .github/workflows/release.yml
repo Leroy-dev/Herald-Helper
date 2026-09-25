@@ -45,7 +45,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
         run: |
-          $files = Get-ChildItem artifacts/release/ -Include HeraldHelper-*.exe,HeraldHelper-*.7z
+          $files = Get-ChildItem -Path "artifacts/release/HeraldHelper-*.exe","artifacts/release/HeraldHelper-*.7z"
           if ($files.Count -eq 0) { throw "No release artifacts found" }
           gh release view $env:RELEASE_TAG 2>$null
           if ($LASTEXITCODE -eq 0) {
