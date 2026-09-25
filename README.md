@@ -1,19 +1,30 @@
 # Herald Helper
 
-A C# .NET 10 WPF in-game overlay and helper for Dark Age of Camelot (DAoC), targeting the Eden and Blackthorn freeshards.
+A C# .NET 10 WPF in-game overlay and helper for Dark Age of Camelot (DAoC), targeting the Eden, Blackthorn and OpenDAoC-compatible freeshards.
 
 ## What it does
 
 Herald Helper watches the DAoC client and renders click-through overlay windows with:
 
-- Target name and profile while herald details load.
+- Target name, profile, and live HP% while herald details load.
 - Pending cast bars with fixed, repeated, and interrupt-aware timing.
-- Ability / crowd-control timers driven by landed ability and spell hits.
-- Target resists (thrust/slash/crush verdicts from armor class).
-- Self-CC banner and a "who is peeling me" attacker list.
+- Ability / crowd-control timers driven by landed ability and spell hits —
+  immunity math is server-verified (flat 60s post-effect on OpenDAoC, live-era
+  5x melee rule on Eden).
+- A per-category `READY:` line (Stun / Mezz / Root / Nearsight) on the
+  current target, plus an optional sound when a category opens up.
+- A cooldowns window for spell recasts and realm abilities (real cooldown
+  values from the server spell table and realm-ability handlers).
+- Target resists — real `stats_*` adapter values when memory reads are on,
+  class-table verdicts otherwise.
+- Self-CC banner that clears at the real effect-expire message.
+- A "who is peeling me" attacker list.
+- **Group frames with vitals, buff icons, and CC badges** — broadcast lines
+  ("Bobby is stunned!") mark the matching group member for ~12s.
 - **Your active buffs with real names and icons** — read from the client's
   own effects list, the same data the top-of-screen buff bar draws.
-- A pet window with vitals and active-effect icons.
+- A pet window with vitals and real effect names resolved from the client's
+  icon→spell map.
 - Configurable OCR replay capture for deterministic debugging.
 
 ## Data sources
@@ -45,6 +56,12 @@ memory-backed panels.
 - `src/HeraldHelper.Desktop` — WPF desktop UI, catalog update service, and SQLite persistence.
 - `tests/HeraldHelper.Tests` — xUnit tests.
 - `data/eden-charplan` and `data/blackthorn-charplan` — generated DAoC catalog data.
+- `data/client-tables` — tables exported from the client's `gamedata.mpk` and
+  the deployed server DB (`spells.csv`, `icons.csv`, `server-spells.csv`,
+  `ra-cooldowns.csv`) — used for icon→name resolution and as the cast-spell /
+  cooldown catalog on non-Eden/Blackthorn shards.
+- `docs/knowledge/` — reverse-engineering notes on the client, the server
+  CC/immunity model, OCR, and capture internals.
 - `scripts/` — catalog crawlers, portable release packaging.
 
 ## Build and test
