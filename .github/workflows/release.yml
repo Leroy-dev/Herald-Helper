@@ -37,12 +37,19 @@ jobs:
       - name: Package release
         run: powershell -ExecutionPolicy Bypass -File scripts/release.ps1
 
+      # gh CLI is preinstalled on the runner — avoids the deprecated
+      # softprops/action-gh-release (Node 20) action entirely.
       - name: Publish GitHub release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
-          name: HeraldHelper ${{ github.event.inputs.tag || github.ref_name }}
-          files: |
-            artifacts/release/HeraldHelper-*.exe
-            artifacts/release/HeraldHelper-*.7z
-          generate_release_notes: true
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          $files = Get-ChildItem artifacts/release/ -Include HeraldHelper-*.exe,HeraldHelper-*.7z
+          if ($files.Count -eq 0) { throw "No release artifacts found" }
+          gh release view $env:RELEASE_TAG 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:RELEASE_TAG $files.FullName --clobber
+          } else {
+            gh release create $env:RELEASE_TAG $files.FullName --title "HeraldHelper $env:RELEASE_TAG" --generate-notes
+          }
