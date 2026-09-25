@@ -10,13 +10,15 @@ namespace HeraldHelper.Infrastructure.Parsing;
 /// elapsed-since-use display.</summary>
 public static partial class RealmAbilityCooldownTable
 {
-    /// <summary>Loads the cooldown map for a class, or null when no catalog
-    /// file exists. Class name is slugged (lowercase, non-alnum → _).</summary>
+    /// <summary>Loads the cooldown map for a class. Eden/Blackthorn read the
+    /// class's charplan delve JSON; every other shard falls back to the
+    /// server-mined data/client-tables/ra-cooldowns.csv (GetReUseDelay values
+    /// from the atlas realm-ability handlers, joined to display names).</summary>
     public static IReadOnlyDictionary<string, int>? Load(ShardType shard, string? className, string? dataRoot = null)
     {
         if (shard is not (ShardType.Eden or ShardType.Blackthorn) || string.IsNullOrWhiteSpace(className))
         {
-            return null;
+            return LoadServerTable();
         }
 
         var catalog = shard == ShardType.Eden ? "eden-charplan" : "blackthorn-charplan";
@@ -26,7 +28,7 @@ public static partial class RealmAbilityCooldownTable
             : FindClassFile(catalog, slug);
         if (path is null || !File.Exists(path))
         {
-            return null;
+            return LoadServerTable();
         }
 
         try
@@ -62,6 +64,36 @@ public static partial class RealmAbilityCooldownTable
         {
             return null;
         }
+    }
+
+    /// <summary>Server-mined RA cooldowns — ra-cooldowns.csv carries
+    /// KeyName,Name,CooldownSeconds per ability. Index by display name (the
+    /// cooldown dictionary keys match ability/profile names, not keys).</summary>
+    internal static IReadOnlyDictionary<string, int>? LoadServerTable()
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, "data", "client-tables", "ra-cooldowns.csv");
+            if (File.Exists(candidate))
+            {
+                var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                foreach (var line in File.ReadLines(candidate).Skip(1))
+                {
+                    var fields = line.Split(',');
+                    if (fields.Length >= 3 &&
+                        int.TryParse(fields[2], out var seconds) && seconds > 0)
+                    {
+                        result[fields[1].Trim('"').Trim()] = seconds;
+                    }
+                }
+                return result.Count > 0 ? result : null;
+            }
+
+            current = current.Parent;
+        }
+
+        return null;
     }
 
     /// <summary>Walk up from the output dir like AbilityProfileCatalog does —
