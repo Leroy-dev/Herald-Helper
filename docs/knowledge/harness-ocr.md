@@ -38,8 +38,15 @@ How the harness gets game state, and where each path can fail.
   class-armor verdicts for targets and shows the *own* resists/vitals
   read live instead.
 - The timers window appends a `READY:` line per immunity category
-  (Stun/Mezz/Root — root+snare share one bucket) for the current target,
-  using the same name normalization as the tracker.
+  (Stun/Mezz/Root/Nearsight — root+snare share one bucket) for the
+  current target, using the same name normalization as the tracker.
+  A short optional ping (`alertCcReady`) plays when a category opens.
+- Group frames carry CC badges from broadcast `Message2` lines
+  ("{name} is stunned!") joined onto `group_nameN` — needs the stats
+  adapter for member names.
+- A broadcast stun apply naming the *current target* synthesizes a
+  tracker entry (~11s + 60s flat ≈ 71s window) even when no cast line
+  was seen — stun only; other CC durations are too variable to guess.
 
 ## Failure behavior
 

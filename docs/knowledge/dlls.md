@@ -13,6 +13,14 @@ What each server DLL provides and where HeraldHelper consumes it.
   is zero or absent.
 - Blackthorn entries may lack cast-time entirely — accept entries that
   are otherwise useful.
+- `ServerCastSpellCatalog` serves the shards without a charplan catalog
+  (Default/Phoenix/Titan/Celestius + offline): `data/client-tables/server-spells.csv`
+  is the deployed `Spell` table export (4,152 rows — cast time, recast
+  ms, damage, icons; `RecastDelay` is in **milliseconds** and short
+  spell recasts only — RA cooldowns are hardcoded in handlers, not in
+  this table). `ra-cooldowns.csv` fills that gap: 42 `GetReUseDelay`
+  values mined from `realmabilities_atlasOF` handlers joined to
+  `Ability.Name` (Purge/Vanish 1800s, Battle Yell/Grapple 900s).
 - Catalog updates crawl in-process: `HttpCatalogCrawler` →
   `EdenCharplanCrawl` / `BlackthornCharplanCrawl` (C# ports of the old
   `scripts/crawl_*.js`), staged writes `<catalog>.staging-<pid>` then
