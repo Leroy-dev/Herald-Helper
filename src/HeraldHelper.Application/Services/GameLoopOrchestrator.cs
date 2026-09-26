@@ -45,6 +45,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     private readonly VisibleEventTracker _realmAbilityTracker = new();
     private readonly VisibleEventTracker _negationEventTracker = new();
     private SelfCcState? _selfCc;
+    private bool _selfCcFromIcon;
     private readonly ICcIconIndex? _ccIconIndex;
     private readonly Dictionary<string, PeelEntry> _attackers = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<RealmAbilityActivation> _realmAbilityUses = [];
@@ -521,6 +522,7 @@ public sealed class GameLoopOrchestrator : IDisposable
                      static x => x.OccurrenceOrdinal))
         {
             _selfCc = new SelfCcState(cc.Effect, nowUtc);
+            _selfCcFromIcon = false;
             _diagnostics?.Log($"[SelfCC] {cc.Effect}");
             _alertSound?.Play(AlertKind.SelfCc);
         }
@@ -540,6 +542,7 @@ public sealed class GameLoopOrchestrator : IDisposable
                  active.Effect is ControlEffectType.Root or ControlEffectType.Snare))
             {
                 _selfCc = null;
+                _selfCcFromIcon = false;
                 _diagnostics?.Log($"[SelfCC] {expired.Effect} expired");
             }
         }
@@ -647,6 +650,9 @@ public sealed class GameLoopOrchestrator : IDisposable
             _broadcastCc.Remove(stale);
         }
 
+        var clientState = ClientStateExtractor.Extract(_adapterValueSource?.LatestAdapterValues);
+        ApplySelfIconCc(clientState, nowUtc);
+
         var snapshot = new OverlaySnapshot(
             GetLastTarget(),
             timers,
@@ -655,7 +661,7 @@ public sealed class GameLoopOrchestrator : IDisposable
             _selfCc,
             _attackers.Values.OrderByDescending(x => x.LastSeenUtc).Take(6).ToList(),
             BuildCooldownLines(),
-            ApplyBroadcastCc(ClientStateExtractor.Extract(_adapterValueSource?.LatestAdapterValues), nowUtc),
+            ApplyBroadcastCc(clientState, nowUtc),
             _castInterruptedUntil > nowUtc ? _castInterruptedUntil : null);
 
         var renderStopwatch = Stopwatch.StartNew();
@@ -824,6 +830,49 @@ public sealed class GameLoopOrchestrator : IDisposable
             ControlEffectType.Nearsight => 1,
             _ => 0,
         };
+    }
+
+    /// <summary>Icon backstop for self-CC: a CC icon on the self-effects strip
+    /// sets the banner when chat never showed the apply line (scrollback merge,
+    /// no chatlog). Icon-extraction jitters, so only icon-derived state is ever
+    /// cleared by the icon disappearing — chat-confirmed state survives.</summary>
+    private void ApplySelfIconCc(ClientStateSnapshot? state, DateTimeOffset nowUtc)
+    {
+        if (_ccIconIndex is null)
+        {
+            return;
+        }
+
+        ControlEffectType? strongest = null;
+        foreach (var effect in state?.SelfEffects ?? [])
+        {
+            if (_ccIconIndex.Resolve(effect.IconId) is { } resolved &&
+                CcSeverity(resolved) > CcSeverity(strongest ?? ControlEffectType.Nearsight))
+            {
+                strongest = resolved;
+            }
+        }
+
+        if (_selfCcFromIcon)
+        {
+            if (strongest is null)
+            {
+                _selfCc = null;
+                _selfCcFromIcon = false;
+                _diagnostics?.Log("[SelfCC] icon gone — banner cleared");
+            }
+            else if (_selfCc!.Effect != strongest)
+            {
+                _selfCc = new SelfCcState(strongest.Value, nowUtc);
+                _diagnostics?.Log($"[SelfCC] {strongest} (icon)");
+            }
+        }
+        else if (_selfCc is null && strongest is not null)
+        {
+            _selfCc = new SelfCcState(strongest.Value, nowUtc);
+            _selfCcFromIcon = true;
+            _diagnostics?.Log($"[SelfCC] {strongest} (icon)");
+        }
     }
 
     /// <summary>RA activations + spell recasts as one countdown list —

@@ -1245,6 +1245,78 @@ public sealed class GameLoopOrchestratorTests
     }
 
     [Fact]
+    public async Task TickAsync_SelfIconCc_SetsBannerWithoutChatLine()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var capture = new FakeChatCaptureService("ignored");
+        var parser = new FakeChatEventParser(new ChatParseResult(null, []));
+        var adapters = new FakeAdapterValueSource
+        {
+            LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["self_effect0"] = "Stunned",
+                ["self_effect_icon0"] = "1161"
+            }
+        };
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            capture, parser, new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(), overlay,
+            adapterValueSource: adapters,
+            ccIconIndex: new StubCcIconIndex(new Dictionary<int, ControlEffectType> { [1161] = ControlEffectType.Stun }));
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now, CancellationToken.None);
+
+        Assert.Equal(ControlEffectType.Stun, overlay.LastSnapshot!.SelfCc?.Effect);
+
+        adapters.LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now.AddSeconds(1), CancellationToken.None);
+
+        Assert.Null(overlay.LastSnapshot!.SelfCc);
+    }
+
+    [Fact]
+    public async Task TickAsync_SelfIconCc_ChatApplyStaysAuthoritative()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var capture = new FakeChatCaptureService("ignored");
+        var apply = new ChatParseResult(null, [], SelfCcEvents:
+            [new SelfCcEvent(ControlEffectType.Mezz, 1)]);
+        var parser = new FakeChatEventParser(apply);
+        var adapters = new FakeAdapterValueSource
+        {
+            LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["self_effect0"] = "Stunned",
+                ["self_effect_icon0"] = "1161"
+            }
+        };
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            capture, parser, new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(), overlay,
+            adapterValueSource: adapters,
+            ccIconIndex: new StubCcIconIndex(new Dictionary<int, ControlEffectType> { [1161] = ControlEffectType.Stun }));
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now, CancellationToken.None);
+
+        // chat said mez; icon says stun — chat wins, and a vanished icon must
+        // not clear the chat-confirmed banner
+        Assert.Equal(ControlEffectType.Mezz, overlay.LastSnapshot!.SelfCc?.Effect);
+
+        adapters.LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now.AddSeconds(1), CancellationToken.None);
+
+        Assert.Equal(ControlEffectType.Mezz, overlay.LastSnapshot!.SelfCc?.Effect);
+    }
+
+    [Fact]
     public async Task TickAsync_BroadcastStunOnTarget_SynthesizesTimer()
     {
         var now = DateTimeOffset.UtcNow;
