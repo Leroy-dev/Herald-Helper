@@ -129,6 +129,11 @@ diminishing returns (`NpcImmunityEffect`), not the player flat timer.
   with non-CC spells are dropped — e.g. pet summons reusing a snare glyph).
   Badges show for the effect's whole visible duration at any range, no chat
   needed; broadcast lines still win ties as the fresher signal.
+- **Self-CC has an icon backstop too** — the `self_effects` strip carries
+  name+icon per effect; a CC icon there sets the banner when chat missed the
+  apply line. Clearing is asymmetric by design: icon extraction is a jittery
+  memory scan, so icon-derived state clears on icon loss but chat-confirmed
+  state survives icon absence.
 - **Broadcast apply on the current target synthesizes a stun timer** —
   "another player stunned your target" now starts a real immunity entry
   without your cast line ever being seen. Stun only: its duration band is
