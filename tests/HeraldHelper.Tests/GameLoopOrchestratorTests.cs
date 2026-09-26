@@ -1124,6 +1124,32 @@ public sealed class GameLoopOrchestratorTests
     }
 
     [Fact]
+    public async Task TickAsync_RealmAbilityCastLine_RomanSuffixResolvesCooldown()
+    {
+        var now = DateTimeOffset.UtcNow;
+        // Live line: 'You cast a Purge II Spell!' - m_name carries the trained
+        // level; the cooldown table keys the base name.
+        var castEvent = new CastEvent(CastEventType.Completed, "Purge II", 1);
+        var parser = new FakeChatEventParser(new ChatParseResult(
+            null, [], castEvent, VisibleCastEvents: [castEvent]));
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            new FakeChatCaptureService("ignored"),
+            parser,
+            new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(),
+            overlay,
+            realmAbilityCooldowns: new Dictionary<string, int> { ["Purge"] = 600 });
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+
+        var cooldown = Assert.Single(overlay.LastSnapshot!.Cooldowns!);
+        Assert.Equal("Purge II", cooldown.Name);
+        Assert.True(cooldown.ReadyUtc > now.AddMinutes(5));
+    }
+
+    [Fact]
     public async Task TickAsync_AdapterDexterityDrivesCastSpeed()
     {
         // stats_dexterity from the memory adapter merges into the stats

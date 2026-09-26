@@ -388,7 +388,10 @@ public sealed class GameLoopOrchestrator : IDisposable
             return;
         }
 
-        if (_realmAbilityCooldowns.TryGetValue(spellName, out var raCooldown)
+        // The live RA line is 'You cast a Purge II Spell!' - m_name carries the
+        // trained level; the cooldown table keys the base name.
+        var raName = StripRomanSuffix(spellName);
+        if (_realmAbilityCooldowns.TryGetValue(raName, out var raCooldown)
             && !_realmAbilityUses.Any(x =>
                 string.Equals(x.AbilityName, spellName, StringComparison.OrdinalIgnoreCase)
                 && nowUtc - x.UsedUtc < TimeSpan.FromSeconds(10)))
@@ -1013,6 +1016,14 @@ public sealed class GameLoopOrchestrator : IDisposable
         normalized = Regex.Replace(normalized, @"\s+spell$", string.Empty, RegexOptions.IgnoreCase);
         normalized = Regex.Replace(normalized, @"\s+", " ");
         return normalized.Trim();
+    }
+
+    /// <summary>'Purge II' -> 'Purge' — Roman-level suffixes only ever appear
+    /// on realm-ability names (m_name carries the trained level).</summary>
+    private static string StripRomanSuffix(string name)
+    {
+        var match = Regex.Match(name, @"\s+(?:I{1,3}|IV|V|VI{0,3}|IX|X)$");
+        return match.Success ? name[..match.Index].Trim() : name;
     }
 
     private static string BuildCastEventKey(CastEvent castEvent)
