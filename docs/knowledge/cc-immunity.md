@@ -123,6 +123,12 @@ diminishing returns (`NpcImmunityEffect`), not the player flat timer.
   frame shows a `·S/·M/·R/·Sn/·NS` badge for ≤12 s (broadcast lines carry
   no duration). Enemy names also parse but only badge if they match a
   group member — no member list, no display.
+- **Group icons carry CC state too** — `group_%dicon%d` adapters expose each
+  member's buff strip (~30 slots). `CcIconIndex` maps icon id → effect from
+  `server-spells.csv` (both `Icon` and `ClientEffect` columns; icons shared
+  with non-CC spells are dropped — e.g. pet summons reusing a snare glyph).
+  Badges show for the effect's whole visible duration at any range, no chat
+  needed; broadcast lines still win ties as the fresher signal.
 - **Broadcast apply on the current target synthesizes a stun timer** —
   "another player stunned your target" now starts a real immunity entry
   without your cast line ever being seen. Stun only: its duration band is
