@@ -47,6 +47,10 @@ public sealed class GameLoopOrchestrator : IDisposable
     private SelfCcState? _selfCc;
     private bool _selfCcFromIcon;
     private readonly ICcIconIndex? _ccIconIndex;
+    private readonly ICcSpellIndex? _ccSpellIndex;
+    // A completed cast of a known CC spell — consumed by the next broadcast
+    // apply line so the timer gets the real server duration, not a guess.
+    private PendingCcCast? _pendingCcCast;
     private readonly Dictionary<string, PeelEntry> _attackers = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<RealmAbilityActivation> _realmAbilityUses = [];
     private readonly Dictionary<string, CooldownEntry> _spellCooldowns = new(StringComparer.OrdinalIgnoreCase);
@@ -91,7 +95,8 @@ public sealed class GameLoopOrchestrator : IDisposable
         IAdapterValueSource? adapterValueSource = null,
         IAlertSound? alertSound = null,
         IReadOnlyDictionary<string, int>? realmAbilityCooldowns = null,
-        ICcIconIndex? ccIconIndex = null)
+        ICcIconIndex? ccIconIndex = null,
+        ICcSpellIndex? ccSpellIndex = null)
     {
         _chatCaptureService = chatCaptureService;
         _chatEventParser = chatEventParser;
@@ -114,6 +119,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         _adapterValueSource = adapterValueSource;
         _alertSound = alertSound;
         _ccIconIndex = ccIconIndex;
+        _ccSpellIndex = ccSpellIndex;
         _realmAbilityCooldowns = realmAbilityCooldowns ?? new Dictionary<string, int>(0);
 
         foreach (var shard in Enum.GetValues<ShardType>())
@@ -398,6 +404,14 @@ public sealed class GameLoopOrchestrator : IDisposable
         {
             _realmAbilityUses.Add(new RealmAbilityActivation(spellName, nowUtc, raCooldown));
             _diagnostics?.Log($"[RA] {spellName} (via cast line)");
+        }
+
+        // A completed cast of a known CC spell sets up the pending link: the
+        // broadcast apply line that lands next converts to a real-duration
+        // timer in RegisterBroadcastHit.
+        if (_ccSpellIndex?.Resolve(spellName) is { } cc)
+        {
+            _pendingCcCast = new PendingCcCast(spellName, cc.Effect, cc.DurationSeconds, nowUtc.AddSeconds(3));
         }
 
         var spellInfo = _castSpellCatalog.FindBySpellName(spellName, _activeCharacterClass, _activeCharacterLevel);
@@ -724,14 +738,14 @@ public sealed class GameLoopOrchestrator : IDisposable
 
     /// <summary>A broadcast apply naming the current target = another
     /// player's CC landed when we never saw the cast line. Synthesize the
-    /// tracker hit so timers + READY reflect it. Stun only: its duration
-    /// band is tight (3-11s on this server) while mez/root/snare durations
-    /// vary too much to guess honestly — a wrong READY is worse than none.
-    /// Only when no active stun timer already covers it (dedupes the
-    /// broadcast of our own hit).</summary>
+    /// tracker hit so timers + READY reflect it. When our own casted CC spell
+    /// is still pending, its real server duration wins for any effect; without
+    /// a cast, only stun gets the flat guess (3-11s band is tight — mez/root/
+    /// snare durations vary too much to guess honestly). Deduped per effect.
+    /// </summary>
     private void RegisterBroadcastHit(BroadcastCcEvent bc, ShardType shardType, DateTimeOffset nowUtc)
     {
-        if (bc.Effect != ControlEffectType.Stun || _currentTargetName is not { } target)
+        if (_currentTargetName is not { } target)
         {
             return;
         }
@@ -742,8 +756,20 @@ public sealed class GameLoopOrchestrator : IDisposable
             return;
         }
 
+        // A pending casted CC spell supplies the real server duration for any
+        // effect; without one only stun gets a guessed timer (its 3-11s band
+        // is tight — mez/root/snare durations vary too much to guess honestly).
+        var pending = _pendingCcCast;
+        var pendingMatches = pending is not null &&
+                             pending.ExpiresUtc >= nowUtc &&
+                             pending.Effect == bc.Effect;
+        if (!pendingMatches && bc.Effect != ControlEffectType.Stun)
+        {
+            return;
+        }
+
         var alreadyTracked = _ccImmunityTracker.GetActiveTimers(nowUtc)
-            .Any(x => x.EffectType == ControlEffectType.Stun &&
+            .Any(x => x.EffectType == bc.Effect &&
                       string.Equals(NormalizeTimerTargetName(x.TargetName), normalized,
                           StringComparison.OrdinalIgnoreCase));
         if (alreadyTracked)
@@ -751,16 +777,18 @@ public sealed class GameLoopOrchestrator : IDisposable
             return;
         }
 
-        // Casted-stun math (duration + flat immunity) — melee stuns cap at
-        // ~9s anyway, so the flat model stays conservative on both shards.
+        var durationSeconds = pendingMatches ? pending!.DurationSeconds : BroadcastStunDurationSeconds;
         _ccImmunityTracker.RegisterSuccessfulHit(
-            new AbilityHit(target, "broadcast", "s", ControlEffectType.Stun,
-                BroadcastStunDurationSeconds, true, bc.OccurrenceOrdinal, null, false),
+            new AbilityHit(target, pendingMatches ? pending!.SpellName : "broadcast", "s", bc.Effect,
+                durationSeconds, true, bc.OccurrenceOrdinal, null, false),
             GetTargetClass(target), 0, nowUtc, shardType);
-        _diagnostics?.Log($"[Broadcast] stun applied to target — synthesized timer");
+        _diagnostics?.Log(
+            $"[Broadcast] {bc.Effect} applied to target — synthesized timer ({durationSeconds}s, {(pendingMatches ? pending!.SpellName : "guess")})");
     }
 
     private const int BroadcastStunDurationSeconds = 11;
+
+    private sealed record PendingCcCast(string SpellName, ControlEffectType Effect, int DurationSeconds, DateTimeOffset ExpiresUtc);
 
     /// <summary>Broadcast-CC (Message2) badges joined onto group members:
     /// name match attaches the active broadcast effect to that member's

@@ -1150,6 +1150,44 @@ public sealed class GameLoopOrchestratorTests
     }
 
     [Fact]
+    public async Task TickAsync_CastedCc_BroadcastApplyGetsRealDuration()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var capture = new FakeChatCaptureService("ignored");
+        // Tick 1 targets the mob; tick 2 carries 'You cast a Stunning Bellow
+        // spell!' + 'Level 50 Training Dummy cannot seem to move!' - the
+        // pending cast converts the broadcast apply into a real-duration timer
+        // (server table: Stunning Bellow = Stun, 9s).
+        var targetResult = new ChatParseResult(
+            new TargetEvent("Level 50 Training Dummy", TargetMembership.NonMember), []);
+        var castEvent = new CastEvent(CastEventType.Completed, "Stunning Bellow", 1);
+        var hitResult = new ChatParseResult(null, [], castEvent,
+            VisibleCastEvents: [castEvent],
+            BroadcastCcEvents: [new BroadcastCcEvent("Level 50 Training Dummy", ControlEffectType.Stun, true, 1)]);
+        var parser = new FakeChatEventParser(targetResult);
+        var tracker = new RecordingCcImmunityTracker();
+        var orchestrator = new GameLoopOrchestrator(
+            capture, parser, new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            tracker, new RecordingOverlayRenderer(),
+            ccSpellIndex: new StubCcSpellIndex(new Dictionary<string, CcSpellInfo>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["stunning bellow"] = new(ControlEffectType.Stun, 9)
+            }));
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Eden, 10, now, CancellationToken.None);
+        parser.NextResult = hitResult;
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Eden, 10, now.AddMilliseconds(300), CancellationToken.None);
+
+        var hit = Assert.Single(tracker.RegisteredHits);
+        Assert.Equal(9, hit.BaseDurationSeconds);
+        Assert.Equal("Stunning Bellow", hit.AbilityName);
+        Assert.Equal(ControlEffectType.Stun, hit.EffectType);
+    }
+
+    [Fact]
     public async Task TickAsync_AdapterDexterityDrivesCastSpeed()
     {
         // stats_dexterity from the memory adapter merges into the stats
@@ -1487,6 +1525,21 @@ public sealed class GameLoopOrchestratorTests
         public ControlEffectType? Resolve(int iconId)
         {
             return _map.TryGetValue(iconId, out var effect) ? effect : null;
+        }
+    }
+
+    private sealed class StubCcSpellIndex : ICcSpellIndex
+    {
+        private readonly IReadOnlyDictionary<string, CcSpellInfo> _map;
+
+        public StubCcSpellIndex(IReadOnlyDictionary<string, CcSpellInfo> map)
+        {
+            _map = map;
+        }
+
+        public CcSpellInfo? Resolve(string spellName)
+        {
+            return _map.TryGetValue(spellName, out var info) ? info : null;
         }
     }
 

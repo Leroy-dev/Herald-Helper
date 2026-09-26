@@ -101,14 +101,14 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
     /// barrage of color" still matches "is stunned").
     private static readonly (Regex Pattern, ControlEffectType Effect)[] BroadcastCcApplyPatterns =
     [
-        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) begins moving more slowly", ControlEffectType.Snare),
-        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) cannot seem to move", ControlEffectType.Stun),
-        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) is entranced", ControlEffectType.Mezz),
-        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) is mesmerized", ControlEffectType.Mezz),
-        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) is stunned", ControlEffectType.Stun),
-        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) is surrounded by constricting bonds", ControlEffectType.Snare),
-        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) stumbles, unable to see", ControlEffectType.Nearsight),
-        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?)'s feet are frozen to the ground", ControlEffectType.Root),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z0-9'\- ]{1,39}?) begins moving more slowly", ControlEffectType.Snare),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z0-9'\- ]{1,39}?) cannot seem to move", ControlEffectType.Stun),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z0-9'\- ]{1,39}?) is entranced", ControlEffectType.Mezz),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z0-9'\- ]{1,39}?) is mesmerized", ControlEffectType.Mezz),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z0-9'\- ]{1,39}?) is stunned", ControlEffectType.Stun),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z0-9'\- ]{1,39}?) is surrounded by constricting bonds", ControlEffectType.Snare),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z0-9'\- ]{1,39}?) stumbles, unable to see", ControlEffectType.Nearsight),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z0-9'\- ]{1,39}?)'s feet are frozen to the ground", ControlEffectType.Root),
         BroadcastRegex(@"rocks rise from the ground and trip (?<name>[^.!\r\n]+)", ControlEffectType.Root),
     ];
     /// Broadcast expire lines (spell Message4) — "{Name} recovers from…".
@@ -117,10 +117,10 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
     private static readonly (Regex Pattern, ControlEffectType Effect)[] BroadcastCcExpirePatterns =
     [
         BroadcastRegex(@"the blindness recedes from (?<name>[^.!\r\n]+)", ControlEffectType.Nearsight),
-        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) can move normally again", ControlEffectType.Snare),
-        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) is no longer entranced", ControlEffectType.Mezz),
-        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) recovers from the mesmerize", ControlEffectType.Mezz),
-        BroadcastRegex(@"(?<name>[A-Z][A-Za-z'\- ]{1,39}?) recovers from the stun", ControlEffectType.Stun),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z0-9'\- ]{1,39}?) can move normally again", ControlEffectType.Snare),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z0-9'\- ]{1,39}?) is no longer entranced", ControlEffectType.Mezz),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z0-9'\- ]{1,39}?) recovers from the mesmerize", ControlEffectType.Mezz),
+        BroadcastRegex(@"(?<name>[A-Z][A-Za-z0-9'\- ]{1,39}?) recovers from the stun", ControlEffectType.Stun),
     ];
     private static (Regex Pattern, ControlEffectType Effect) BroadcastRegex(string pattern, ControlEffectType effect)
     {

@@ -165,7 +165,8 @@ public static class AppComposition
             windowAwareCapture as IAdapterValueSource,
             alertSound,
             RealmAbilityCooldownTable.Load(settings.ShardType, activeClass),
-            CcIconIndex.Load());
+            CcIconIndex.Load(),
+            new ServerCcSpellIndex());
 
         return (orchestrator, overlay, settings, capture, windowAwareCapture);
     }

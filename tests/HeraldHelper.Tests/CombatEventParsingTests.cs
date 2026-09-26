@@ -68,6 +68,19 @@ public sealed class CombatEventParsingTests
     }
 
     [Fact]
+    public void Broadcast_NameWithDigits_CapturesFullName()
+    {
+        // Mob/pet names carry digits - 'Level 50 Training Dummy' truncated to
+        // 'Training Dummy' broke the current-target match for synthesized
+        // timers.
+        var result = Parse("Level 50 Training Dummy cannot seem to move!");
+
+        Assert.Contains(result.BroadcastCcEvents ?? [],
+            x => x.Name == "Level 50 Training Dummy" &&
+                 x.Effect == ControlEffectType.Stun && x.Applied);
+    }
+
+    [Fact]
     public void Broadcast_ExpireLines_EmitNotApplied()
     {
         var result = Parse("Bobby recovers from the stun. Walter is no longer entranced. Clyde can move normally again.");
