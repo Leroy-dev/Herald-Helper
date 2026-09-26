@@ -111,7 +111,7 @@ public sealed class ServerCastSpellCatalog : ICastSpellCatalog
         return result.ToDictionary(x => x.Key, x => (IReadOnlyList<CastSpellInfo>)x.Value);
     }
 
-    private static string? FindDataRoot()
+    internal static string? FindDataRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
         while (current is not null)
@@ -128,7 +128,7 @@ public sealed class ServerCastSpellCatalog : ICastSpellCatalog
         return null;
     }
 
-    private static List<string> ParseCsvLine(string line)
+    internal static List<string> ParseCsvLine(string line)
     {
         var fields = new List<string>();
         var i = 0;

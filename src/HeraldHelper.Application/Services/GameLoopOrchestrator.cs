@@ -45,6 +45,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     private readonly VisibleEventTracker _realmAbilityTracker = new();
     private readonly VisibleEventTracker _negationEventTracker = new();
     private SelfCcState? _selfCc;
+    private readonly ICcIconIndex? _ccIconIndex;
     private readonly Dictionary<string, PeelEntry> _attackers = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<RealmAbilityActivation> _realmAbilityUses = [];
     private readonly Dictionary<string, CooldownEntry> _spellCooldowns = new(StringComparer.OrdinalIgnoreCase);
@@ -88,7 +89,8 @@ public sealed class GameLoopOrchestrator : IDisposable
         IOnlineSyncService? onlineSync = null,
         IAdapterValueSource? adapterValueSource = null,
         IAlertSound? alertSound = null,
-        IReadOnlyDictionary<string, int>? realmAbilityCooldowns = null)
+        IReadOnlyDictionary<string, int>? realmAbilityCooldowns = null,
+        ICcIconIndex? ccIconIndex = null)
     {
         _chatCaptureService = chatCaptureService;
         _chatEventParser = chatEventParser;
@@ -110,6 +112,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         _onlineSync = onlineSync;
         _adapterValueSource = adapterValueSource;
         _alertSound = alertSound;
+        _ccIconIndex = ccIconIndex;
         _realmAbilityCooldowns = realmAbilityCooldowns ?? new Dictionary<string, int>(0);
 
         foreach (var shard in Enum.GetValues<ShardType>())
@@ -764,9 +767,20 @@ public sealed class GameLoopOrchestrator : IDisposable
         var joined = new List<GroupMemberState>(members.Count);
         foreach (var m in members)
         {
+            // Adapter icons outlive the 12s broadcast window — a CC icon on the
+            // member's strip badges them for as long as the effect is visible.
+            var iconCc = IconCcFor(m);
             if (_broadcastCc.TryGetValue(m.Name, out var entry) && entry.UntilUtc > nowUtc)
             {
-                joined.Add(m with { ActiveCc = entry.Effect });
+                var effect = CcSeverity(entry.Effect) >= CcSeverity(iconCc ?? ControlEffectType.Nearsight)
+                    ? entry.Effect
+                    : iconCc;
+                joined.Add(m with { ActiveCc = effect });
+                changed = true;
+            }
+            else if (iconCc is not null)
+            {
+                joined.Add(m with { ActiveCc = iconCc });
                 changed = true;
             }
             else
@@ -776,6 +790,40 @@ public sealed class GameLoopOrchestrator : IDisposable
         }
 
         return changed ? state with { GroupMembers = joined } : state;
+    }
+
+    private ControlEffectType? IconCcFor(GroupMemberState member)
+    {
+        if (_ccIconIndex is null || member.BuffIcons.Count == 0)
+        {
+            return null;
+        }
+
+        ControlEffectType? strongest = null;
+        foreach (var icon in member.BuffIcons)
+        {
+            if (int.TryParse(icon, System.Globalization.NumberStyles.Integer,
+                    System.Globalization.CultureInfo.InvariantCulture, out var iconId) &&
+                _ccIconIndex.Resolve(iconId) is { } effect &&
+                CcSeverity(effect) > CcSeverity(strongest ?? ControlEffectType.Nearsight))
+            {
+                strongest = effect;
+            }
+        }
+        return strongest;
+    }
+
+    private static int CcSeverity(ControlEffectType effect)
+    {
+        return effect switch
+        {
+            ControlEffectType.Stun => 5,
+            ControlEffectType.Mezz => 4,
+            ControlEffectType.Root => 3,
+            ControlEffectType.Snare => 2,
+            ControlEffectType.Nearsight => 1,
+            _ => 0,
+        };
     }
 
     /// <summary>RA activations + spell recasts as one countdown list —

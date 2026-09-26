@@ -1203,6 +1203,48 @@ public sealed class GameLoopOrchestratorTests
     }
 
     [Fact]
+    public async Task TickAsync_GroupIconCc_BadgesMemberWithoutChatLine()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var capture = new FakeChatCaptureService("ignored");
+        var parser = new FakeChatEventParser(new ChatParseResult(null, []));
+        var adapters = new FakeAdapterValueSource
+        {
+            LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["group_name0"] = "Bobby",
+                ["group_class0"] = "Hero",
+                ["group_0icon5"] = "1161"
+            }
+        };
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            capture, parser, new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(), overlay,
+            adapterValueSource: adapters,
+            ccIconIndex: new StubCcIconIndex(new Dictionary<int, ControlEffectType> { [1161] = ControlEffectType.Stun }));
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now, CancellationToken.None);
+
+        var bobby = Assert.Single(overlay.LastSnapshot!.ClientState!.GroupMembers);
+        Assert.Equal(ControlEffectType.Stun, bobby.ActiveCc);
+
+        // icon disappears -> badge clears on the next tick, no expire message needed
+        adapters.LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["group_name0"] = "Bobby",
+            ["group_class0"] = "Hero"
+        };
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now.AddSeconds(1), CancellationToken.None);
+
+        var cleared = Assert.Single(overlay.LastSnapshot!.ClientState!.GroupMembers);
+        Assert.Null(cleared.ActiveCc);
+    }
+
+    [Fact]
     public async Task TickAsync_BroadcastStunOnTarget_SynthesizesTimer()
     {
         var now = DateTimeOffset.UtcNow;
@@ -1332,6 +1374,21 @@ public sealed class GameLoopOrchestratorTests
         public ChatParseResult Parse(string ocrText, string? fallbackTargetName = null)
         {
             return _result;
+        }
+    }
+
+    private sealed class StubCcIconIndex : ICcIconIndex
+    {
+        private readonly IReadOnlyDictionary<int, ControlEffectType> _map;
+
+        public StubCcIconIndex(IReadOnlyDictionary<int, ControlEffectType> map)
+        {
+            _map = map;
+        }
+
+        public ControlEffectType? Resolve(int iconId)
+        {
+            return _map.TryGetValue(iconId, out var effect) ? effect : null;
         }
     }
 

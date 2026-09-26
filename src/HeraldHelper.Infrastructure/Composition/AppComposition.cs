@@ -164,7 +164,8 @@ public static class AppComposition
             onlineSync,
             windowAwareCapture as IAdapterValueSource,
             alertSound,
-            RealmAbilityCooldownTable.Load(settings.ShardType, activeClass));
+            RealmAbilityCooldownTable.Load(settings.ShardType, activeClass),
+            CcIconIndex.Load());
 
         return (orchestrator, overlay, settings, capture, windowAwareCapture);
     }
