@@ -398,6 +398,7 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
         {
             foreach (var proc in Process.GetProcessesByName(name))
             {
+                using var _proc = proc;
                 saw = true;
                 var handle = OpenProcess(0x0410, false, proc.Id);
                 if (handle == IntPtr.Zero)

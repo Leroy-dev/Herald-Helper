@@ -81,15 +81,18 @@ public sealed class DaocChatLogPump
         {
             foreach (var p in Process.GetProcessesByName(name))
             {
-                pidSet.Add(p.Id);
+                using (p) { pidSet.Add(p.Id); }
             }
         }
         // The Blackthorn client runs as "game1127.dll" (name includes extension).
         foreach (var p in Process.GetProcesses())
         {
-            if (p.ProcessName.StartsWith("game1127", StringComparison.OrdinalIgnoreCase))
+            using (p)
             {
-                pidSet.Add(p.Id);
+                if (p.ProcessName.StartsWith("game1127", StringComparison.OrdinalIgnoreCase))
+                {
+                    pidSet.Add(p.Id);
+                }
             }
         }
 

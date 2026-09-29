@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using HeraldHelper.Application.Contracts;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
@@ -71,42 +72,88 @@ public sealed class DaocMemoryChatSource : IChatCaptureService, IWindowAwareChat
 
     private bool _servedChat;
 
+    // Lines memory emitted that the client will flush to disk later — the
+    // chat.log tailer echoes them on the next read and the queue drops those
+    // echoes, so a flush gap exposes ONLY the lines memory never saw.
+    private readonly Queue<string> _awaitingFlush = new();
+    private const int MaxAwaitingFlush = 400;
+    private static readonly Regex LogTimestamp = new(@"^\[\d{1,2}:\d{2}:\d{2}\]\s?", RegexOptions.Compiled);
+    private static readonly Regex AdapterLineEcho = new(@"^\S+ \((?:scalar|text)\): ", RegexOptions.Compiled);
+
     public string LastChatSource =>
         _servedChat ? "memory" : (_fallback as IChatCaptureSourceTelemetry)?.LastChatSource ?? "OCR";
 
-    public Task<string> CaptureChatTextAsync(ScreenRegion region, CancellationToken cancellationToken)
+    public async Task<string> CaptureChatTextAsync(ScreenRegion region, CancellationToken cancellationToken)
     {
-        var text = ReadPendingLines();
-        if (text is not null)
+        var mem = ReadPendingLines();
+        var tail = await PollTailerAsync(t => t.CaptureChatTextAsync(region, cancellationToken));
+        if (mem is null)
         {
-            _servedChat = true;
-            return Task.FromResult(text);
+            // Not bound / can't read — defer to the wrapped chain.
+            _servedChat = false;
+            return tail ?? (_fallback is IChatCaptureService chatFallback
+                ? await chatFallback.CaptureChatTextAsync(region, cancellationToken)
+                : string.Empty);
         }
-        // Not bound / can't read — defer to the wrapped chain so chat.log
-        // tail / relay / OCR still cover the region.
-        _servedChat = false;
-        return _fallback is IChatCaptureService chatFallback
-            ? chatFallback.CaptureChatTextAsync(region, cancellationToken)
-            : Task.FromResult(string.Empty);
+        _servedChat = true;
+        return tail + mem;
     }
 
-    public Task<string> CaptureWindowTextAsync(
+    public async Task<string> CaptureWindowTextAsync(
         OcrWatchRegion watchRegion,
         ShardType shardType,
         CancellationToken cancellationToken)
     {
         if (!_regionKeys.Contains(watchRegion.Key) && !_regionKeys.Contains(watchRegion.Label))
         {
-            return _fallback.CaptureWindowTextAsync(watchRegion, shardType, cancellationToken);
+            return await _fallback.CaptureWindowTextAsync(watchRegion, shardType, cancellationToken);
         }
-        var text = ReadPendingLines();
-        if (text is not null)
+        var mem = ReadPendingLines();
+        var tail = await PollTailerAsync(t => t.CaptureWindowTextAsync(watchRegion, shardType, cancellationToken));
+        if (mem is null)
         {
-            _servedChat = true;
-            return Task.FromResult(text);
+            _servedChat = false;
+            return tail ?? await _fallback.CaptureWindowTextAsync(watchRegion, shardType, cancellationToken);
         }
-        _servedChat = false;
-        return _fallback.CaptureWindowTextAsync(watchRegion, shardType, cancellationToken);
+        _servedChat = true;
+        return tail + mem;
+    }
+
+    /// <summary>Null when the immediate inner isn't the chat.log tailer —
+    /// keeps its file offset warm so a flush gap is recoverable, and returns
+    /// only the lines memory never emitted (tailer echoes are skipped via
+    /// the _awaitingFlush queue).</summary>
+    private async Task<string?> PollTailerAsync(Func<ChatLogTailCaptureService, Task<string>> call)
+    {
+        if (_fallback is not ChatLogTailCaptureService tailer)
+        {
+            return null;
+        }
+
+        var tail = await call(tailer);
+        if (tail.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var sb = new StringBuilder();
+        var recovered = 0;
+        foreach (var line in tail.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (_awaitingFlush.Count > 0 &&
+                string.Equals(_awaitingFlush.Peek(), line, StringComparison.Ordinal))
+            {
+                _awaitingFlush.Dequeue();
+                continue;
+            }
+            recovered++;
+            sb.Append(line).Append('\n');
+        }
+        if (recovered > 0)
+        {
+            _diagnostics?.Log($"[MemChat] recovered {recovered} line(s) flushed to disk between polls");
+        }
+        return sb.ToString();
     }
 
     /// <summary>Null = unbound/unreadable (caller should defer to fallback);
@@ -164,6 +211,21 @@ public sealed class DaocMemoryChatSource : IChatCaptureService, IWindowAwareChat
             }
             _pendingPartial = text[(lastNl + 1)..];
             var emitted = text[..(lastNl + 1)];
+            // Record every emitted line so the tailer's post-flush echo can
+            // be told apart from lines that were flushed before we saw them.
+            foreach (var line in emitted.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var normalized = LogTimestamp.Replace(line.TrimEnd('\r'), string.Empty);
+                if (normalized.Length == 0 || AdapterLineEcho.IsMatch(normalized))
+                {
+                    continue;
+                }
+                _awaitingFlush.Enqueue(normalized);
+            }
+            while (_awaitingFlush.Count > MaxAwaitingFlush)
+            {
+                _awaitingFlush.Dequeue();
+            }
             var firstLine = emitted.Split('\n', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim();
             if (firstLine?.Length > 60) firstLine = firstLine[..60] + "…";
             _diagnostics?.Log($"[MemChat] +{newBytes}B -> {firstLine}");
@@ -191,6 +253,7 @@ public sealed class DaocMemoryChatSource : IChatCaptureService, IWindowAwareChat
         {
             foreach (var proc in Process.GetProcessesByName(name))
             {
+                using var _proc = proc;   // GetProcessesByName leaks handles otherwise
                 sawProcess = true;
                 var handle = OpenProcess(0x0410, false, proc.Id); // QUERY_INFORMATION | VM_READ
                 if (handle == IntPtr.Zero)

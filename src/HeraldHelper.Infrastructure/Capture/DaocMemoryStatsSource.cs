@@ -433,6 +433,7 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
         {
             foreach (var proc in Process.GetProcessesByName(name))
             {
+                using var _proc = proc;
                 sawProcess = true;
                 var handle = OpenProcess(0x0410, false, proc.Id);
                 if (handle == IntPtr.Zero)
