@@ -245,6 +245,11 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
             slot++;
         }
 
+        // Sentinel: the strip was actually read this poll — zero effects is
+        // "player has no buffs", not "effects unavailable". Lets consumers
+        // (self-CC icon clearing) tell the two apart.
+        _values["self_effects_polled"] = "1";
+
         // Clear stale slots beyond what we just saw.
         for (var i = slot; _values.Remove($"self_effect{i}") | _values.Remove($"self_effect_icon{i}"); i++)
         {

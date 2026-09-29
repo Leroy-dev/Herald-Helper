@@ -68,7 +68,7 @@ public sealed class ServerCcSpellIndex : ICcSpellIndex
         return result;
     }
 
-    private static ControlEffectType? EffectForType(string type)
+    internal static ControlEffectType? EffectForType(string type)
     {
         return type switch
         {
@@ -80,6 +80,11 @@ public sealed class ServerCcSpellIndex : ICcSpellIndex
             _ => null
         };
     }
+
+    /// <summary>StyleTypes produce melee-style abilities in synthesized
+    /// profiles — the "your pet performs" / "you perform" parser branch.</summary>
+    internal static bool IsStyleType(string type) =>
+        type.StartsWith("Style", StringComparison.OrdinalIgnoreCase);
 
     private static string NormalizeName(string value)
     {

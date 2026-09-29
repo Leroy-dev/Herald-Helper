@@ -4,6 +4,7 @@ using HeraldHelper.Desktop.Repositories;
 using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 using HeraldHelper.Infrastructure.Auth;
+using HeraldHelper.Infrastructure.Casting;
 using HeraldHelper.Infrastructure.Composition;
 using HeraldHelper.Infrastructure.Configuration;
 using HeraldHelper.Infrastructure.Overlay;
@@ -214,10 +215,25 @@ internal sealed class RuntimeController : IDisposable
             }
         }
 
-        return _abilityRepository.LoadAbilities()
+        var manual = _abilityRepository.LoadAbilities()
             .Where(x => x.IsEnabled)
             .Select(row => ToAbilityDefinition(row, icons))
             .ToList();
+        if (manual.Count == 0)
+        {
+            // No charplan profile and nothing defined — the parser would
+            // recognize no spell names at all. Seed the generic CC set from
+            // the server table so cast/style lines still register.
+            var synthesized = ServerAbilitySynthesis.Load();
+            if (synthesized.Count > 0)
+            {
+                _responseDiagnostics?.Log(
+                    $"[Abilities] no profile or manual abilities — synthesized {synthesized.Count} CC spells from server table");
+            }
+            return synthesized.ToList();
+        }
+
+        return manual;
     }
 
     private static bool SupportsAbilityProfiles(ShardType shard)

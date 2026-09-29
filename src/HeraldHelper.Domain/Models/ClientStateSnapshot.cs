@@ -21,7 +21,11 @@ public sealed record ClientStateSnapshot(
     double? ReleaseTimerSeconds,
     double? TimerSeconds,
     PlayerVitals? Vitals = null,
-    int? TargetHealthPercent = null)
+    int? TargetHealthPercent = null,
+    /// <summary>True when the EFFECTS array was actually scanned this poll —
+    /// an empty <see cref="SelfEffects"/> then means "no buffs", not
+    /// "unavailable" (mem-stats off / unbound).</summary>
+    bool SelfEffectsPolled = false)
 {
     public static readonly ClientStateSnapshot Empty = new(
         [], [], [], null, null, false, null, null, null, null, null, null);

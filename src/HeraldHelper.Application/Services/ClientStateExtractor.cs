@@ -37,7 +37,8 @@ public static class ClientStateExtractor
             ReleaseTimerSeconds: ReadNumber(values, "release_timer_time"),
             TimerSeconds: ReadNumber(values, "timer_time"),
             Vitals: ExtractVitals(values),
-            TargetHealthPercent: ReadInt(values, "summary_target_hits"));
+            TargetHealthPercent: ReadInt(values, "summary_target_hits"),
+            SelfEffectsPolled: values.ContainsKey("self_effects_polled"));
     }
 
     /// <summary>summary_player_hits/power/end are live percents; stats_* are

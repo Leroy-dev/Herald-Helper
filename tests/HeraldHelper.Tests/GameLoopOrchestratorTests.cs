@@ -1591,6 +1591,81 @@ public sealed class GameLoopOrchestratorTests
     }
 
     [Fact]
+    public async Task TickAsync_SelfCc_ChatBannerClearsWhenPolledStripHasNoIcon()
+    {
+        // Chat said "you are stunned" but the expire line scrolled off; a
+        // polled effects strip showing no CC icon for 2 ticks ends the banner
+        // instead of sitting on the 90s cap.
+        var now = DateTimeOffset.UtcNow;
+        var capture = new FakeChatCaptureService("ignored");
+        var apply = new ChatParseResult(null, [], SelfCcEvents:
+            [new SelfCcEvent(ControlEffectType.Stun, 1)]);
+        var parser = new FakeChatEventParser(apply);
+        var adapters = new FakeAdapterValueSource
+        {
+            LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["self_effects_polled"] = "1"
+            }
+        };
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            capture, parser, new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(), overlay,
+            adapterValueSource: adapters,
+            ccIconIndex: new StubCcIconIndex(new Dictionary<int, ControlEffectType> { [1161] = ControlEffectType.Stun }));
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now, CancellationToken.None);
+        Assert.Equal(ControlEffectType.Stun, overlay.LastSnapshot!.SelfCc?.Effect);
+
+        // Tick 2: empty polled strip, banner only 1.6s old — first miss.
+        parser.NextResult = new ChatParseResult(null, []);
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now.AddSeconds(1.6), CancellationToken.None);
+        Assert.Equal(ControlEffectType.Stun, overlay.LastSnapshot!.SelfCc?.Effect);
+
+        // Tick 3: second consecutive miss — banner clears.
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now.AddSeconds(3), CancellationToken.None);
+        Assert.Null(overlay.LastSnapshot!.SelfCc);
+    }
+
+    [Fact]
+    public async Task TickAsync_SelfCc_ChatBannerSurvivesWhenStripNotPolled()
+    {
+        // Without the polled sentinel (stats-mem off / unbound) an empty
+        // effect list must NOT clear a chat-confirmed banner.
+        var now = DateTimeOffset.UtcNow;
+        var capture = new FakeChatCaptureService("ignored");
+        var apply = new ChatParseResult(null, [], SelfCcEvents:
+            [new SelfCcEvent(ControlEffectType.Stun, 1)]);
+        var parser = new FakeChatEventParser(apply);
+        var adapters = new FakeAdapterValueSource
+        {
+            LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        };
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            capture, parser, new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(), overlay,
+            adapterValueSource: adapters,
+            ccIconIndex: new StubCcIconIndex(new Dictionary<int, ControlEffectType> { [1161] = ControlEffectType.Stun }));
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now, CancellationToken.None);
+        parser.NextResult = new ChatParseResult(null, []);
+        for (var i = 1; i <= 3; i++)
+        {
+            await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+                ShardType.Default, 0, now.AddSeconds(i * 2), CancellationToken.None);
+        }
+        Assert.Equal(ControlEffectType.Stun, overlay.LastSnapshot!.SelfCc?.Effect);
+    }
+
+    [Fact]
     public async Task TickAsync_SelfIconCc_NearsightSetsBanner()
     {
         // Nearsight is the weakest CC tier — the old severity baseline made a

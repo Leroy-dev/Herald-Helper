@@ -972,7 +972,28 @@ public sealed class GameLoopOrchestrator : IDisposable
             _selfCcFromIcon = true;
             _diagnostics?.Log($"[SelfCC] {strongest} (icon)");
         }
+        else if (_selfCc is not null &&
+                 state?.SelfEffectsPolled == true &&
+                 strongest is null &&
+                 nowUtc - _selfCc.StartedUtc > TimeSpan.FromSeconds(1.5))
+        {
+            // Chat-derived banner + live strip shows no CC icon two polls in
+            // a row — the expire line never arrived; don't wait out the 90s
+            // cap. The age gate covers cast→icon application lag.
+            if (++_selfCcNoIconStreak >= 2)
+            {
+                _diagnostics?.Log("[SelfCC] no CC icon on polled strip — banner cleared");
+                _selfCc = null;
+                _selfCcNoIconStreak = 0;
+            }
+        }
+        else
+        {
+            _selfCcNoIconStreak = 0;
+        }
     }
+
+    private int _selfCcNoIconStreak;
 
     /// <summary>RA activations + spell recasts as one countdown list —
     /// ready-time when the cooldown is known, else used-time only.</summary>
