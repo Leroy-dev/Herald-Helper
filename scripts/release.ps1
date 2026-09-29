@@ -135,7 +135,7 @@ $sizeMB = [math]::Round((Get-ChildItem $publishDir -Recurse -File |
 Write-Host "==> Publish folder: $publishDir ($sizeMB MB)"
 
 if (-not $SkipZip) {
-    $stamp = Get-Date -Format "yyyyMMdd-HHmm"
+    $stamp = "stable"
     $sevenZip = Get-Command 7z -ErrorAction SilentlyContinue |
         Select-Object -ExpandProperty Source
     if (-not $sevenZip -and (Test-Path "C:\Program Files\7-Zip\7z.exe")) {
@@ -146,12 +146,12 @@ if (-not $SkipZip) {
         # Self-extracting .exe: LZMA2 compression (~40% smaller than zip) and the
         # target PC needs nothing installed to unpack it.
         $sfx = "C:\Program Files\7-Zip\7z.sfx"
-        $archivePath = Join-Path $OutputRoot "HeraldHelper-$stamp.7z"
+        $archivePath = Join-Path $OutputRoot "HeraldHelper.7z"
         Write-Host "==> Creating $archivePath"
         & $sevenZip a -t7z -mx=9 -m0=lzma2 $archivePath (Join-Path $publishDir "*") | Out-Null
         if ($LASTEXITCODE -ne 0) { throw "7z failed" }
         if (Test-Path $sfx) {
-            $sfxPath = Join-Path $OutputRoot "HeraldHelper-$stamp.exe"
+            $sfxPath = Join-Path $OutputRoot "HeraldHelper.exe"
             Write-Host "==> Creating self-extracting $sfxPath"
             & $sevenZip a -t7z -mx=9 -m0=lzma2 "-sfx$sfx" $sfxPath (Join-Path $publishDir "*") | Out-Null
             if ($LASTEXITCODE -ne 0) { throw "7z sfx failed" }
@@ -160,7 +160,7 @@ if (-not $SkipZip) {
         Write-Host ("==> 7z size: {0} MB" -f [math]::Round((Get-Item $archivePath).Length / 1MB, 1))
     }
     else {
-        $zipPath = Join-Path $OutputRoot "HeraldHelper-$stamp.zip"
+        $zipPath = Join-Path $OutputRoot "HeraldHelper.zip"
         Write-Host "==> Creating $zipPath (7-Zip not found - falling back to zip)"
         Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath -CompressionLevel Optimal -Force
         Write-Host ("==> Zip size: {0} MB" -f [math]::Round((Get-Item $zipPath).Length / 1MB, 1))
