@@ -29,4 +29,7 @@ public enum NegationKind
 public sealed record NegationEvent(
     NegationKind Kind,
     string? TargetName,
-    int OccurrenceOrdinal = 1);
+    int OccurrenceOrdinal = 1,
+    /// <summary>Character index inside the parsed frame — lets suppression
+    /// logic order negations against cast/perform mentions in merged OCR.</summary>
+    int TextIndex = -1);

@@ -529,11 +529,23 @@ public sealed class GameLoopOrchestrator : IDisposable
             }
             else
             {
-                lock (_targetLock)
+                // Unnamed negation ("you miss", "spell is cancelled") — prefer
+                // the hit this frame resolved on: the resist belongs to that
+                // cast's target, which may differ from the already-switched
+                // current target.
+                var frameTarget = parseResult.AbilityHits?.LastOrDefault()?.TargetName;
+                if (!string.IsNullOrWhiteSpace(frameTarget))
                 {
-                    if (!string.IsNullOrWhiteSpace(_currentTargetName))
+                    names.Add(frameTarget);
+                }
+                else
+                {
+                    lock (_targetLock)
                     {
-                        names.Add(_currentTargetName);
+                        if (!string.IsNullOrWhiteSpace(_currentTargetName))
+                        {
+                            names.Add(_currentTargetName);
+                        }
                     }
                 }
             }
@@ -1105,7 +1117,10 @@ public sealed class GameLoopOrchestrator : IDisposable
 
     private static string BuildAbilityEventKey(AbilityHit hit)
     {
-        return $"{hit.TargetName}|{hit.AbilityName}|{hit.SkillCode}|{hit.EffectType}|{hit.LandedSuccessfully}";
+        // 'landed' deliberately excluded: a resist line scrolling in/out
+        // between frames flips it, which would re-emit the hit (and could
+        // resurrect a timer for a hit the game actually resisted).
+        return $"{hit.TargetName}|{hit.AbilityName}|{hit.SkillCode}|{hit.EffectType}";
     }
 
     private bool IsCurrentTarget(string targetName)

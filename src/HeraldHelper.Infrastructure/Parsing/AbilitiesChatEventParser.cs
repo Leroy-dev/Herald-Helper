@@ -9,7 +9,10 @@ namespace HeraldHelper.Infrastructure.Parsing;
 public sealed class AbilitiesChatEventParser : IChatEventParser
 {
     private const int MaxAbilityTargetDistanceChars = 180;
-    private const string NextMessageBoundary = @"(?=(?:\s+you\s+(?:exam\w*|begin|cast|attempt|move|prepare|target|resist|hit)\b)|(?:\s+[A-Z][A-Za-z'\-]+\s+casts?\s+a\s+spell\b)|[\r\n\.\!\?\:\;\]\[]|$)";
+    // Boundary verbs for merged OCR frames — when two lines run together
+    // ("...Bob you perform your Slam") the capture must stop at the next
+    // "you <verb>" or a new speaker sentence instead of swallowing it.
+    private const string NextMessageBoundary = @"(?=(?:\s+you\s+(?:exam\w*|begin|cast|attempt|move|prepare|perform|target|resist|hit|fail|use|activate|enter|are|recover|miss|die|play|have|do|block|parry|evade|slay|kill)\b)|(?:\s+[A-Z][A-Za-z'\-]+\s+(?:casts?|hits|misses|attacks|performs|evades|blocks|parries|kills|dies)\b)|[\r\n\.\!\?\:\;\]\[]|$)";
     /// "You target [X]" and "You enter combat mode and target [X]" both
     /// name the current target — the combat-mode variant is what melee
     /// swings print, so it must drive CC attribution too.
@@ -282,18 +285,18 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         var hitMentions = ParseAbilityMentions(normalizedOcrText);
         var visibleCastEvents = ParseCastEvents(normalizedOcrText);
         var castEvent = visibleCastEvents.LastOrDefault();
-        var negationEvents = ParseNegationEvents(normalizedOcrText);
+        var negationsIndexed = ParseNegationEventsWithIndex(normalizedOcrText);
+        var negationEvents = AssignNegationOrdinals(negationsIndexed);
         var contextSpans = BuildMentionContextSpans(normalizedOcrText);
-        var resistedNames = new HashSet<string>(
-            negationEvents.Where(x => x.Kind == NegationKind.Resisted && x.TargetName is not null)
-                          .Select(x => NormalizeTargetName(x.TargetName!)),
-            StringComparer.OrdinalIgnoreCase);
-        var failedAppNames = new HashSet<string>(
-            negationEvents.Where(x => x.Kind == NegationKind.FailedApplication && x.TargetName is not null)
-                          .Select(x => NormalizeTargetName(x.TargetName!)),
-            StringComparer.OrdinalIgnoreCase);
-        var spellNegated = negationEvents.Any(x => x.Kind == NegationKind.Immune);
-        var failedAppUnnamed = negationEvents.Any(x => x.Kind == NegationKind.FailedApplication && x.TargetName is null);
+        // A resist/immune line suppresses only hits it textually FOLLOWS —
+        // frame-wide suppression kills an unrelated landed cast when a stale
+        // resist scrolls in above the new cast line in the same frame.
+        bool NegationFollows(NegationKind kind, int mentionIndex, string? normalizedTarget = null) =>
+            negationsIndexed.Any(n =>
+                n.Event.Kind == kind && n.Index > mentionIndex &&
+                (normalizedTarget is null ||
+                 (n.Event.TargetName is { } t && string.Equals(
+                     NormalizeTargetName(t), normalizedTarget, StringComparison.OrdinalIgnoreCase))));
         var hitOrdinals = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var mention in hitMentions)
         {
@@ -302,7 +305,8 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
             // name the ability without applying its effect — only a completed
             // cast or an executed style can land a CC.
             if (context is MentionContext.CastStart or MentionContext.StylePrepare
-                or MentionContext.StyleFail or MentionContext.Resist)
+                or MentionContext.StyleFail or MentionContext.PetStyle
+                or MentionContext.Resist)
             {
                 continue;
             }
@@ -319,29 +323,38 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
 
             targetName = NormalizeTargetName(targetName);
 
+            var normalizedTarget = NormalizeTargetName(targetName);
             var landed = context switch
             {
                 // "You perform your X perfectly!" only fires on a resolved
                 // hit — but "already has this effect" means the CC itself
                 // was rejected even though the swing landed.
-                MentionContext.StyleExecute => !failedAppUnnamed,
+                MentionContext.StyleExecute =>
+                    !NegationFollows(NegationKind.FailedApplication, mention.Index) &&
+                    !NegationFollows(NegationKind.FailedApplication, mention.Index, normalizedTarget),
                 // "You cast a X spell!" — landed unless a resist/immune
-                // line names this target in the same frame.
+                // line naming this target follows in the same frame.
                 // "You begin playing X!" — a song IS the application; the
                 // client prints no completion line for it.
                 MentionContext.CastComplete or MentionContext.SongStart =>
-                    !spellNegated && !failedAppUnnamed && !resistedNames.Contains(NormalizeTargetName(targetName)),
+                    !NegationFollows(NegationKind.Immune, mention.Index) &&
+                    !NegationFollows(NegationKind.FailedApplication, mention.Index) &&
+                    !NegationFollows(NegationKind.Resisted, mention.Index, normalizedTarget) &&
+                    !NegationFollows(NegationKind.FailedApplication, mention.Index, normalizedTarget),
                 // Failure text lives in the mention's own sentence or the ones
                 // after it ("Foo resists your Slam!") — a "must wait … again"
                 // line from an earlier attempt must not suppress a landed hit.
-                _ => !failedAppUnnamed && !ContainsFailureKeyword(WindowFromLineStart(normalizedOcrText, mention.Index, mention.Ability.Name.Length))
+                _ => !NegationFollows(NegationKind.FailedApplication, mention.Index) &&
+                     !ContainsFailureKeyword(WindowFromLineStart(normalizedOcrText, mention.Index, mention.Ability.Name.Length))
             };
-            if (resistedNames.Contains(NormalizeTargetName(targetName)) ||
-                failedAppNames.Contains(NormalizeTargetName(targetName)))
+            if (NegationFollows(NegationKind.Resisted, mention.Index, normalizedTarget) ||
+                NegationFollows(NegationKind.FailedApplication, mention.Index, normalizedTarget))
             {
                 landed = false;
             }
-            var hitKey = $"{targetName}|{mention.Ability.Name}|{mention.Ability.SkillCode}|{mention.Ability.EffectType}|{landed}";
+            // 'landed' excluded — a resist scrolling in/out flips it and
+            // would re-emit (or resurrect) the same hit.
+            var hitKey = $"{targetName}|{mention.Ability.Name}|{mention.Ability.SkillCode}|{mention.Ability.EffectType}";
             hitOrdinals.TryGetValue(hitKey, out var previousOrdinal);
             var occurrenceOrdinal = previousOrdinal + 1;
             hitOrdinals[hitKey] = occurrenceOrdinal;
@@ -381,6 +394,9 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         StylePrepare,
         StyleExecute,
         StyleFail,
+        /// A pet style ("Your Moolish performs its X perfectly") — not a
+        /// player hit and the target is unknown; no hit is created.
+        PetStyle,
         Resist
     }
 
@@ -412,7 +428,9 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         }
         foreach (Match m in PetStyleExecuteRegex.Matches(text))
         {
-            spans.Add((m.Index, m.Index + m.Length, MentionContext.StyleExecute));
+            // A pet's style lands on the PET's target — attributing it to the
+            // player's current target creates a phantom CC timer.
+            spans.Add((m.Index, m.Index + m.Length, MentionContext.PetStyle));
         }
         foreach (Match m in StyleFailRegex.Matches(text))
         {
@@ -453,7 +471,7 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         return best;
     }
 
-    private static IReadOnlyList<NegationEvent> ParseNegationEvents(string ocrText)
+    private static List<(int Index, NegationEvent Event)> ParseNegationEventsWithIndex(string ocrText)
     {
         var events = new List<(int Index, NegationEvent Event)>();
 
@@ -522,15 +540,20 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
             }
         }
 
+        return events.OrderBy(x => x.Index).ToList();
+    }
+
+    private static IReadOnlyList<NegationEvent> AssignNegationOrdinals(
+        List<(int Index, NegationEvent Event)> indexed)
+    {
         var ordinals = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        return events
-            .OrderBy(x => x.Index)
+        return indexed
             .Select(x =>
             {
                 var key = $"{x.Event.Kind}|{x.Event.TargetName ?? string.Empty}";
                 ordinals.TryGetValue(key, out var ord);
                 ordinals[key] = ++ord;
-                return x.Event with { OccurrenceOrdinal = ord };
+                return x.Event with { OccurrenceOrdinal = ord, TextIndex = x.Index };
             })
             .ToList();
     }

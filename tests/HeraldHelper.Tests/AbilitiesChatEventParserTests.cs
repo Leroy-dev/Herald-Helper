@@ -1,4 +1,5 @@
 using HeraldHelper.Application.Models;
+using HeraldHelper.Domain.Enums;
 using HeraldHelper.Domain.Models;
 using HeraldHelper.Infrastructure.Casting;
 using HeraldHelper.Infrastructure.Parsing;
@@ -453,6 +454,76 @@ public sealed class AbilitiesChatEventParserTests
 
         Assert.Contains(result.LifeEvents!,
             e => e.Kind == CombatLifeKind.Death && e.OtherName == "Methasorc");
+    }
+
+    [Fact]
+    public void Parse_StaleResistBeforeCastDoesNotSuppressNewHit()
+    {
+        // A resist line scrolling in ABOVE a new cast in the same frame belongs
+        // to an earlier attempt — it must not suppress the fresh landed hit.
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Stunning Bellow", "s", 9, ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse(
+            "Alice resists the effect! You cast a Stunning Bellow spell!",
+            fallbackTargetName: "Alice");
+
+        var hit = Assert.Single(result.AbilityHits!);
+        Assert.True(hit.LandedSuccessfully);
+        // The negation still surfaces — the tracker retracts the OLD timer.
+        Assert.Contains(result.NegationEvents!, e => e.Kind == NegationKind.Resisted);
+    }
+
+    [Fact]
+    public void Parse_ResistAfterCastStillSuppresses()
+    {
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Stunning Bellow", "s", 9, ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse(
+            "You cast a Stunning Bellow spell! Alice resists the effect!",
+            fallbackTargetName: "Alice");
+
+        var hit = Assert.Single(result.AbilityHits!);
+        Assert.False(hit.LandedSuccessfully);
+    }
+
+    [Fact]
+    public void Parse_MergedTargetPerform_TargetStopsAtVerb()
+    {
+        // OCR-merged lines without punctuation: the target capture must stop
+        // at the next "you <verb>" boundary, not swallow the perform line.
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "m", 9, ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse("You target Bob you perform your Slam perfectly!");
+
+        Assert.Equal("Bob", result.TargetEvent!.Name);
+        var hit = Assert.Single(result.AbilityHits!);
+        Assert.Equal("Bob", hit.TargetName);
+        Assert.True(hit.IsMeleeStyle);
+    }
+
+    [Fact]
+    public void Parse_PetStyleExecuteCreatesNoHit()
+    {
+        // "Your pet performs its X perfectly" is the pet's target, not yours —
+        // no hit may be attributed to the current target.
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "m", 9, ControlEffectType.Stun)
+        ]);
+
+        var result = parser.Parse(
+            "You target [Alice]. Your Moolish performs its Slam perfectly!");
+
+        Assert.Empty(result.AbilityHits!);
     }
 
     [Fact]
