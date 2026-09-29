@@ -215,7 +215,11 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        if (pageDenied || string.IsNullOrWhiteSpace(latestCookieHeader) ||
+        // Same rule as headless: page-deny only gates profiles without a
+        // validateUrl — Eden's hub keeps a hidden login affordance in the DOM
+        // for logged-in users, which would veto a live session otherwise.
+        var denyBlocks = string.IsNullOrWhiteSpace(profile.ValidateUrl) && pageDenied;
+        if (denyBlocks || string.IsNullOrWhiteSpace(latestCookieHeader) ||
             !await IsLoginValidatedAsync(profile, latestCookieHeader, latestUserAgent, CancellationToken.None))
         {
             _diagnostics?.Log(
@@ -297,20 +301,29 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
             cancellationToken.ThrowIfCancellationRequested();
             var cookies = await browser.CookiesAsync([profile.HubUrl]);
             var cookieHeader = BuildCookieHeader(cookies, profile);
+            if (string.IsNullOrWhiteSpace(cookieHeader))
+            {
+                diagnostics?.Log($"[Auth] {profile.Shard}: poll — no session cookies yet");
+                await Task.Delay(750, cancellationToken);
+                continue;
+            }
+
             var userAgent = await TryReadUserAgentAsync(page, cancellationToken);
+            var hasValidateUrl = !string.IsNullOrWhiteSpace(profile.ValidateUrl);
             var pageDenied = await PageShowsDenyAsync(page, profile.HubDenyPhrases, cancellationToken);
-            if (pageDenied || string.IsNullOrWhiteSpace(cookieHeader))
-            {
-                diagnostics?.Log($"[Auth] {profile.Shard}: poll — cookies={cookies.Count} denied={pageDenied}");
-            }
-            else if (!await IsLoginValidatedAsync(profile, cookieHeader, userAgent, cancellationToken))
-            {
-                diagnostics?.Log($"[Auth] {profile.Shard}: cookies present but validateUrl rejected the session (dead/expired)");
-            }
-            else
+            // Server-side validateUrl is the authority when configured —
+            // Eden's hub keeps a hidden login affordance in the DOM even for
+            // a live session, so page-deny alone can't veto a validated one.
+            // Without a validateUrl, deny phrases are the only logged-out
+            // signal and still gate.
+            if (((!hasValidateUrl && !pageDenied) || hasValidateUrl) &&
+                await IsLoginValidatedAsync(profile, cookieHeader, userAgent, cancellationToken))
             {
                 return cookieHeader;
             }
+
+            diagnostics?.Log(
+                $"[Auth] {profile.Shard}: cookies={cookies.Count} denied={pageDenied} validate={(hasValidateUrl ? "failed" : "n/a")}");
 
             await Task.Delay(750, cancellationToken);
         }
