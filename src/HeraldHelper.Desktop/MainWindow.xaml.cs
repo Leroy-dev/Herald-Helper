@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
@@ -932,10 +933,33 @@ public partial class MainWindow : Window
         window.ShowDialog();
     }
 
+    private readonly ConcurrentQueue<string> _pendingDiagLines = new();
+    private int _diagFlushScheduled;
+
     private void OnResponseDiagnosticLineAdded(string line)
     {
-        // BeginInvoke — logging must never block the capture/parse thread.
-        Dispatcher.BeginInvoke(() =>
+        // Buffer + one dispatcher op per burst: a MemStats poll logs hundreds
+        // of lines and AppendText-per-line flooded the UI queue ahead of the
+        // awaited render dispatch — the ~2s 'render' spikes.
+        _pendingDiagLines.Enqueue(line);
+        if (Interlocked.Exchange(ref _diagFlushScheduled, 1) == 0)
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, FlushDiagnosticLines);
+        }
+    }
+
+    private void FlushDiagnosticLines()
+    {
+        _diagFlushScheduled = 0;
+        var sb = new System.Text.StringBuilder();
+        var count = 0;
+        while (count < 4000 && _pendingDiagLines.TryDequeue(out var line))
+        {
+            sb.AppendLine(line);
+            count++;
+        }
+
+        if (sb.Length > 0)
         {
             if (ResponseDiagnosticsBox.Text.Length > 80_000)
             {
@@ -943,16 +967,16 @@ public partial class MainWindow : Window
             }
             else
             {
-                if (ResponseDiagnosticsBox.Text.Length > 0)
-                {
-                    ResponseDiagnosticsBox.AppendText(Environment.NewLine);
-                }
-
-                ResponseDiagnosticsBox.AppendText(line);
+                ResponseDiagnosticsBox.AppendText(sb.ToString());
             }
 
             ResponseDiagnosticsBox.ScrollToEnd();
-        });
+        }
+
+        if (!_pendingDiagLines.IsEmpty && Interlocked.Exchange(ref _diagFlushScheduled, 1) == 0)
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, FlushDiagnosticLines);
+        }
     }
 
     internal void ReloadOverlaySettingsFromStore()

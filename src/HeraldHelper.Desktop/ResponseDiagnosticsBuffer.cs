@@ -10,7 +10,7 @@ public sealed class ResponseDiagnosticsBuffer : IResponseDiagnostics
 
     public event Action<string>? LineAdded;
 
-    public ResponseDiagnosticsBuffer(int maxLines = 500)
+    public ResponseDiagnosticsBuffer(int maxLines = 3000)
     {
         _maxLines = Math.Max(50, maxLines);
     }
