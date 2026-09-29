@@ -195,6 +195,13 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         "you can't charm that target",
         "this spell does not charm that type of monster"
     ];
+    /// Player-stopped casts/songs: 'Your spell is cancelled!' — a fresh timer
+    /// created by the just-seen 'begin playing'/cast line is a phantom.
+    private static readonly string[] SpellCancelledMarkers =
+    [
+        "your spell is cancelled",
+        "your spell is canceled"
+    ];
     /// Style lifecycle (server sends these only in the named phases):
     ///   prepare → button press queues the style (no swing yet)
     ///   perform perfectly → the swing hit AND the style fired
@@ -493,6 +500,15 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
             while ((startIndex = lowered.IndexOf(marker, startIndex, StringComparison.Ordinal)) >= 0)
             {
                 events.Add((startIndex, new NegationEvent(NegationKind.FailedApplication, null)));
+                startIndex += marker.Length;
+            }
+        }
+        foreach (var marker in SpellCancelledMarkers)
+        {
+            var startIndex = 0;
+            while ((startIndex = lowered.IndexOf(marker, startIndex, StringComparison.Ordinal)) >= 0)
+            {
+                events.Add((startIndex, new NegationEvent(NegationKind.Cancelled, null)));
                 startIndex += marker.Length;
             }
         }

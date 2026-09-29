@@ -129,10 +129,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             }
 
             var targetText = overlay.ShowTarget
-                ? BuildTargetText(snapshot.Target, overlay, snapshot.ClientState?.TargetHealthPercent)
+                ? BuildTargetText(snapshot.Target, overlay)
                 : string.Empty;
             var timerLines = overlay.ShowTimers
-                ? BuildTimerLines(snapshot.Timers, timerColor, snapshot.Target?.Name)
+                ? BuildTimerLines(snapshot.Timers, timerColor)
                 : null;
             var cooldownLines = overlay.ShowCooldowns ? BuildCooldownLines(snapshot.Cooldowns) : null;
             var timerText = timerLines is null ? string.Empty : string.Join("\n", timerLines.Select(l => l.Text));
@@ -256,7 +256,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     /// <summary>Typed-flag variant — the Overlay view's field checkboxes are the
     /// source of truth; the map overloads remain for tests and legacy cfg.</summary>
     internal static string BuildTargetText(
-        TargetProfile? target, OverlaySettings overlay, int? targetHealthPercent = null)
+        TargetProfile? target, OverlaySettings overlay)
     {
         return BuildTargetTextCore(
             target,
@@ -265,8 +265,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             overlay.ShowLevel,
             overlay.ShowRealmRank,
             overlay.ShowSoloKills,
-            allowDetailFallback: false,
-            targetHealthPercent);
+            allowDetailFallback: false);
     }
 
     internal static string BuildTargetText(TargetProfile? target, IReadOnlyDictionary<string, string>? map)
@@ -474,8 +473,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         bool showLevel,
         bool showRealmRank,
         bool showSoloKills,
-        bool allowDetailFallback,
-        int? targetHealthPercent = null)
+        bool allowDetailFallback)
     {
         if (target is null || string.IsNullOrWhiteSpace(target.Name) || !IsRealPlayerTarget(target))
         {
@@ -501,11 +499,6 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         {
             line2Parts.Add(target.RealmRank);
         }
-        if (targetHealthPercent is { } hp)
-        {
-            line2Parts.Add($"{hp}%");
-        }
-
         var text = line1;
         if (target.IsLoading)
         {
@@ -553,8 +546,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     /// caller via IconImageLoader). Cooldowns live in their own window.</summary>
     internal static List<(string Text, MediaColor Color, IconSpriteRef? Icon)>? BuildTimerLines(
         IReadOnlyCollection<CcTimerEntry> timers,
-        MediaColor fallbackColor = default,
-        string? currentTargetName = null)
+        MediaColor fallbackColor = default)
     {
         var now = DateTimeOffset.UtcNow;
         var lines = new List<(string Text, MediaColor Color, IconSpriteRef? Icon)>();
@@ -577,33 +569,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
                     x.Icon);
             }));
 
-        // Per-category readiness on the current target — the categories with
-        // no active immunity entry are open for application right now.
-        if (!string.IsNullOrWhiteSpace(currentTargetName))
-        {
-            var normalizedTarget = NormalizeTimerTargetName(currentTargetName);
-            var immune = timers
-                .Where(x => x.RemainingSeconds(now) > 0 &&
-                            string.Equals(NormalizeTimerTargetName(x.TargetName), normalizedTarget,
-                                StringComparison.OrdinalIgnoreCase))
-                .Select(x => x.EffectType)
-                .ToHashSet();
-            var ready = ReadinessCategories.Where(c => !immune.Contains(c)).ToList();
-            lines.Add((
-                ready.Count == ReadinessCategories.Length
-                    ? $"READY: {string.Join(' ', ReadinessCategories.Select(ReadinessType))}"
-                    : ready.Count == 0
-                        ? "READY: none"
-                        : $"READY: {string.Join(' ', ready.Select(ReadinessType))}",
-                MediaColor.FromRgb(0x4E, 0xC9, 0x7B),
-                null));
-        }
-
         return lines.Count == 0 ? null : lines.Take(14).ToList();
     }
-
-    private static readonly ControlEffectType[] ReadinessCategories =
-        [ControlEffectType.Stun, ControlEffectType.Mezz, ControlEffectType.Root, ControlEffectType.Nearsight];
 
     /// <summary>Same normalization as CcImmunityTracker — chat lines and the
     /// target adapter disagree on "the " prefixes and "---" suffixes.</summary>

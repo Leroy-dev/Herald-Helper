@@ -519,6 +519,10 @@ public sealed class GameLoopOrchestrator : IDisposable
             var maxAge = negation.Kind switch
             {
                 NegationKind.SwingFailed or NegationKind.StyleFailed => TimeSpan.FromSeconds(3),
+                // A cancelled song/cast retracts only a timer created in the
+                // same breath — the effect genuinely runs while it plays, so
+                // stopping later must not undo a real immunity.
+                NegationKind.Cancelled => TimeSpan.FromSeconds(3),
                 NegationKind.FailedApplication => TimeSpan.FromSeconds(1.5),
                 _ => TimeSpan.FromSeconds(8)
             };

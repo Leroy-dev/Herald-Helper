@@ -418,6 +418,21 @@ public sealed class AbilitiesChatEventParserTests
     }
 
     [Fact]
+    public void Parse_SpellCancelledEmitsNegation()
+    {
+        // Minstrel song: 'begin playing' creates the hit; cancelling before
+        // the first pulse must retract the fresh timer.
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Commanding Cadence", "i", 29, HeraldHelper.Domain.Enums.ControlEffectType.Mezz)
+        ]);
+
+        var result = parser.Parse("You begin playing Commanding Cadence! Your spell is cancelled!");
+
+        Assert.Contains(result.NegationEvents!, n => n.Kind == NegationKind.Cancelled && n.TargetName is null);
+    }
+
+    [Fact]
     public void Parse_StylePrepareDoesNotCreateHit()
     {
         var parser = new AbilitiesChatEventParser(

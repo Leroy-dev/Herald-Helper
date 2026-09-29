@@ -102,6 +102,44 @@ public sealed class GameLoopOrchestratorTests
     }
 
     [Fact]
+    public async Task TickAsync_CancelledSongRetractsPhantomTimer()
+    {
+        // Live trace (Minstrel): 'You begin playing Commanding Cadence!'
+        // registers the mez hit immediately; the player cancels before the
+        // first pulse lands — 'Your spell is cancelled!' must retract the
+        // fresh entry instead of leaving a phantom timer on the target.
+        var now = DateTimeOffset.UtcNow;
+        var capture = new SequenceChatCaptureService(
+        [
+            "You target [Level 50 Training Dummy].",
+            "You begin playing Commanding Cadence!",
+            "Your spell is cancelled!"
+        ]);
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Commanding Cadence", "i", 29, ControlEffectType.Mezz)
+        ]);
+        var tracker = new RecordingCcImmunityTracker();
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            capture,
+            parser,
+            new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            tracker,
+            overlay);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now.AddMilliseconds(300), CancellationToken.None);
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now.AddSeconds(1), CancellationToken.None);
+
+        var hit = Assert.Single(tracker.RegisteredHits);
+        Assert.Equal("Commanding Cadence", hit.AbilityName);
+        var retraction = Assert.Single(tracker.Retracted);
+        Assert.Contains(retraction.Names, n => n.Contains("Training Dummy", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task TickAsync_AlertsOnceWhenCcImmunityExpires()
     {
         var now = DateTimeOffset.UtcNow;
@@ -1677,6 +1715,7 @@ public sealed class GameLoopOrchestratorTests
     private sealed class RecordingCcImmunityTracker : ICcImmunityTracker
     {
         public List<AbilityHit> RegisteredHits { get; } = [];
+        public List<(List<string> Names, TimeSpan MaxAge)> Retracted { get; } = [];
 
         public void RegisterSuccessfulHit(AbilityHit hit, string? targetClass, int resistPercent, DateTimeOffset nowUtc,
             ShardType shard = ShardType.Default)
@@ -1686,6 +1725,7 @@ public sealed class GameLoopOrchestratorTests
 
         public void RetractFreshEntries(IEnumerable<string> targetNames, DateTimeOffset nowUtc, TimeSpan maxAge)
         {
+            Retracted.Add((targetNames.ToList(), maxAge));
         }
 
         public IReadOnlyCollection<CcTimerEntry> GetActiveTimers(DateTimeOffset nowUtc)
