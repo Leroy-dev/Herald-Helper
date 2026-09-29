@@ -110,11 +110,14 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
         // cookies are either already valid or the user must sign in via the
         // browser window. A short wait only covers session writes racing in.
         var cookieHeader = await WaitForCookieHeaderAsync(
-            browser, profile, page, TimeSpan.FromSeconds(10), cancellationToken);
+            browser, profile, page, TimeSpan.FromSeconds(10), _diagnostics, cancellationToken);
         if (string.IsNullOrWhiteSpace(cookieHeader))
         {
+            _diagnostics?.Log($"[Auth] {profile.Shard}: no validated session in persistent profile — sign in via the Browser button");
             return null;
         }
+
+        _diagnostics?.Log($"[Auth] {profile.Shard}: session cookies captured ({cookieHeader.Split(';').Length} cookies)");
 
         var userAgent = await TryReadUserAgentAsync(page, cancellationToken);
 
@@ -215,8 +218,12 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
         if (pageDenied || string.IsNullOrWhiteSpace(latestCookieHeader) ||
             !await IsLoginValidatedAsync(profile, latestCookieHeader, latestUserAgent, CancellationToken.None))
         {
+            _diagnostics?.Log(
+                $"[Auth] {profile.Shard}: browser closed — denied={pageDenied}, cookies={(string.IsNullOrWhiteSpace(latestCookieHeader) ? "none" : "present")}, validation failed");
             return null;
         }
+
+        _diagnostics?.Log($"[Auth] {profile.Shard}: login captured via browser window");
 
         var bundle = new ShardAuthBundle(latestCookieHeader, latestUserAgent);
         _onRefreshed(profile.Shard, bundle);
@@ -281,6 +288,7 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
         ShardAuthProfile profile,
         IPage page,
         TimeSpan timeout,
+        IResponseDiagnostics? diagnostics,
         CancellationToken cancellationToken)
     {
         var started = DateTimeOffset.UtcNow;
@@ -291,9 +299,15 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
             var cookieHeader = BuildCookieHeader(cookies, profile);
             var userAgent = await TryReadUserAgentAsync(page, cancellationToken);
             var pageDenied = await PageShowsDenyAsync(page, profile.HubDenyPhrases, cancellationToken);
-            if (!pageDenied &&
-                !string.IsNullOrWhiteSpace(cookieHeader) &&
-                await IsLoginValidatedAsync(profile, cookieHeader, userAgent, cancellationToken))
+            if (pageDenied || string.IsNullOrWhiteSpace(cookieHeader))
+            {
+                diagnostics?.Log($"[Auth] {profile.Shard}: poll — cookies={cookies.Count} denied={pageDenied}");
+            }
+            else if (!await IsLoginValidatedAsync(profile, cookieHeader, userAgent, cancellationToken))
+            {
+                diagnostics?.Log($"[Auth] {profile.Shard}: cookies present but validateUrl rejected the session (dead/expired)");
+            }
+            else
             {
                 return cookieHeader;
             }
