@@ -161,6 +161,8 @@ public partial class MainWindow : Window
                 OutputBox.Text = message;
                 LoopStatusText.Text = $"Tick failed {DateTime.Now:HH:mm:ss}";
             });
+        _runtimeController.TickBusy += () =>
+            Dispatcher.BeginInvoke(() => LoopStatusText.Text = "Tick already running…");
         _runtimeController.Stopped += () =>
             Dispatcher.BeginInvoke(() =>
             {
@@ -199,6 +201,15 @@ public partial class MainWindow : Window
         _isBindingControls = true;
         try
         {
+            // Persisted like window bounds — otherwise every restart reset to 350ms.
+            if (int.TryParse(
+                    _settingsController.LoadMap().TryGetValue("ui.loopMs", out var loopMsRaw) ? loopMsRaw : null,
+                    out var loopMs))
+            {
+                _loopInterval = TimeSpan.FromMilliseconds(Math.Clamp(loopMs, 100, 5000));
+                _runtimeController.Interval = _loopInterval;
+                LoopMsText.Text = loopMs.ToString();
+            }
             BuildOverlayElementsPanel(fontFamilies);
         }
         finally
@@ -829,6 +840,12 @@ public partial class MainWindow : Window
         if (_runtimeController is not null)
         {
             _runtimeController.Interval = _loopInterval;
+        }
+        if (!_isBindingControls)
+        {
+            _settingsController.Save([
+                new ConfigEntry { Key = "ui.loopMs", Value = ms.ToString() }
+            ]);
         }
     }
 

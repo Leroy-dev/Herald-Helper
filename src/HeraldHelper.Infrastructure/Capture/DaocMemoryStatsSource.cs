@@ -113,8 +113,12 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
             {
                 return;
             }
-            if (!_mapBound && !TryBindMap())
+            if (!_mapBound)
             {
+                // The bind walks the whole address space (5 anchor scans +
+                // effects array) — multi-second on a cold start. It runs on a
+                // background task; until it lands the inner chain serves.
+                KickMapBind();
                 return;
             }
 
@@ -253,10 +257,55 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
         name.StartsWith("group_", StringComparison.OrdinalIgnoreCase) ||
         name is "concentration" or "combat_mode" or "compass_heading" or "bounty_points";
 
-    private bool TryBindMap()
+    private Task? _bindTask;
+    private DateTime _lastBindKick = DateTime.MinValue;
+
+    /// <summary>Called under _sync while unbound. The scan is minutes-scale
+    /// heavy relative to a 350ms tick — never run it inline again.</summary>
+    private void KickMapBind()
     {
-        // Union every map discovered via the anchors — each adapter type owns
-        // its own map (numeric at obj+4, text at obj+0x10, ...).
+        if (_process == IntPtr.Zero || _bindTask is { IsCompleted: false })
+        {
+            return;
+        }
+        // Failed scans retry gently, not every poll.
+        if (DateTime.UtcNow - _lastBindKick < TimeSpan.FromSeconds(5))
+        {
+            return;
+        }
+        _lastBindKick = DateTime.UtcNow;
+        var process = _process;
+        _bindTask = Task.Run(() =>
+        {
+            var (records, effectsBase, mapsFound) = ScanAdapterMaps(process);
+            lock (_sync)
+            {
+                if (_process != process)
+                {
+                    return; // rebound meanwhile — discard the stale scan
+                }
+                if (mapsFound > 0)
+                {
+                    _records = records;
+                    _effectsBase = effectsBase;
+                    _mapBound = true;
+                    _bindError = null;
+                    _diagnostics?.Log($"[MemStats] bound: {records.Count} adapters across {mapsFound} registry map(s)" +
+                                      (_effectsBase >= 0 ? $", effects array @0x{_effectsBase:X}" : ", no effects array"));
+                }
+                else
+                {
+                    _bindError = "adapter map not found";
+                }
+            }
+        });
+    }
+
+    /// <summary>Union every map discovered via the anchors — each adapter type
+    /// owns its own map (numeric at obj+4, text at obj+0x10, ...). Pure scan
+    /// against a captured handle; results are applied under _sync.</summary>
+    private (Dictionary<string, long> Records, long EffectsBase, int MapsFound) ScanAdapterMaps(IntPtr process)
+    {
         var merged = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
         var mapsFound = 0;
         foreach (var anchor in AnchorNames)
@@ -266,7 +315,7 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
             var anchorDone = false;
             while (!anchorDone)
             {
-                if (VirtualQueryEx(_process, new IntPtr(addr), out var mbi, Marshal.SizeOf<MemoryBasicInformation>()) == 0)
+                if (VirtualQueryEx(process, new IntPtr(addr), out var mbi, Marshal.SizeOf<MemoryBasicInformation>()) == 0)
                 {
                     break;
                 }
@@ -277,7 +326,7 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
                     continue;
                 }
                 var buf = new byte[mbi.RegionSize];
-                if (!ReadProcessMemory(_process, new IntPtr(mbi.BaseAddress), buf, buf.Length, out var got))
+                if (!ReadProcessMemory(process, new IntPtr(mbi.BaseAddress), buf, buf.Length, out var got))
                 {
                     continue;
                 }
@@ -293,11 +342,11 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
                         continue;
                     }
                     var node = mbi.BaseAddress + i - DaocAdapterMapReader.NodeNameBuf;
-                    if (!DaocAdapterMapReader.IsNode(ReadBytes, node))
+                    if (!DaocAdapterMapReader.IsNode((a, n) => ReadBytesFromProcess(process, a, n), node))
                     {
                         continue;
                     }
-                    var map = DaocAdapterMapReader.WalkMap(ReadBytes, node);
+                    var map = DaocAdapterMapReader.WalkMap((a, n) => ReadBytesFromProcess(process, a, n), node);
                     if (map.Count > 5)
                     {
                         foreach (var kv in map)
@@ -311,28 +360,17 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
                 }
             }
         }
-        if (mapsFound > 0)
-        {
-            _records = merged;
-            _mapBound = true;
-            _bindError = null;
-            _effectsBase = TryLocateEffectsArray();
-            _diagnostics?.Log($"[MemStats] bound: {merged.Count} adapters across {mapsFound} registry map(s)" +
-                              (_effectsBase >= 0 ? $", effects array @0x{_effectsBase:X}" : ", no effects array"));
-            return true;
-        }
-        _bindError = "adapter map not found";
-        return false;
+        return (merged, TryLocateEffectsArray(process), mapsFound);
     }
 
     /// <summary>Find the "EFFECTS\0" marker and return the array base.
     /// Validated by checking the first record's name field reads as ASCII.</summary>
-    private long TryLocateEffectsArray()
+    private long TryLocateEffectsArray(IntPtr process)
     {
         long addr = 0;
         while (true)
         {
-            if (VirtualQueryEx(_process, new IntPtr(addr), out var mbi, Marshal.SizeOf<MemoryBasicInformation>()) == 0)
+            if (VirtualQueryEx(process, new IntPtr(addr), out var mbi, Marshal.SizeOf<MemoryBasicInformation>()) == 0)
             {
                 break;
             }
@@ -343,7 +381,7 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
                 continue;
             }
             var buf = new byte[mbi.RegionSize];
-            if (!ReadProcessMemory(_process, new IntPtr(mbi.BaseAddress), buf, buf.Length, out var got))
+            if (!ReadProcessMemory(process, new IntPtr(mbi.BaseAddress), buf, buf.Length, out var got))
             {
                 continue;
             }
@@ -362,7 +400,7 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
                 var baseAddr = mbi.BaseAddress + i + EffectsMarker.Length;
                 // records start ~0x34 after the marker; first name must read
                 // as printable ASCII — rejects stray "EFFECTS" literals.
-                var probe = ReadBytes(baseAddr + 0x38, EffectNameLength);
+                var probe = ReadBytesFromProcess(process, baseAddr + 0x38, EffectNameLength);
                 if (probe is not null)
                 {
                     var nul = Array.IndexOf(probe, (byte)0);
@@ -417,10 +455,12 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
         return false;
     }
 
-    private byte[]? ReadBytes(long addr, int size)
+    private byte[]? ReadBytes(long addr, int size) => ReadBytesFromProcess(_process, addr, size);
+
+    private static byte[]? ReadBytesFromProcess(IntPtr process, long addr, int size)
     {
         var buf = new byte[size];
-        return ReadProcessMemory(_process, new IntPtr(addr), buf, size, out var read) && read > 0
+        return ReadProcessMemory(process, new IntPtr(addr), buf, size, out var read) && read > 0
             ? buf[..read]
             : null;
     }

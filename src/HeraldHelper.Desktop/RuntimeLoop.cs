@@ -40,6 +40,10 @@ internal sealed class RuntimeLoop : IDisposable
 
     public event Action<string>? TickFailed;
 
+    /// <summary>A manual Run-Tick/F5 while a tick is still in flight — the
+    /// button looks dead otherwise during a slow capture.</summary>
+    public event Action? TickBusy;
+
     /// <summary>Raised when the loop stops itself (not via <see cref="Stop"/>).</summary>
     public event Action? Stopped;
 
@@ -64,6 +68,7 @@ internal sealed class RuntimeLoop : IDisposable
     {
         if (_tickInProgress)
         {
+            TickBusy?.Invoke();
             return;
         }
 

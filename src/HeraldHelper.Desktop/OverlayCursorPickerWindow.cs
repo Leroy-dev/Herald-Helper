@@ -67,22 +67,30 @@ public sealed class OverlayCursorPickerWindow : Window
         };
     }
 
+    /// <summary>PointToScreen yields physical pixels but Window.Left/Top and
+    /// SystemParameters.VirtualScreen* are device-independent — on a scaled
+    /// display (125%/150%) the raw px values place overlays offset from the
+    /// click. Convert once here so stored positions stay in DIP.</summary>
+    private System.Windows.Point ToScreenDip(System.Windows.Point local)
+    {
+        var screen = PointToScreen(local);
+        var dpi = VisualTreeHelper.GetDpi(this);
+        return new System.Windows.Point(screen.X / dpi.DpiScaleX, screen.Y / dpi.DpiScaleY);
+    }
+
     private void OnMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
     {
         var local = e.GetPosition(this);
         Canvas.SetLeft(_dot, local.X - (_dot.Width / 2));
         Canvas.SetTop(_dot, local.Y - (_dot.Height / 2));
 
-        var screen = PointToScreen(local);
-        var x = (int)Math.Round(screen.X);
-        var y = (int)Math.Round(screen.Y);
-        PositionChanged?.Invoke(x, y);
+        var screen = ToScreenDip(local);
+        PositionChanged?.Invoke((int)Math.Round(screen.X), (int)Math.Round(screen.Y));
     }
 
     private void OnMouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
-        var local = e.GetPosition(this);
-        var screen = PointToScreen(local);
+        var screen = ToScreenDip(e.GetPosition(this));
         SelectedPosition = ((int)Math.Round(screen.X), (int)Math.Round(screen.Y));
         DialogResult = true;
         Close();

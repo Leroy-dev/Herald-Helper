@@ -14,6 +14,9 @@ internal sealed class OverlaySettingsController
 
     public OverlaySettings Load()
     {
+        // Actually re-read the store — callers use this for "reload" and the
+        // cached object would silently ignore external edits.
+        _settings.Load();
         return _settings.Value.Overlay;
     }
 

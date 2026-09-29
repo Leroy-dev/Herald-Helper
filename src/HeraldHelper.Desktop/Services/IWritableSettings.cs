@@ -24,11 +24,14 @@ internal class SqliteWritableSettings<T> : IWritableSettings<T> where T : class,
 
     protected readonly SettingsController _settings;
     protected readonly string _key;
+    private readonly HeraldHelper.Application.Contracts.IResponseDiagnostics? _diagnostics;
 
-    public SqliteWritableSettings(SettingsController settings, string key)
+    public SqliteWritableSettings(SettingsController settings, string key,
+        HeraldHelper.Application.Contracts.IResponseDiagnostics? diagnostics = null)
     {
         _settings = settings;
         _key = key;
+        _diagnostics = diagnostics;
     }
 
     public T Value { get; private set; } = new();
@@ -47,9 +50,11 @@ internal class SqliteWritableSettings<T> : IWritableSettings<T> where T : class,
                     return;
                 }
             }
-            catch
+            catch (JsonException ex)
             {
-                // ignore and fall through to defaults
+                // Corrupt blob used to silently reset every setting to
+                // defaults — at least report it.
+                _diagnostics?.Log($"[Settings] {_key}: stored JSON invalid ({ex.Message}) — falling back to defaults");
             }
         }
 
@@ -73,7 +78,9 @@ internal sealed class HeraldHelperSettingsService : SqliteWritableSettings<Heral
 {
     private const string SettingsKey = "heraldhelper.settings.v1";
 
-    public HeraldHelperSettingsService(SettingsController settings) : base(settings, SettingsKey)
+    public HeraldHelperSettingsService(SettingsController settings,
+        HeraldHelper.Application.Contracts.IResponseDiagnostics? diagnostics = null)
+        : base(settings, SettingsKey, diagnostics)
     {
     }
 

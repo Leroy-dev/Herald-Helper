@@ -106,8 +106,7 @@ public partial class MainWindow : Window
         new()
         {
             Key = "group", Label = "Group",
-            Hidden = true, // experimental — needs adapter stats feed
-            ToolTip = "Group member frames (name, class, HP/End/Pow bars) — adapter data, needs stats memory read.",
+            ToolTip = "Group member frames (name, class, HP/End/Pow bars + CC badges) — needs stats memory read; off by default.",
             GetShow = s => s.ShowGroup, SetShow = (s, v) => s.ShowGroup = v,
             GetX = s => s.GroupX, SetX = (s, v) => s.GroupX = v,
             GetY = s => s.GroupY, SetY = (s, v) => s.GroupY = v,

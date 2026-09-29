@@ -13,6 +13,10 @@ internal sealed class IconImageLoader
     private const int SpellBadgeWidth = 20;
     private const int SpellBadgeHeight = 12;
     private readonly Dictionary<string, BitmapImage> _sheetCache = new(StringComparer.OrdinalIgnoreCase);
+    // Composed icons (crop + border/badge/corner tiles) were rebuilt every
+    // render — ~10 crops + a DrawingGroup per icon per tick. IconSpriteRef is
+    // a record, so full value equality keys the cache.
+    private readonly Dictionary<IconSpriteRef, ImageSource?> _composedCache = new();
     private string? _spriteRoot;
 
     public ImageSource? Load(IconSpriteRef? icon)
@@ -21,7 +25,17 @@ internal sealed class IconImageLoader
         {
             return null;
         }
+        if (_composedCache.TryGetValue(icon, out var cached))
+        {
+            return cached;
+        }
+        var composed = Compose(icon);
+        _composedCache[icon] = composed;
+        return composed;
+    }
 
+    private ImageSource? Compose(IconSpriteRef icon)
+    {
         try
         {
             var spritePath = ResolveSpritePath(icon.SpriteSheet);

@@ -36,7 +36,10 @@ internal static class AppServiceProvider
         services.AddSingleton<ITargetProfileCache>(sp => sp.GetRequiredService<AppDataStore>());
 
         services.AddSingleton<SettingsController>();
-        services.AddSingleton<IWritableSettings<HeraldHelperSettings>, HeraldHelperSettingsService>();
+        services.AddSingleton<IWritableSettings<HeraldHelperSettings>>(sp =>
+            new HeraldHelperSettingsService(
+                sp.GetRequiredService<SettingsController>(),
+                sp.GetRequiredService<IResponseDiagnostics>()));
         services.AddSingleton<OverlaySettingsController>();
 
         services.AddSingleton<ThemeController>();
