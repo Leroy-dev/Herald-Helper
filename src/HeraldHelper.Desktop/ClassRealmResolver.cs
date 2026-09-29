@@ -112,20 +112,6 @@ internal static class ClassRealmResolver
         }
     }
 
-    private static string? TryFindDataRoot(string dataDirName)
-    {
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
-        {
-            var candidate = Path.Combine(current.FullName, "data", dataDirName);
-            if (Directory.Exists(candidate))
-            {
-                return candidate;
-            }
-
-            current = current.Parent;
-        }
-
-        return null;
-    }
+    private static string? TryFindDataRoot(string dataDirName) =>
+        HeraldHelper.Infrastructure.Casting.DataPaths.FindDirectory(dataDirName);
 }

@@ -310,7 +310,7 @@ public partial class MainWindow : Window
         }
 
         var map = _settingsController.LoadMap();
-        var runtime = AppRuntimeSettings.FromMap(map);
+        var runtime = AppRuntimeSettings.FromMap(map, _responseDiagnostics);
         var overlay = _overlaySettingsController.Load();
         var overlayElements = new[]
         {

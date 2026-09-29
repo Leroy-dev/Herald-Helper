@@ -20,23 +20,27 @@ public static class AbilityFileStore
                 continue;
             }
 
-            var parts = line.Split('#');
-            if (parts.Length != 4)
+            // name#skill#seconds#effect — split from the RIGHT so a '#' inside
+            // the ability name survives (plain Split('#') silently drops it).
+            var i3 = line.LastIndexOf('#');
+            var i2 = i3 > 0 ? line.LastIndexOf('#', i3 - 1) : -1;
+            var i1 = i2 > 0 ? line.LastIndexOf('#', i2 - 1) : -1;
+            if (i1 <= 0)
             {
                 continue;
             }
 
-            if (!int.TryParse(parts[2].Trim(), out var seconds))
+            if (!int.TryParse(line[(i2 + 1)..i3].Trim(), out var seconds))
             {
                 continue;
             }
 
             rows.Add(new AbilityEditorRow
             {
-                AbilityName = parts[0].Trim(),
-                SkillCode = parts[1].Trim().ToLowerInvariant(),
+                AbilityName = line[..i1].Trim(),
+                SkillCode = line[(i1 + 1)..i2].Trim().ToLowerInvariant(),
                 DurationSeconds = seconds,
-                EffectType = parts[3].Trim().ToLowerInvariant()
+                EffectType = line[(i3 + 1)..].Trim().ToLowerInvariant()
             });
         }
 

@@ -48,6 +48,14 @@ public sealed class TesseractCliOcrEngine : IOcrEngine
                 ex);
         }
 
+        // Cancel must kill the child — ReadToEndAsync/WaitForExitAsync alone
+        // would leave a wedged tesseract.exe running after an OCE.
+        using var killOnCancel = cancellationToken.Register(static p =>
+        {
+            try { ((Process)p!).Kill(entireProcessTree: true); }
+            catch { /* already exited */ }
+        }, process);
+
         var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
         var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
         await process.WaitForExitAsync(cancellationToken);

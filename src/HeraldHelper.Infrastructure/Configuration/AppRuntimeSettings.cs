@@ -56,7 +56,9 @@ public sealed record AppRuntimeSettings(
         return FromMap(map);
     }
 
-    public static AppRuntimeSettings FromMap(IReadOnlyDictionary<string, string> map)
+    public static AppRuntimeSettings FromMap(
+        IReadOnlyDictionary<string, string> map,
+        HeraldHelper.Application.Contracts.IResponseDiagnostics? diagnostics = null)
     {
         var showCastBar = ReadBool(map, "overlayShowCastBar", true);
         var showTarget = ReadBool(map, "overlayShowTarget", true);
@@ -69,7 +71,7 @@ public sealed record AppRuntimeSettings(
         var resis = map.TryGetValue("resis", out var resisRaw) && int.TryParse(resisRaw, out var r) ? r : 0;
         resis = Math.Clamp(resis, 0, 60);
         var ocr = map.TryGetValue("ocrEngine", out var ocrRaw) ? ParseOcr(ocrRaw) : OcrEngineMode.Adaptive;
-        var watchRegions = ParseOcrWatchRegions(map, shard);
+        var watchRegions = ParseOcrWatchRegions(map, shard, diagnostics);
         var customUiFolder = map.TryGetValue("customUiFolder", out var folder) &&
                              !string.IsNullOrWhiteSpace(folder)
             ? folder.Trim()
@@ -181,7 +183,9 @@ public sealed record AppRuntimeSettings(
         };
     }
 
-    private static IReadOnlyList<OcrWatchRegion> ParseOcrWatchRegions(IReadOnlyDictionary<string, string> map, ShardType shard)
+    private static IReadOnlyList<OcrWatchRegion> ParseOcrWatchRegions(
+        IReadOnlyDictionary<string, string> map, ShardType shard,
+        HeraldHelper.Application.Contracts.IResponseDiagnostics? diagnostics)
     {
         if (shard == ShardType.Default)
         {
@@ -202,8 +206,9 @@ public sealed record AppRuntimeSettings(
             var items = string.IsNullOrWhiteSpace(raw) ? [] : JsonSerializer.Deserialize<List<OcrWatchRegion>>(raw) ?? [];
             result.AddRange(items.Where(x => x.Region.Width > 0 && x.Region.Height > 0));
         }
-        catch
+        catch (JsonException ex)
         {
+            diagnostics?.Log($"[Settings] {key}: corrupt JSON ({ex.Message}) — OCR regions dropped");
         }
 
         if (map.TryGetValue(CharacterSettingsKeys.OcrStats(shard, characterName), out var statsRaw) &&
@@ -218,8 +223,9 @@ public sealed record AppRuntimeSettings(
                     result.Add(statsRegion);
                 }
             }
-            catch
+            catch (JsonException ex)
             {
+                diagnostics?.Log($"[Settings] ocrStats: corrupt JSON ({ex.Message}) — stats region dropped");
             }
         }
         return result;

@@ -316,22 +316,7 @@ public sealed class EdenCastSpellCatalog : ICastSpellCatalog
                    StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string? TryFindDataRoot()
-    {
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
-        {
-            var candidate = Path.Combine(current.FullName, "data", "eden-charplan");
-            if (Directory.Exists(candidate))
-            {
-                return candidate;
-            }
-
-            current = current.Parent;
-        }
-
-        return null;
-    }
+    private static string? TryFindDataRoot() => DataPaths.FindDirectory("eden-charplan");
 
     private static bool TryReadString(JsonElement element, string propertyName, out string value)
     {

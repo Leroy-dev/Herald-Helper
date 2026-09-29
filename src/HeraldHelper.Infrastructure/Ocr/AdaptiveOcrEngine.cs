@@ -71,7 +71,11 @@ public sealed class AdaptiveOcrEngine : IOcrEngine
             }
             catch
             {
-                return await EvaluateEnginesAsync(imagePath, null, cancellationToken).ConfigureAwait(false);
+                // Skip the engine that just threw — it would be spawned again
+                // inside the evaluation and fail again for nothing.
+                return await EvaluateEnginesAsync(
+                        imagePath, null, cancellationToken, exclude: _selected)
+                    .ConfigureAwait(false);
             }
 
             _readsSinceEvaluation++;
@@ -99,13 +103,18 @@ public sealed class AdaptiveOcrEngine : IOcrEngine
     private async Task<string> EvaluateEnginesAsync(
         string imagePath,
         EngineRead? completedRead,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IOcrEngine? exclude = null)
     {
         EngineRead? best = null;
         Exception? lastError = null;
 
         foreach (var engine in _engines)
         {
+            if (ReferenceEquals(engine, exclude))
+            {
+                continue;
+            }
             try
             {
                 EngineRead candidate;
@@ -125,6 +134,27 @@ public sealed class AdaptiveOcrEngine : IOcrEngine
                 {
                     best = candidate;
                 }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                lastError = ex;
+            }
+        }
+
+        if (best is null && exclude is not null && _engines.Count > 1)
+        {
+            // Everything else failed too — give the excluded engine its turn
+            // so "all engines dead" still reports the real last error.
+            try
+            {
+                var sw = Stopwatch.StartNew();
+                var text = await exclude.ReadTextAsync(imagePath, cancellationToken).ConfigureAwait(false);
+                sw.Stop();
+                best = new EngineRead(exclude, text, sw.ElapsedMilliseconds);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {

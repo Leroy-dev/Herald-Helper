@@ -151,20 +151,9 @@ internal sealed class IconImageLoader
             return _spriteRoot;
         }
 
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
-        {
-            var candidate = Path.Combine(current.FullName, "data", "eden-charplan", "assets", "sprites");
-            if (Directory.Exists(candidate))
-            {
-                _spriteRoot = candidate;
-                return _spriteRoot;
-            }
-
-            current = current.Parent;
-        }
-
-        return null;
+        _spriteRoot = HeraldHelper.Infrastructure.Casting.DataPaths
+            .FindDirectory("eden-charplan", "assets", "sprites");
+        return _spriteRoot;
     }
 
     private string? ResolveSpritePath(string spriteSheet)
@@ -176,17 +165,8 @@ internal sealed class IconImageLoader
         }
 
         var relativePath = spriteSheet["blackthorn/".Length..].Replace('/', Path.DirectorySeparatorChar);
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
-        {
-            var candidate = Path.Combine(current.FullName, "data", "blackthorn-charplan", "assets", "icons", relativePath);
-            if (File.Exists(candidate))
-            {
-                return candidate;
-            }
-            current = current.Parent;
-        }
-        return null;
+        return HeraldHelper.Infrastructure.Casting.DataPaths
+            .FindFile("blackthorn-charplan", "assets", "icons", relativePath);
     }
 
     private static bool IsValidRect(BitmapSource source, Int32Rect rect)

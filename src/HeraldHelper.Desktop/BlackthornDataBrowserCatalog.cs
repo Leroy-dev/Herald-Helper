@@ -276,15 +276,6 @@ internal static class BlackthornDataBrowserCatalog
         return !string.IsNullOrWhiteSpace(value);
     }
 
-    private static string? TryFindDataRoot()
-    {
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
-        {
-            var candidate = Path.Combine(current.FullName, "data", "blackthorn-charplan");
-            if (Directory.Exists(candidate)) return candidate;
-            current = current.Parent;
-        }
-        return null;
-    }
+    private static string? TryFindDataRoot() =>
+        HeraldHelper.Infrastructure.Casting.DataPaths.FindDirectory("blackthorn-charplan");
 }

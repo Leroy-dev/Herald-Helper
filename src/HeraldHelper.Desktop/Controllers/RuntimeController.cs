@@ -135,7 +135,7 @@ internal sealed class RuntimeController : IDisposable
 
     private RuntimeSession BuildSession(IReadOnlyDictionary<string, string> settingsMap, Action onCharacterStatsSaved)
     {
-        var selectedShard = AppRuntimeSettings.FromMap(settingsMap).ShardType;
+        var selectedShard = AppRuntimeSettings.FromMap(settingsMap, _responseDiagnostics).ShardType;
         var selectedCharacter = ReadOrDefault(
             settingsMap,
             CharacterSettingsKeys.SelectedCharacter(selectedShard),

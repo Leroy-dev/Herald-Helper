@@ -31,7 +31,7 @@ public static class AppComposition
         IAlertSound? alertSound = null)
     {
         getSettings ??= () => settingsMap;
-        var settings = AppRuntimeSettings.FromMap(settingsMap);
+        var settings = AppRuntimeSettings.FromMap(settingsMap, diagnostics);
         var activeClass = ResolveActiveClass(settingsMap, settings.ShardType);
         var activeLevel = ResolveActiveLevel(settingsMap, settings.ShardType);
         var activeCharacter = ResolveActiveCharacter(settingsMap, settings.ShardType);
@@ -166,7 +166,7 @@ public static class AppComposition
             alertSound,
             LoadRaCooldowns(settings.ShardType, activeClass, diagnostics),
             LoadCcIconIndex(diagnostics),
-            LoadCcSpellIndex(diagnostics));
+            LoadCcSpellIndex(abilities, diagnostics));
 
         return (orchestrator, overlay, settings, capture, windowAwareCapture);
     }
@@ -188,10 +188,12 @@ public static class AppComposition
         return index;
     }
 
-    private static ServerCcSpellIndex LoadCcSpellIndex(IResponseDiagnostics? diagnostics)
+    private static ICcSpellIndex LoadCcSpellIndex(
+        IReadOnlyCollection<AbilityDefinition> abilities, IResponseDiagnostics? diagnostics)
     {
-        var index = new ServerCcSpellIndex();
-        diagnostics?.Log($"[Data] cc-spells: {index.Count} entries");
+        var server = new ServerCcSpellIndex();
+        var index = new CompositeCcSpellIndex(server, abilities);
+        diagnostics?.Log($"[Data] cc-spells: {server.Count} server + {index.Count} ability-profile entries");
         return index;
     }
 

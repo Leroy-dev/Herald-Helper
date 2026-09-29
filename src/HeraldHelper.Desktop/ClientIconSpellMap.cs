@@ -76,20 +76,6 @@ internal static class ClientIconSpellMap
         return result;
     }
 
-    private static string? FindTableRoot()
-    {
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
-        {
-            var candidate = Path.Combine(current.FullName, "data", "client-tables");
-            if (Directory.Exists(candidate))
-            {
-                return candidate;
-            }
-
-            current = current.Parent;
-        }
-
-        return null;
-    }
+    private static string? FindTableRoot() =>
+        HeraldHelper.Infrastructure.Casting.DataPaths.FindDirectory("client-tables");
 }

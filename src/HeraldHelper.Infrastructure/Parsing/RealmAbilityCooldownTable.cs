@@ -72,52 +72,31 @@ public static partial class RealmAbilityCooldownTable
     /// cooldown dictionary keys match ability/profile names, not keys).</summary>
     internal static IReadOnlyDictionary<string, int>? LoadServerTable()
     {
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
+        var candidate = DataPaths.FindFile("client-tables", "ra-cooldowns.csv");
+        if (candidate is null)
         {
-            var candidate = Path.Combine(current.FullName, "data", "client-tables", "ra-cooldowns.csv");
-            if (File.Exists(candidate))
-            {
-                var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-                foreach (var line in File.ReadLines(candidate).Skip(1))
-                {
-                    // Quoted display names can carry commas — use the real
-                    // CSV parser, not a naive split.
-                    var fields = ServerCastSpellCatalog.ParseCsvLine(line);
-                    if (fields.Count >= 3 &&
-                        int.TryParse(fields[2], out var seconds) && seconds > 0)
-                    {
-                        result[fields[1].Trim('"').Trim()] = seconds;
-                    }
-                }
-                return result.Count > 0 ? result : null;
-            }
-
-            current = current.Parent;
+            return null;
         }
 
-        return null;
+        var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var line in File.ReadLines(candidate).Skip(1))
+        {
+            // Quoted display names can carry commas — use the real
+            // CSV parser, not a naive split.
+            var fields = ServerCastSpellCatalog.ParseCsvLine(line);
+            if (fields.Count >= 3 &&
+                int.TryParse(fields[2], out var seconds) && seconds > 0)
+            {
+                result[fields[1].Trim('"').Trim()] = seconds;
+            }
+        }
+        return result.Count > 0 ? result : null;
     }
 
     /// <summary>Walk up from the output dir like AbilityProfileCatalog does —
     /// dev builds run from bin/… while data/ sits at the repo root.</summary>
-    private static string? FindClassFile(string catalog, string slug)
-    {
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
-        {
-            var candidate = Path.Combine(
-                current.FullName, "data", catalog, "generated", "classes", $"{slug}.json");
-            if (File.Exists(candidate))
-            {
-                return candidate;
-            }
-
-            current = current.Parent;
-        }
-
-        return null;
-    }
+    private static string? FindClassFile(string catalog, string slug) =>
+        DataPaths.FindFile(catalog, "generated", "classes", $"{slug}.json");
 
     /// <summary>"Can use every: 20:00 min" / "05:00 min" / "90 sec".</summary>
     internal static int? ParseCooldown(string? delve)

@@ -55,12 +55,9 @@ internal sealed class SqliteDatabaseMigrationsRepository : SqliteRepositoryBase,
             );
             """);
 
-        ApplyMigration(connection, 2, """
-            CREATE TABLE IF NOT EXISTS app_meta (
-                key TEXT PRIMARY KEY,
-                value TEXT NOT NULL
-            );
-            """);
+        // Migration 2 created an app_meta table that was never used; the slot
+        // stays (version bookkeeping) but no longer creates dead objects.
+        ApplyMigration(connection, 2, "SELECT 1;");
 
         ApplyMigration(connection, 3, """
             CREATE TABLE IF NOT EXISTS eden_entry_overrides (

@@ -504,22 +504,8 @@ public static partial class AbilityProfileCatalog
         return !string.IsNullOrWhiteSpace(value);
     }
 
-    private static string? TryFindDataRoot(string directoryName)
-    {
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
-        {
-            var candidate = Path.Combine(current.FullName, "data", directoryName);
-            if (Directory.Exists(candidate))
-            {
-                return candidate;
-            }
-
-            current = current.Parent;
-        }
-
-        return null;
-    }
+    private static string? TryFindDataRoot(string directoryName) =>
+        HeraldHelper.Infrastructure.Casting.DataPaths.FindDirectory(directoryName);
 
     [GeneratedRegex(@"\b(?:mesmeri[sz]\w*|mezz\w*)\b", RegexOptions.IgnoreCase)]
     private static partial Regex MezzRegex();

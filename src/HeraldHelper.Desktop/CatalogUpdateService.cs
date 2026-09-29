@@ -137,19 +137,8 @@ internal sealed class CatalogUpdateService
         }
     }
 
-    private static string? FindProjectRoot()
-    {
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
-        {
-            if (Directory.Exists(Path.Combine(current.FullName, "data")))
-            {
-                return current.FullName;
-            }
-            current = current.Parent;
-        }
-        return null;
-    }
+    private static string? FindProjectRoot() =>
+        HeraldHelper.Infrastructure.Casting.DataPaths.FindProjectRoot();
 
     private static string ReadSummary(string root)
     {
