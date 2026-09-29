@@ -76,7 +76,7 @@ public sealed class GameLoopOrchestratorTests
         var capture = new SequenceChatCaptureService(
         [
             "You target [Alice].",
-            "You perform the Slam perfectly!"
+            "You perform your Slam perfectly!"
         ]);
         var parser = new AbilitiesChatEventParser(
         [
@@ -166,6 +166,34 @@ public sealed class GameLoopOrchestratorTests
         }
 
         Assert.Equal(1, herald.CallCount);
+    }
+
+    [Fact]
+    public async Task TickAsync_NonPlayerCacheIsShardScoped()
+    {
+        // A mob name marked non-player on Eden must not suppress the same
+        // name lookup on Blackthorn — shards share no player namespace.
+        var now = DateTimeOffset.UtcNow;
+        var targetEvent = new TargetEvent("Bob", TargetMembership.Unknown);
+        var parser = new SequenceChatEventParser(
+        [
+            new ChatParseResult(targetEvent, [], VisibleTargetEvents: [targetEvent]),
+            new ChatParseResult(targetEvent, [], VisibleTargetEvents: [targetEvent])
+        ]);
+        var herald = new FakeHeraldClient(null);
+        var orchestrator = new GameLoopOrchestrator(
+            new FakeChatCaptureService("ignored"),
+            parser,
+            new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(herald),
+            new RecordingCcImmunityTracker(),
+            new RecordingOverlayRenderer());
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+        // Same name, other shard — must still query herald.
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Blackthorn, 10, now.AddSeconds(1), CancellationToken.None);
+
+        Assert.Equal(2, herald.CallCount);
     }
 
     [Fact]
@@ -333,6 +361,69 @@ public sealed class GameLoopOrchestratorTests
         Assert.NotEmpty(tracker.RegisteredHits);
         Assert.All(tracker.RegisteredHits,
             h => Assert.Equal("Level 50 Training Dummy", h.TargetName));
+    }
+
+    [Fact]
+    public async Task TickAsync_BareMissDoesNotRetractStyleTimer()
+    {
+        // "You miss" fires on every auto-swing — with no style resolving in
+        // the same combat event it must not retract the Slam immunity that
+        // just landed.
+        var now = DateTimeOffset.UtcNow;
+        var capture = new SequenceChatCaptureService(
+        [
+            "You target [Alice].",
+            "You perform your Slam perfectly!",
+            "You miss!"
+        ]);
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "m", 9, ControlEffectType.Stun)
+        ]);
+        var tracker = new RecordingCcImmunityTracker();
+        var orchestrator = new GameLoopOrchestrator(
+            capture, parser, new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            tracker, new RecordingOverlayRenderer());
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now.AddMilliseconds(300), CancellationToken.None);
+        // Next auto-swing whiffs 2.2s later — different combat event.
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now.AddSeconds(2.5), CancellationToken.None);
+
+        Assert.Single(tracker.RegisteredHits);
+        Assert.Empty(tracker.Retracted);
+    }
+
+    [Fact]
+    public async Task TickAsync_SwingDeflectionPairedWithStyleRetracts()
+    {
+        // "You perform Slam perfectly" then "Alice evades your attack" in the
+        // same combat event — the deflection legitimately undoes the timer.
+        var now = DateTimeOffset.UtcNow;
+        var capture = new SequenceChatCaptureService(
+        [
+            "You target [Alice].",
+            "You perform your Slam perfectly!",
+            "Alice evades your attack!"
+        ]);
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Slam", "m", 9, ControlEffectType.Stun)
+        ]);
+        var tracker = new RecordingCcImmunityTracker();
+        var orchestrator = new GameLoopOrchestrator(
+            capture, parser, new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            tracker, new RecordingOverlayRenderer());
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now.AddMilliseconds(300), CancellationToken.None);
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now.AddMilliseconds(400), CancellationToken.None);
+
+        Assert.Single(tracker.RegisteredHits);
+        var retraction = Assert.Single(tracker.Retracted);
+        Assert.Contains(retraction.Names, n => n.Contains("Alice", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -1497,6 +1588,36 @@ public sealed class GameLoopOrchestratorTests
             ShardType.Default, 0, now.AddSeconds(1), CancellationToken.None);
 
         Assert.Equal(ControlEffectType.Mezz, overlay.LastSnapshot!.SelfCc?.Effect);
+    }
+
+    [Fact]
+    public async Task TickAsync_SelfIconCc_NearsightSetsBanner()
+    {
+        // Nearsight is the weakest CC tier — the old severity baseline made a
+        // lone nearsight icon unreachable (1 > 1 fails).
+        var now = DateTimeOffset.UtcNow;
+        var capture = new FakeChatCaptureService("ignored");
+        var parser = new FakeChatEventParser(new ChatParseResult(null, []));
+        var adapters = new FakeAdapterValueSource
+        {
+            LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["self_effect0"] = "Nearsighted",
+                ["self_effect_icon0"] = "2267"
+            }
+        };
+        var overlay = new RecordingOverlayRenderer();
+        var orchestrator = new GameLoopOrchestrator(
+            capture, parser, new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            new RecordingCcImmunityTracker(), overlay,
+            adapterValueSource: adapters,
+            ccIconIndex: new StubCcIconIndex(new Dictionary<int, ControlEffectType> { [2267] = ControlEffectType.Nearsight }));
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30),
+            ShardType.Default, 0, now, CancellationToken.None);
+
+        Assert.Equal(ControlEffectType.Nearsight, overlay.LastSnapshot!.SelfCc?.Effect);
     }
 
     [Fact]

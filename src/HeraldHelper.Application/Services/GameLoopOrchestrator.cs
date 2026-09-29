@@ -14,6 +14,10 @@ public sealed class GameLoopOrchestrator : IDisposable
     /// summary_target polls lag chat 'You target' lines by a cycle — a stale
     /// emit right after a real switch must not flip the target back.
     private static readonly TimeSpan AdapterTargetLagWindow = TimeSpan.FromSeconds(3);
+    /// A swing deflection retracts a fresh style timer only while the two
+    /// lines belong to the same combat event — under any realistic weapon
+    /// speed, so an unrelated auto-swing "You miss" can't kill an immunity.
+    private static readonly TimeSpan SwingPairWindow = TimeSpan.FromSeconds(1);
     private readonly IChatCaptureService _chatCaptureService;
     private readonly IChatEventParser _chatEventParser;
     private readonly ICastSpellCatalog _castSpellCatalog;
@@ -33,7 +37,11 @@ public sealed class GameLoopOrchestrator : IDisposable
     private Task<TargetLookupResult>? _targetLookupTask;
     private CancellationTokenSource? _targetLookupCts;
     private long _targetGeneration;
+    // Shard-scoped: a mob named "Bob" on Eden must not suppress a player
+    // "Bob" lookup on another shard for the rest of the session.
     private readonly HashSet<string> _knownNonPlayerTargets = new(StringComparer.OrdinalIgnoreCase);
+    private static string NonPlayerKey(ShardType shard, string name) => $"{shard}:{name.Trim()}";
+    private readonly Dictionary<string, DateTimeOffset> _lastMeleeStyleHitAtUtc = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset _lastParsedTargetAtUtc = DateTimeOffset.MinValue;
     private readonly VisibleEventTracker _targetEventTracker = new();
     // Cast starts can leave the OCR viewport and reappear as ordinal 1 on the
@@ -490,6 +498,10 @@ public sealed class GameLoopOrchestrator : IDisposable
         foreach (var hit in newAbilityHits)
         {
             _ccImmunityTracker.RegisterSuccessfulHit(hit, GetTargetClass(hit.TargetName), resistPercent, nowUtc, shardType);
+            if (hit.IsMeleeStyle)
+            {
+                _lastMeleeStyleHitAtUtc[NormalizeTimerTargetName(hit.TargetName)] = nowUtc;
+            }
             if (hit.LandedSuccessfully)
             {
                 _diagnostics?.Log(
@@ -535,6 +547,15 @@ public sealed class GameLoopOrchestrator : IDisposable
             // A rejected application ("already has this effect") means the
             // prior timer is still valid — only a timer created by this
             // exact attempt (a frame earlier) may be retracted.
+            if (negation.Kind == NegationKind.SwingFailed &&
+                !names.Any(n => _lastMeleeStyleHitAtUtc.TryGetValue(NormalizeTimerTargetName(n), out var styleAt)
+                                && nowUtc - styleAt < SwingPairWindow))
+            {
+                // Bare "You miss"/deflection lines fire on every auto-swing —
+                // with no style hit resolving in the same combat event there
+                // is nothing to retract.
+                continue;
+            }
             var maxAge = negation.Kind switch
             {
                 NegationKind.SwingFailed or NegationKind.StyleFailed => TimeSpan.FromSeconds(3),
@@ -865,7 +886,7 @@ public sealed class GameLoopOrchestrator : IDisposable
             if (int.TryParse(icon, System.Globalization.NumberStyles.Integer,
                     System.Globalization.CultureInfo.InvariantCulture, out var iconId) &&
                 _ccIconIndex.Resolve(iconId) is { } effect &&
-                CcSeverity(effect) > CcSeverity(strongest ?? ControlEffectType.Nearsight))
+                (strongest is null || CcSeverity(effect) > CcSeverity(strongest.Value)))
             {
                 strongest = effect;
             }
@@ -901,7 +922,7 @@ public sealed class GameLoopOrchestrator : IDisposable
         foreach (var effect in state?.SelfEffects ?? [])
         {
             if (_ccIconIndex.Resolve(effect.IconId) is { } resolved &&
-                CcSeverity(resolved) > CcSeverity(strongest ?? ControlEffectType.Nearsight))
+                (strongest is null || CcSeverity(resolved) > CcSeverity(strongest.Value)))
             {
                 strongest = resolved;
             }
@@ -1118,7 +1139,7 @@ public sealed class GameLoopOrchestrator : IDisposable
             // Herald already told us this name has no player profile (mob/NPC)
             // — treat it like a parser-confirmed non-member instead of
             // re-querying every few seconds while the mob stays targeted.
-            var effectiveMembership = _knownNonPlayerTargets.Contains(targetName)
+            var effectiveMembership = _knownNonPlayerTargets.Contains(NonPlayerKey(shardType, targetName))
                 ? TargetMembership.NonMember
                 : targetEvent.Membership;
 
@@ -1352,7 +1373,7 @@ public sealed class GameLoopOrchestrator : IDisposable
                     // Authoritative negative — the shard answered but the name
                     // has no player fields (mob/NPC). Remember it so neither
                     // the standing target nor a re-target re-queries herald.
-                    _knownNonPlayerTargets.Add(result.TargetName);
+                    _knownNonPlayerTargets.Add(NonPlayerKey(result.ShardType, result.TargetName));
                     _nextTargetLookupAtUtc = DateTimeOffset.MaxValue;
                 }
                 else
@@ -1378,7 +1399,7 @@ public sealed class GameLoopOrchestrator : IDisposable
             {
                 // Profile object with no player fields — same authoritative
                 // negative, keep it off the retry loop too.
-                _knownNonPlayerTargets.Add(result.TargetName);
+                _knownNonPlayerTargets.Add(NonPlayerKey(result.ShardType, result.TargetName));
                 _nextTargetLookupAtUtc = DateTimeOffset.MaxValue;
             }
             else

@@ -23,6 +23,12 @@ public sealed partial class BlackthornHeraldClient : IHeraldClient
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         AddAuthHeaders(req);
         using var resp = await _httpClient.SendAsync(req, cancellationToken);
+        if (resp.StatusCode == HttpStatusCode.NotFound)
+        {
+            // Definitive "no such player" — return null (no error) so the
+            // orchestrator's negative cache stops re-querying this name.
+            return null;
+        }
         resp.EnsureSuccessStatusCode();
         var html = await resp.Content.ReadAsStringAsync(cancellationToken);
 

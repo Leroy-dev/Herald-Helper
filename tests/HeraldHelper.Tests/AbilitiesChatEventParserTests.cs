@@ -1,4 +1,5 @@
 using HeraldHelper.Application.Models;
+using HeraldHelper.Domain.Models;
 using HeraldHelper.Infrastructure.Casting;
 using HeraldHelper.Infrastructure.Parsing;
 
@@ -430,6 +431,28 @@ public sealed class AbilitiesChatEventParserTests
         var result = parser.Parse("You begin playing Commanding Cadence! Your spell is cancelled!");
 
         Assert.Contains(result.NegationEvents!, n => n.Kind == NegationKind.Cancelled && n.TargetName is null);
+    }
+
+    [Fact]
+    public void Parse_JustKilledYouEmitsDeathWithKiller()
+    {
+        var parser = new AbilitiesChatEventParser([]);
+
+        var result = parser.Parse("Methasorc just killed you!");
+
+        var death = Assert.Single(result.LifeEvents!, e => e.Kind == CombatLifeKind.Death);
+        Assert.Equal("Methasorc", death.OtherName);
+    }
+
+    [Fact]
+    public void Parse_HasJustKilledYouEmitsDeathWithKiller()
+    {
+        var parser = new AbilitiesChatEventParser([]);
+
+        var result = parser.Parse("You have been killed by Methasorc. Methasorc has just killed you!");
+
+        Assert.Contains(result.LifeEvents!,
+            e => e.Kind == CombatLifeKind.Death && e.OtherName == "Methasorc");
     }
 
     [Fact]

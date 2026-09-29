@@ -45,7 +45,7 @@ public sealed class AbilitiesChatEventParser : IChatEventParser
         @"you\s+(?:have\s+)?(?:slain|killed|slay)\s+(?<name>[A-Z][A-Za-z'\-]+)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex DeathKillerRegex = new(
-        @"(?:you\s+have\s+been\s+killed\s+by\s+(?<name>[A-Z][A-Za-z'\-]+)|(?<name>[A-Z][A-Za-z'\-]+)\s+(?:has\s+just\s+)?kills?\s+you)\b",
+        @"(?:you\s+have\s+been\s+killed\s+by\s+(?<name>[A-Z][A-Za-z'\-]+)|(?<name>[A-Z][A-Za-z'\-]+)\s+(?:(?:has\s+)?just\s+)?(?:kills|killed|slays|slew|slain)\s+you)\b",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex DeathPlainRegex = new(
         @"you\s+die\b",

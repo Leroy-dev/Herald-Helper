@@ -116,12 +116,15 @@ public sealed class EdenHeraldClient : IHeraldClient, IHeraldProfileUpdateSource
         _diagnostics?.Log($"[Eden] player/{targetName} => {(int)status} | full body:\n{payload}");
         if (status != HttpStatusCode.OK)
         {
-            return null;
+            // Non-200 is transient/server trouble — throw so the orchestrator
+            // treats it as a retryable error, not an authoritative "not a
+            // player" (which would poison the negative-name cache).
+            throw new HttpRequestException($"eden player lookup returned {(int)status} for {targetName}");
         }
 
         if (!TryExtractJsonPayload(payload, out var jsonPayload))
         {
-            return null;
+            throw new HttpRequestException($"eden player lookup returned a non-JSON payload for {targetName}");
         }
 
         var profile = await ParseProfileAsync(targetName, jsonPayload, cancellationToken);
