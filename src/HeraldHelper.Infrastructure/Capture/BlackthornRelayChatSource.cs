@@ -264,5 +264,6 @@ public sealed class BlackthornRelayChatSource : IChatCaptureService, IWindowAwar
     public void Dispose()
     {
         _stop.Cancel();
+        (_fallback as IDisposable)?.Dispose();
     }
 }

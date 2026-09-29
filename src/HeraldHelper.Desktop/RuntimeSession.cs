@@ -94,6 +94,9 @@ internal sealed class RuntimeSession : IRuntimeSession
 
     public void Dispose()
     {
+        // The chain is a decorator stack — the outermost layer cascades to the
+        // inner sources (memory handles, relay WebSocket, scrollback arena).
+        (CaptureChain as IDisposable)?.Dispose();
         Orchestrator.Dispose();
     }
 }

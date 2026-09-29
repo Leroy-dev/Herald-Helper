@@ -122,6 +122,7 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
             // dense arrays, so a handful of reads covers hundreds of adapters.
             var ordered = _records.Values.Distinct().OrderBy(a => a).ToArray();
             var updated = 0;
+            List<string>? changed = null;
             var i = 0;
             while (i < ordered.Length)
             {
@@ -160,7 +161,7 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
                                 updated++;
                                 if (IsInteresting(kv.Key))
                                 {
-                                    _diagnostics?.Log($"[MemStats] {kv.Key} = {value}");
+                                    (changed ??= new List<string>()).Add($"{kv.Key}={value}");
                                 }
                             }
                         }
@@ -170,7 +171,13 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
             }
             if (updated > 0)
             {
+                // One line per poll — a changed set can be hundreds of adapter
+                // values and per-value logging drowned the diagnostics queue.
                 _diagnostics?.Log($"[MemStats] poll: {_values.Count} values ({updated} changed)");
+                if (changed is not null)
+                {
+                    _diagnostics?.Log($"[MemStats] changed: {string.Join(", ", changed)}");
+                }
             }
 
             PollEffects();
@@ -442,7 +449,11 @@ public sealed class DaocMemoryStatsSource : IWindowAwareChatCaptureService, ICha
         _records = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
     }
 
-    public void Dispose() => Unbind();
+    public void Dispose()
+    {
+        Unbind();
+        (_inner as IDisposable)?.Dispose();
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct MemoryBasicInformation

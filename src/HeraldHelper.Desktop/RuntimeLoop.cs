@@ -13,6 +13,8 @@ internal sealed class RuntimeLoop : IDisposable
     private bool _tickInProgress;
     private string? _lastFailure;
     private int _sameFailureCount;
+    private CancellationTokenSource _tickCts = new();
+    private Task? _activeTick;
 
     public RuntimeLoop(IRuntimeSession session, Func<LoopTickInput> input, TimeSpan interval)
     {
@@ -43,12 +45,19 @@ internal sealed class RuntimeLoop : IDisposable
 
     public void Start()
     {
+        if (_tickCts.IsCancellationRequested)
+        {
+            _tickCts = new CancellationTokenSource();
+        }
         _timer.Start();
     }
 
     public void Stop()
     {
         _timer.Stop();
+        // Cooperative cancel — a wedged capture (heap scan, dead OCR child)
+        // can't hold the loop hostage past a Stop.
+        _tickCts.Cancel();
     }
 
     public async Task TickOnceAsync()
@@ -71,19 +80,26 @@ internal sealed class RuntimeLoop : IDisposable
         }
 
         _tickInProgress = true;
+        var ct = _tickCts.Token;
+        var tick = Task.Run(() => _session.TickAsync(
+            input.ChatRegion,
+            input.Shard,
+            input.ResistPercent,
+            ct));
+        _activeTick = tick;
         try
         {
             // Capture (RPM/OCR) is blocking work — run it off the UI thread so
             // the window stays responsive at 350ms cadence. Subscribers must
             // marshal to the dispatcher for UI updates.
-            var result = await Task.Run(() => _session.TickAsync(
-                input.ChatRegion,
-                input.Shard,
-                input.ResistPercent,
-                CancellationToken.None));
+            var result = await tick;
             _lastFailure = null;
             _sameFailureCount = 0;
             TickCompleted?.Invoke(result);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Stop/Rebuild cancelled the in-flight tick — not a failure.
         }
         catch (Exception ex)
         {
@@ -92,6 +108,7 @@ internal sealed class RuntimeLoop : IDisposable
         finally
         {
             _tickInProgress = false;
+            _activeTick = null;
         }
     }
 
@@ -114,7 +131,24 @@ internal sealed class RuntimeLoop : IDisposable
     public void Dispose()
     {
         _timer.Stop();
+        _tickCts.Cancel();
+        // Give an in-flight tick a moment to unwind before its session is
+        // torn down — capture sources honor the token on their await points,
+        // but a long heap scan may not; either way the session is disposed.
+        var tick = _activeTick;
+        if (tick is not null)
+        {
+            try
+            {
+                tick.Wait(TimeSpan.FromSeconds(3));
+            }
+            catch
+            {
+                // Faulted or still running — dispose the session regardless.
+            }
+        }
         _session.Dispose();
+        _tickCts.Dispose();
     }
 }
 

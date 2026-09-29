@@ -463,7 +463,11 @@ public sealed class DaocScrollbackChatSource : IChatCaptureService, IWindowAware
         _arenas.Clear();
     }
 
-    public void Dispose() => Unbind();
+    public void Dispose()
+    {
+        Unbind();
+        (_fallback as IDisposable)?.Dispose();
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct MemoryBasicInformation

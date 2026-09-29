@@ -334,7 +334,11 @@ public sealed class DaocMemoryChatSource : IChatCaptureService, IWindowAwareChat
         return null;
     }
 
-    public void Dispose() => Unbind();
+    public void Dispose()
+    {
+        Unbind();
+        (_fallback as IDisposable)?.Dispose();
+    }
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern IntPtr OpenProcess(int access, bool inherit, int pid);
