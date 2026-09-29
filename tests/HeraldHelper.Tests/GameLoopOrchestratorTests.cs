@@ -140,6 +140,35 @@ public sealed class GameLoopOrchestratorTests
     }
 
     [Fact]
+    public async Task TickAsync_NonPlayerHeraldResultStopsRepeatLookups()
+    {
+        // Herald answers a mob/NPC name with an empty profile — that answer
+        // never changes, so the old every-5s retry was pure API spam while a
+        // training dummy stayed targeted.
+        var now = DateTimeOffset.UtcNow;
+        var targetEvent = new TargetEvent("Level 50 Training Dummy", TargetMembership.Unknown);
+        var parser = new FakeChatEventParser(new ChatParseResult(
+            targetEvent, [], VisibleTargetEvents: [targetEvent]));
+        var herald = new FakeHeraldClient(null);
+        var orchestrator = new GameLoopOrchestrator(
+            new FakeChatCaptureService("ignored"),
+            parser,
+            new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(herald),
+            new RecordingCcImmunityTracker(),
+            new RecordingOverlayRenderer());
+
+        for (var i = 0; i < 5; i++)
+        {
+            await orchestrator.TickAsync(
+                new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10,
+                now.AddSeconds(i * 6), CancellationToken.None);
+        }
+
+        Assert.Equal(1, herald.CallCount);
+    }
+
+    [Fact]
     public async Task TickAsync_AlertsOnceWhenCcImmunityExpires()
     {
         var now = DateTimeOffset.UtcNow;
@@ -298,11 +327,14 @@ public sealed class GameLoopOrchestratorTests
             new ChatParseResult(new TargetEvent("TargetB", TargetMembership.Unknown), []),
             new ChatParseResult(new TargetEvent("TargetB", TargetMembership.Unknown), [])
         ]);
-        var heraldClient = new NamedHeraldClient(new Dictionary<string, TargetProfile?>
-        {
-            ["TargetA"] = new TargetProfile("TargetA", "Guild", "Hero", 50, "RR5L0", 12),
-            ["TargetB"] = null
-        });
+        // TargetB throws — a transient failure must keep the last player AND
+        // still retry; a clean 'not a player' answer would not.
+        var heraldClient = new NamedHeraldClient(
+            new Dictionary<string, TargetProfile?>
+            {
+                ["TargetA"] = new TargetProfile("TargetA", "Guild", "Hero", 50, "RR5L0", 12)
+            },
+            faults: "TargetB");
         var overlay = new RecordingOverlayRenderer();
         var orchestrator = new GameLoopOrchestrator(
             capture,
@@ -1662,10 +1694,12 @@ public sealed class GameLoopOrchestratorTests
     private sealed class NamedHeraldClient : IHeraldClient
     {
         private readonly IReadOnlyDictionary<string, TargetProfile?> _profiles;
+        private readonly HashSet<string> _faults;
 
-        public NamedHeraldClient(IReadOnlyDictionary<string, TargetProfile?> profiles)
+        public NamedHeraldClient(IReadOnlyDictionary<string, TargetProfile?> profiles, params string[] faults)
         {
             _profiles = profiles;
+            _faults = new HashSet<string>(faults, StringComparer.OrdinalIgnoreCase);
         }
 
         public int CallCount { get; private set; }
@@ -1673,6 +1707,10 @@ public sealed class GameLoopOrchestratorTests
         public Task<TargetProfile?> GetTargetProfileAsync(string targetName, CancellationToken cancellationToken)
         {
             CallCount++;
+            if (_faults.Contains(targetName))
+            {
+                throw new HttpRequestException("simulated herald failure");
+            }
             _profiles.TryGetValue(targetName, out var profile);
             return Task.FromResult(profile);
         }

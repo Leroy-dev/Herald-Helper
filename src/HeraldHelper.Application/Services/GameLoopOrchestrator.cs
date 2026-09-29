@@ -30,6 +30,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     private Task<TargetLookupResult>? _targetLookupTask;
     private CancellationTokenSource? _targetLookupCts;
     private long _targetGeneration;
+    private readonly HashSet<string> _knownNonPlayerTargets = new(StringComparer.OrdinalIgnoreCase);
     private readonly VisibleEventTracker _targetEventTracker = new();
     // Cast starts can leave the OCR viewport and reappear as ordinal 1 on the
     // next cast. One missing frame is enough to allow the same cast again.
@@ -1096,8 +1097,14 @@ public sealed class GameLoopOrchestrator : IDisposable
         {
             var targetChanged = !string.Equals(targetName, _currentTargetName, StringComparison.OrdinalIgnoreCase)
                 || shardType != _currentTargetShard;
+            // Herald already told us this name has no player profile (mob/NPC)
+            // — treat it like a parser-confirmed non-member instead of
+            // re-querying every few seconds while the mob stays targeted.
+            var effectiveMembership = _knownNonPlayerTargets.Contains(targetName)
+                ? TargetMembership.NonMember
+                : targetEvent.Membership;
 
-            if (targetEvent.Membership == TargetMembership.NonMember)
+            if (effectiveMembership == TargetMembership.NonMember)
             {
                 if (targetChanged || _currentTargetMembership != TargetMembership.NonMember)
                 {
@@ -1108,7 +1115,7 @@ public sealed class GameLoopOrchestrator : IDisposable
             }
             else if (targetChanged || _currentTargetMembership == TargetMembership.NonMember)
             {
-                previousLookup = ResetCurrentTargetLocked(targetName, shardType, targetEvent.Membership);
+                previousLookup = ResetCurrentTargetLocked(targetName, shardType, effectiveMembership);
                 RestoreCachedPlayerTargetLocked(targetEvent, shardType);
                 SetPendingPlayerTargetLocked(targetEvent);
                 startedLookup = StartTargetLookupLocked(targetName, shardType, cancellationToken);
@@ -1322,7 +1329,18 @@ public sealed class GameLoopOrchestrator : IDisposable
             _lastLookupAtUtc = nowUtc;
             if (result.Profile is null)
             {
-                _nextTargetLookupAtUtc = nowUtc.Add(FailedLookupRetryDelay);
+                if (result.Error is null)
+                {
+                    // Authoritative negative — the shard answered but the name
+                    // has no player fields (mob/NPC). Remember it so neither
+                    // the standing target nor a re-target re-queries herald.
+                    _knownNonPlayerTargets.Add(result.TargetName);
+                    _nextTargetLookupAtUtc = DateTimeOffset.MaxValue;
+                }
+                else
+                {
+                    _nextTargetLookupAtUtc = nowUtc.Add(FailedLookupRetryDelay);
+                }
             }
             else if (HasPlayerData(result.Profile))
             {
@@ -1337,6 +1355,13 @@ public sealed class GameLoopOrchestrator : IDisposable
                 _nextTargetLookupAtUtc = DateTimeOffset.MaxValue;
                 profileToCache = profile;
                 applied = true;
+            }
+            else if (result.Error is null)
+            {
+                // Profile object with no player fields — same authoritative
+                // negative, keep it off the retry loop too.
+                _knownNonPlayerTargets.Add(result.TargetName);
+                _nextTargetLookupAtUtc = DateTimeOffset.MaxValue;
             }
             else
             {
