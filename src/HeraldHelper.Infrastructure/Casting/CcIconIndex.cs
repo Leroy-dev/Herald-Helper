@@ -34,6 +34,8 @@ public sealed class CcIconIndex : ICcIconIndex
 
     public static CcIconIndex Empty { get; } = new(new Dictionary<int, ControlEffectType>());
 
+    public int Count => _byIcon.Count;
+
     public ControlEffectType? Resolve(int iconId)
     {
         return _byIcon.TryGetValue(iconId, out var effect) ? effect : null;

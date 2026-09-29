@@ -17,6 +17,8 @@ public sealed class ServerCcSpellIndex : ICcSpellIndex
         _byName = Load();
     }
 
+    public int Count => _byName.Count;
+
     public CcSpellInfo? Resolve(string spellName)
     {
         return !string.IsNullOrWhiteSpace(spellName) &&
@@ -53,10 +55,13 @@ public sealed class ServerCcSpellIndex : ICcSpellIndex
             }
 
             var key = NormalizeName(fields[1].Trim());
-            // Duplicate names are rank/variant rows sharing the same duration.
-            if (!result.ContainsKey(key))
+            // Duplicate names are rank variants with DIFFERENT durations
+            // (Mez I vs IX) — chat gives no rank, so keep the longest; RvR
+            // targets are hit by the max rank far more often than rank 1.
+            var info = new CcSpellInfo(effect, (int)Math.Round(durationSeconds));
+            if (!result.TryGetValue(key, out var existing) || existing.DurationSeconds < info.DurationSeconds)
             {
-                result[key] = new CcSpellInfo(effect, (int)Math.Round(durationSeconds));
+                result[key] = info;
             }
         }
 

@@ -322,6 +322,27 @@ public sealed class CatalogAndMigrationIntegrityTests
         }
     }
 
+    [Fact]
+    public void ClientTables_HaveExpectedSchemaAndRows()
+    {
+        // Loaders index columns positionally — a regenerated export with a
+        // reordered header parses cleanly into garbage; pin the schema.
+        var root = FindProjectRoot();
+        var spells = Path.Combine(root, "data", "client-tables", "server-spells.csv");
+        var spellLines = File.ReadAllLines(spells);
+        Assert.Equal(
+            "SpellID,Name,Type,CastTime,Duration,RecastDelay,Damage,DamageType,Icon,ClientEffect",
+            spellLines[0]);
+        Assert.True(spellLines.Length > 4000,
+            $"server-spells.csv shrank to {spellLines.Length} rows — export regression?");
+
+        var cooldowns = Path.Combine(root, "data", "client-tables", "ra-cooldowns.csv");
+        var cooldownLines = File.ReadAllLines(cooldowns);
+        Assert.Equal("KeyName,Name,CooldownSeconds", cooldownLines[0]);
+        Assert.True(cooldownLines.Length > 40,
+            $"ra-cooldowns.csv shrank to {cooldownLines.Length} rows");
+    }
+
     private static string FindProjectRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);

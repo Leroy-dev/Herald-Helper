@@ -164,11 +164,35 @@ public static class AppComposition
             onlineSync,
             windowAwareCapture as IAdapterValueSource,
             alertSound,
-            RealmAbilityCooldownTable.Load(settings.ShardType, activeClass),
-            CcIconIndex.Load(),
-            new ServerCcSpellIndex());
+            LoadRaCooldowns(settings.ShardType, activeClass, diagnostics),
+            LoadCcIconIndex(diagnostics),
+            LoadCcSpellIndex(diagnostics));
 
         return (orchestrator, overlay, settings, capture, windowAwareCapture);
+    }
+
+    // Catalog loads fail silently by design — the composition log line is the
+    // only place an empty table becomes visible (packaging misses data/).
+    private static IReadOnlyDictionary<string, int>? LoadRaCooldowns(
+        ShardType shard, string? className, IResponseDiagnostics? diagnostics)
+    {
+        var table = RealmAbilityCooldownTable.Load(shard, className);
+        diagnostics?.Log($"[Data] ra-cooldowns: {table?.Count ?? 0} entries ({shard}/{className ?? "-"})");
+        return table;
+    }
+
+    private static CcIconIndex LoadCcIconIndex(IResponseDiagnostics? diagnostics)
+    {
+        var index = CcIconIndex.Load();
+        diagnostics?.Log($"[Data] cc-icons: {index.Count} entries");
+        return index;
+    }
+
+    private static ServerCcSpellIndex LoadCcSpellIndex(IResponseDiagnostics? diagnostics)
+    {
+        var index = new ServerCcSpellIndex();
+        diagnostics?.Log($"[Data] cc-spells: {index.Count} entries");
+        return index;
     }
 
     private static string? ResolveActiveClass(IReadOnlyDictionary<string, string> settings, ShardType shard)

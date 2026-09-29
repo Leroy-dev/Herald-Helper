@@ -391,9 +391,10 @@ public sealed class GameLoopOrchestrator : IDisposable
             {
                 OnCastCompleted(castEvent, nowUtc);
             }
+            // Feed every event in order — an Interrupted that isn't the last
+            // still has to clear the cast bar and fire its alert/sound.
+            UpdateActiveCast(castEvent, nowUtc);
         }
-
-        UpdateActiveCast(newCastEvents.LastOrDefault(), nowUtc);
     }
 
     /// <summary>A finished cast starts its recast cooldown (when the catalog
@@ -589,14 +590,18 @@ public sealed class GameLoopOrchestrator : IDisposable
     /// on screen doesn't re-fire every tick.</summary>
     private void TrackCombatEvents(ChatParseResult parseResult, ShardType shardType, DateTimeOffset nowUtc)
     {
-        foreach (var cc in _selfCcTracker.ObserveFrame(
-                     parseResult.SelfCcEvents ?? [],
-                     static x => x.Effect.ToString(),
-                     static x => x.OccurrenceOrdinal))
+        var freshSelfCc = _selfCcTracker.ObserveFrame(
+            parseResult.SelfCcEvents ?? [],
+            static x => x.Effect.ToString(),
+            static x => x.OccurrenceOrdinal);
+        // Multiple CC lines in one frame — strongest wins; last-line-wins
+        // would let a snare erase the stun banner.
+        var selfCc = freshSelfCc.OrderByDescending(cc => CcSeverity(cc.Effect)).FirstOrDefault();
+        if (selfCc is not null)
         {
-            _selfCc = new SelfCcState(cc.Effect, nowUtc);
+            _selfCc = new SelfCcState(selfCc.Effect, nowUtc);
             _selfCcFromIcon = false;
-            _diagnostics?.Log($"[SelfCC] {cc.Effect}");
+            _diagnostics?.Log($"[SelfCC] {selfCc.Effect}");
             _alertSound?.Play(AlertKind.SelfCc);
         }
 
@@ -680,9 +685,16 @@ public sealed class GameLoopOrchestrator : IDisposable
                      static x => x.AbilityName,
                      static x => x.OccurrenceOrdinal))
         {
-            _realmAbilityUses.Add(new RealmAbilityActivation(
-                ra.AbilityName, nowUtc,
-                _realmAbilityCooldowns.TryGetValue(ra.AbilityName, out var cooldown) ? cooldown : null));
+            // The use-line regex accepts any capitalized phrase — only table-
+            // known names earn a cooldown; trained-level suffixes resolve to
+            // the base ability like the cast-line path does.
+            var raName = StripRomanSuffix(ra.AbilityName.Trim());
+            if (!_realmAbilityCooldowns.TryGetValue(raName, out var cooldown) &&
+                !_realmAbilityCooldowns.TryGetValue(ra.AbilityName.Trim(), out cooldown))
+            {
+                continue;
+            }
+            _realmAbilityUses.Add(new RealmAbilityActivation(ra.AbilityName, nowUtc, cooldown));
             _diagnostics?.Log($"[RA] {ra.AbilityName}");
         }
     }

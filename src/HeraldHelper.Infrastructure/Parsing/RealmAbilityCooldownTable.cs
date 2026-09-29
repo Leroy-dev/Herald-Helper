@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using HeraldHelper.Domain.Enums;
+using HeraldHelper.Infrastructure.Casting;
 
 namespace HeraldHelper.Infrastructure.Parsing;
 
@@ -80,8 +81,10 @@ public static partial class RealmAbilityCooldownTable
                 var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
                 foreach (var line in File.ReadLines(candidate).Skip(1))
                 {
-                    var fields = line.Split(',');
-                    if (fields.Length >= 3 &&
+                    // Quoted display names can carry commas — use the real
+                    // CSV parser, not a naive split.
+                    var fields = ServerCastSpellCatalog.ParseCsvLine(line);
+                    if (fields.Count >= 3 &&
                         int.TryParse(fields[2], out var seconds) && seconds > 0)
                     {
                         result[fields[1].Trim('"').Trim()] = seconds;
