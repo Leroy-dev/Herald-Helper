@@ -41,7 +41,9 @@ public static class ShardAuthProfileResolver
             .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToList();
 
-        return new ShardAuthProfile(shard, hub, domain, names, required, validateUrl, deny, hubDeny);
+        var savedUserAgent = Get(settings, $"auth.{key}.userAgent", null);
+
+        return new ShardAuthProfile(shard, hub, domain, names, required, validateUrl, deny, hubDeny, savedUserAgent);
     }
 
     public static IEnumerable<ConfigEntry> DefaultSettings()

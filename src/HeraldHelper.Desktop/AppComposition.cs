@@ -71,7 +71,8 @@ internal static class AppServiceProvider
             return new PlaywrightShardAuthRefreshService(
                 shard => ShardAuthProfileResolver.Resolve(settings.LoadMap(), shard),
                 (shard, bundle) => sp.GetRequiredService<AuthController>().OnRefreshed(shard, bundle),
-                profilesRoot);
+                profilesRoot,
+                sp.GetRequiredService<IResponseDiagnostics>());
         });
 
         services.AddSingleton<ITargetProfileRepository, LocalTargetProfileRepository>();

@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text;
+using HeraldHelper.Application.Contracts;
 using HeraldHelper.Domain.Enums;
 using Microsoft.Playwright;
 
@@ -23,16 +24,32 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
 
     private readonly Func<ShardType, ShardAuthProfile?> _resolveProfile;
     private readonly Action<ShardType, ShardAuthBundle> _onRefreshed;
+    private readonly IResponseDiagnostics? _diagnostics;
     private readonly string _profilesRoot;
+
+    /// <summary>One persistent context per shard at a time — a headed login
+    /// window and a headless refresh on the same userDataDir collide on
+    /// Chromium's profile lock and wedge the headed session.</summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<ShardType, SemaphoreSlim>
+        LaunchLocks = new();
+
+    /// <summary>Stable real-Chrome UA so the login session and every refresh
+    /// present the same fingerprint — Eden invalidates the session when the
+    /// UA drifts ("HeadlessChrome" got the user logged out).</summary>
+    private const string StableUserAgent =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+        "(KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
 
     public PlaywrightShardAuthRefreshService(
         Func<ShardType, ShardAuthProfile?> resolveProfile,
         Action<ShardType, ShardAuthBundle> onRefreshed,
-        string profilesRoot)
+        string profilesRoot,
+        IResponseDiagnostics? diagnostics = null)
     {
         _resolveProfile = resolveProfile;
         _onRefreshed = onRefreshed;
         _profilesRoot = profilesRoot;
+        _diagnostics = diagnostics;
     }
 
     public async Task<ShardAuthBundle?> RefreshAsync(ShardType shard, CancellationToken cancellationToken)
@@ -43,7 +60,26 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
             return null;
         }
 
-        var userDataDir = PrepareUserDataDir(shard);
+        var launchLock = LaunchLocks.GetOrAdd(shard, _ => new SemaphoreSlim(1, 1));
+        if (!await launchLock.WaitAsync(0, cancellationToken))
+        {
+            _diagnostics?.Log($"[Auth] {shard}: refresh skipped — a login browser is open for this shard");
+            return null;
+        }
+
+        try
+        {
+            return await RefreshLockedAsync(profile, cancellationToken);
+        }
+        finally
+        {
+            launchLock.Release();
+        }
+    }
+
+    private async Task<ShardAuthBundle?> RefreshLockedAsync(ShardAuthProfile profile, CancellationToken cancellationToken)
+    {
+        var userDataDir = PrepareUserDataDir(profile.Shard);
 
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchPersistentContextAsync(
@@ -51,6 +87,10 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
             new BrowserTypeLaunchPersistentContextOptions
             {
                 Headless = true,
+                // Same UA the session was captured with — drift invalidates it.
+                UserAgent = string.IsNullOrWhiteSpace(profile.SavedUserAgent)
+                    ? StableUserAgent
+                    : profile.SavedUserAgent,
                 Args =
                 [
                     "--disable-blink-features=AutomationControlled",
@@ -79,7 +119,7 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
         var userAgent = await TryReadUserAgentAsync(page, cancellationToken);
 
         var bundle = new ShardAuthBundle(cookieHeader, userAgent);
-        _onRefreshed(shard, bundle);
+        _onRefreshed(profile.Shard, bundle);
         return bundle;
     }
 
@@ -91,7 +131,21 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
             return null;
         }
 
-        var userDataDir = PrepareUserDataDir(shard);
+        var launchLock = LaunchLocks.GetOrAdd(shard, _ => new SemaphoreSlim(1, 1));
+        await launchLock.WaitAsync(cancellationToken);
+        try
+        {
+            return await OpenBrowserLockedAsync(profile, cancellationToken);
+        }
+        finally
+        {
+            launchLock.Release();
+        }
+    }
+
+    private async Task<ShardAuthBundle?> OpenBrowserLockedAsync(ShardAuthProfile profile, CancellationToken cancellationToken)
+    {
+        var userDataDir = PrepareUserDataDir(profile.Shard);
 
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchPersistentContextAsync(
@@ -99,6 +153,9 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
             new BrowserTypeLaunchPersistentContextOptions
             {
                 Headless = false,
+                UserAgent = string.IsNullOrWhiteSpace(profile.SavedUserAgent)
+                    ? StableUserAgent
+                    : profile.SavedUserAgent,
                 Args =
                 [
                     "--disable-blink-features=AutomationControlled",
@@ -162,7 +219,7 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
         }
 
         var bundle = new ShardAuthBundle(latestCookieHeader, latestUserAgent);
-        _onRefreshed(shard, bundle);
+        _onRefreshed(profile.Shard, bundle);
         return bundle;
     }
 
@@ -248,7 +305,9 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
     }
 
     /// <summary>True when the live hub page still shows an anonymous-login
-    /// affordance (profile HubDenyPhrases — Eden's "LOGIN" nav button). A
+    /// affordance. A bare phrase hit on innerText was too easy — "login" shows
+    /// up in footers and help text of logged-in pages — so the page must also
+    /// expose a real login control (password field, login link/form). A
     /// failed evaluate (mid-navigation, closed tab) counts as denied.</summary>
     private static async Task<bool> PageShowsDenyAsync(
         IPage page, IReadOnlyList<string>? phrases, CancellationToken cancellationToken)
@@ -260,9 +319,11 @@ public sealed class PlaywrightShardAuthRefreshService : IShardAuthRefreshService
 
         try
         {
-            var text = await page.EvaluateAsync<string>(
-                "() => document.body ? document.body.innerText : ''");
-            return ContainsAnyDenyPhrase(text, phrases);
+            var probe = await page.EvaluateAsync<string>(
+                "() => (document.querySelector('input[type=\"password\"], " +
+                "a[href*=\"login\" i], form[action*=\"login\" i]') ? '\u0001LOGINUI\u0001' : '')" +
+                " + (document.body ? document.body.innerText : '')");
+            return probe.Contains("\u0001LOGINUI\u0001") && ContainsAnyDenyPhrase(probe, phrases);
         }
         catch (PlaywrightException)
         {

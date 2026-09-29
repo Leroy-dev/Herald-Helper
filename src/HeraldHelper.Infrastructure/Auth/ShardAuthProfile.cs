@@ -13,4 +13,8 @@ public sealed record ShardAuthProfile(
     /// <summary>Phrases in the live hub page's visible text that mean the
     /// session is anonymous (e.g. Eden's "LOGIN" nav button). Interactive
     /// capture only trusts cookies once the page no longer shows them.</summary>
-    IReadOnlyList<string>? HubDenyPhrases = null);
+    IReadOnlyList<string>? HubDenyPhrases = null,
+    /// <summary>UA captured at login. Eden binds sessions to the user agent —
+    /// a headless refresh must present the SAME UA or the server invalidates
+    /// the session (manifests as "the browser logged me out").</summary>
+    string? SavedUserAgent = null);
