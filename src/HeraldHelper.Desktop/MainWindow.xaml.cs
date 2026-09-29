@@ -841,7 +841,10 @@ public partial class MainWindow : Window
         {
             _runtimeController.Interval = _loopInterval;
         }
-        if (!_isBindingControls)
+        // XAML sets Text= during InitializeComponent — before the ctor
+        // assigns _settingsController — so guard on assignment, not just the
+        // binding flag.
+        if (!_isBindingControls && _settingsController is not null)
         {
             _settingsController.Save([
                 new ConfigEntry { Key = "ui.loopMs", Value = ms.ToString() }
