@@ -287,6 +287,55 @@ public sealed class GameLoopOrchestratorTests
     }
 
     [Fact]
+    public async Task TickAsync_StaleAdapterTargetDoesNotStealCcTimer()
+    {
+        // Live trace: 'You target [Dummy]' landed, but one summary_target poll
+        // still carried the previous target — the stale emit flipped the name
+        // back and the stun mention landed on the old player target.
+        var now = DateTimeOffset.UtcNow;
+        var adapters = new FakeAdapterValueSource
+        {
+            LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["summary_target"] = "Methasorc"
+            }
+        };
+        var capture = new SequenceChatCaptureService(
+        [
+            "You target [Methasorc].",
+            "You target [Level 50 Training Dummy].",
+            "You cast a Stunning Bellow spell! Level 50 Training Dummy cannot seem to move!"
+        ]);
+        var parser = new AbilitiesChatEventParser(
+        [
+            new AbilityDefinition("Stunning Bellow", "i", 9, ControlEffectType.Stun)
+        ]);
+        var tracker = new RecordingCcImmunityTracker();
+        var orchestrator = new GameLoopOrchestrator(
+            capture,
+            parser,
+            new FakeCastSpellCatalog(),
+            new FakeHeraldClientFactory(new FakeHeraldClient(null)),
+            tracker,
+            new RecordingOverlayRenderer(),
+            adapterValueSource: adapters);
+
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now, CancellationToken.None);
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now.AddSeconds(1), CancellationToken.None);
+        // Adapter finally catches up with the real target.
+        adapters.LatestAdapterValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["summary_target"] = "Level 50 Training Dummy"
+        };
+        await orchestrator.TickAsync(new ScreenRegion(0, 0, 100, 30), ShardType.Eden, 10, now.AddMilliseconds(1400), CancellationToken.None);
+
+        // Mention hit + broadcast synthesize — both must name the dummy.
+        Assert.NotEmpty(tracker.RegisteredHits);
+        Assert.All(tracker.RegisteredHits,
+            h => Assert.Equal("Level 50 Training Dummy", h.TargetName));
+    }
+
+    [Fact]
     public async Task TickAsync_UnknownMembershipStillUsesHeraldForVerification()
     {
         var capture = new FakeChatCaptureService("ignored");

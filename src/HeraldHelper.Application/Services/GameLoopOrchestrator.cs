@@ -11,6 +11,9 @@ public sealed class GameLoopOrchestrator : IDisposable
 {
     private static readonly TimeSpan FailedLookupRetryDelay = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan IncompleteProfileRefreshDelay = TimeSpan.FromSeconds(30);
+    /// summary_target polls lag chat 'You target' lines by a cycle — a stale
+    /// emit right after a real switch must not flip the target back.
+    private static readonly TimeSpan AdapterTargetLagWindow = TimeSpan.FromSeconds(3);
     private readonly IChatCaptureService _chatCaptureService;
     private readonly IChatEventParser _chatEventParser;
     private readonly ICastSpellCatalog _castSpellCatalog;
@@ -31,6 +34,7 @@ public sealed class GameLoopOrchestrator : IDisposable
     private CancellationTokenSource? _targetLookupCts;
     private long _targetGeneration;
     private readonly HashSet<string> _knownNonPlayerTargets = new(StringComparer.OrdinalIgnoreCase);
+    private DateTimeOffset _lastParsedTargetAtUtc = DateTimeOffset.MinValue;
     private readonly VisibleEventTracker _targetEventTracker = new();
     // Cast starts can leave the OCR viewport and reappear as ordinal 1 on the
     // next cast. One missing frame is enough to allow the same cast again.
@@ -439,6 +443,10 @@ public sealed class GameLoopOrchestrator : IDisposable
             visibleTargetEvents,
             static x => x.Name.Trim(),
             static x => x.OccurrenceOrdinal);
+        if (newTargetEvents.Count > 0)
+        {
+            _lastParsedTargetAtUtc = nowUtc;
+        }
         var targetEvent = newTargetEvents.LastOrDefault();
         if (targetEvent is null
             && parseResult.TargetEvent is not null
@@ -450,10 +458,20 @@ public sealed class GameLoopOrchestrator : IDisposable
 
         // The adapter registry reports the live selection — a loop started
         // mid-fight (or chat that never showed the "you target" line) still
-        // resolves the target. HandleTargetEvent dedupes repeats.
+        // resolves the target. HandleTargetEvent dedupes repeats. But the
+        // summary_target poll lags chat by a cycle — a stale emit right after
+        // a real "You target" switch would flip the name back and
+        // misattribute the next ability mention (live trace: stunned the
+        // dummy, timer landed on the prior player target). Suppress
+        // disagreeing adapter values briefly; if it still disagrees after the
+        // window the chat line was missed and the adapter wins.
         if (targetEvent is null && ReadAdapterTargetName() is { } adapterTarget)
         {
-            targetEvent = new TargetEvent(adapterTarget, TargetMembership.Unknown);
+            var adapterLagsChat = nowUtc - _lastParsedTargetAtUtc < AdapterTargetLagWindow;
+            if (!adapterLagsChat || IsCurrentTarget(adapterTarget))
+            {
+                targetEvent = new TargetEvent(adapterTarget, TargetMembership.Unknown);
+            }
         }
 
         if (targetEvent is not null)
