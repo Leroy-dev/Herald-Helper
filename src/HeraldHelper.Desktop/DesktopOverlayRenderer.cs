@@ -32,7 +32,8 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private MediaColor? _previewOutlineColor;
     private bool _disposed;
 
-    public DesktopOverlayRenderer(Func<OverlaySettings> getOverlay, Func<IReadOnlyDictionary<string, string>>? getMap = null)
+    public DesktopOverlayRenderer(Func<OverlaySettings> getOverlay, Func<IReadOnlyDictionary<string, string>>? getMap = null,
+        Action<int>? onGroupMemberClick = null)
     {
         _getOverlay = getOverlay;
         _getMap = getMap;
@@ -46,6 +47,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _buffWindow = new OverlayTextWindow();
         _petWindow = new OverlayTextWindow();
         _cooldownsWindow = new OverlayTextWindow();
+        if (onGroupMemberClick is not null)
+        {
+            _groupWindow.MemberClicked += onGroupMemberClick;
+        }
     }
 
     public Task RenderAsync(OverlaySnapshot snapshot, CancellationToken cancellationToken)
@@ -149,8 +154,10 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             var cast = overlay.ShowCastBar ? snapshot.ActiveCast : null;
             _castBarWindow.Update(cast, cx, cy, castbarColor, timerColor, outlineColor, overlay.CastbarFontFamily,
                 castSize, snapshot.CastInterruptedUntil);
+            var groupMembers = overlay.ShowGroup ? snapshot.ClientState?.GroupMembers : null;
+            _groupWindow.SetMemberClickable(overlay.GroupClickHeal && groupMembers is { Count: > 0 });
             _groupWindow.Update(
-                overlay.ShowGroup ? snapshot.ClientState?.GroupMembers : null,
+                groupMembers,
                 gx, gy, groupSize, overlay.EffectiveGroupFontFamily, outlineColor);
 
             _selfCcWindow.Update(

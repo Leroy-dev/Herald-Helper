@@ -417,6 +417,9 @@ public partial class MainWindow : Window
         HookOverlayCheck(DynamicCastSpeedCheckbox, (s, v) => s.DynamicCastSpeedEnabled = v);
         HookOverlayCheck(EstimatedSpellDamageCheckbox, (s, v) => s.EstimatedSpellDamageEnabled = v);
         HookOverlayCheck(OcrReplayCheckbox, (s, v) => s.OcrReplayEnabled = v);
+        HookOverlayCheck(GroupClickHealCheckbox, (s, v) => s.GroupClickHeal = v);
+        HookOverlayText(GroupHealSelectKeysText, (s, v) => s.GroupHealSelectKeys = v);
+        HookOverlayText(GroupHealActionKeyText, (s, v) => s.GroupHealActionKey = v);
 
         OverlayOpacityText.TextChanged += (_, _) =>
         {
@@ -457,6 +460,24 @@ public partial class MainWindow : Window
         };
         box.Checked += handler;
         box.Unchecked += handler;
+    }
+
+    private void HookOverlayText(WpfTextBox? box, Action<OverlaySettings, string> setter)
+    {
+        if (box is null)
+        {
+            return;
+        }
+
+        box.TextChanged += (_, _) =>
+        {
+            if (_isBindingControls)
+            {
+                return;
+            }
+            setter(_overlaySettings, box.Text.Trim());
+            ScheduleOverlaySave();
+        };
     }
 
     private void ApplyColorBox(

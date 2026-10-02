@@ -62,6 +62,9 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private bool _dynamicCastSpeedEnabled;
     private bool _estimatedSpellDamageEnabled;
     private bool _ocrReplayEnabled;
+    private bool _groupClickHeal;
+    private string _groupHealSelectKeys = string.Empty;
+    private string _groupHealActionKey = string.Empty;
     private string _targetFontFamily = "Segoe UI";
     private string _timerFontFamily = "Segoe UI";
     private string _castbarFontFamily = "Segoe UI";
@@ -136,6 +139,15 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     public bool DynamicCastSpeedEnabled { get => _dynamicCastSpeedEnabled; set { _dynamicCastSpeedEnabled = value; OnPropertyChanged(nameof(DynamicCastSpeedEnabled)); } }
     public bool EstimatedSpellDamageEnabled { get => _estimatedSpellDamageEnabled; set { _estimatedSpellDamageEnabled = value; OnPropertyChanged(nameof(EstimatedSpellDamageEnabled)); } }
     public bool OcrReplayEnabled { get => _ocrReplayEnabled; set { _ocrReplayEnabled = value; OnPropertyChanged(nameof(OcrReplayEnabled)); } }
+    /// <summary>Click a group row → send select-member key + action key to the
+    /// game (SendInput, no focus steal — the overlay keeps WS_EX_NOACTIVATE).</summary>
+    public bool GroupClickHeal { get => _groupClickHeal; set { _groupClickHeal = value; OnPropertyChanged(nameof(GroupClickHeal)); } }
+    /// <summary>Comma-separated "select group member" keys matching the in-game
+    /// binds, member 0-7 (e.g. "F1,F2,F3,F4,F5,F6,F7,F8").</summary>
+    public string GroupHealSelectKeys { get => _groupHealSelectKeys; set { _groupHealSelectKeys = value; OnPropertyChanged(nameof(GroupHealSelectKeys)); } }
+    /// <summary>Key fired after the select key (the heal/qbind key, e.g. "F9").
+    /// Empty = select only.</summary>
+    public string GroupHealActionKey { get => _groupHealActionKey; set { _groupHealActionKey = value; OnPropertyChanged(nameof(GroupHealActionKey)); } }
     public string TargetFontFamily { get => _targetFontFamily; set { _targetFontFamily = value; OnPropertyChanged(nameof(TargetFontFamily)); } }
     public string TimerFontFamily { get => _timerFontFamily; set { _timerFontFamily = value; OnPropertyChanged(nameof(TimerFontFamily)); } }
     public string CastbarFontFamily { get => _castbarFontFamily; set { _castbarFontFamily = value; OnPropertyChanged(nameof(CastbarFontFamily)); } }

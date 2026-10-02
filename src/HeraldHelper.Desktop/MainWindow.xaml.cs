@@ -77,6 +77,9 @@ public partial class MainWindow : Window
     private System.Windows.Controls.CheckBox DynamicCastSpeedCheckbox => OverlayView!.DynamicCastSpeedCheckbox;
     private System.Windows.Controls.CheckBox EstimatedSpellDamageCheckbox => OverlayView!.EstimatedSpellDamageCheckbox;
     private System.Windows.Controls.CheckBox OcrReplayCheckbox => OverlayView!.OcrReplayCheckbox;
+    private System.Windows.Controls.CheckBox GroupClickHealCheckbox => OverlayView!.GroupClickHealCheckbox;
+    private System.Windows.Controls.TextBox GroupHealSelectKeysText => OverlayView!.GroupHealSelectKeysText;
+    private System.Windows.Controls.TextBox GroupHealActionKeyText => OverlayView!.GroupHealActionKeyText;
     private System.Windows.Controls.TextBox CastingSpeedBonusText => OverlayView!.CastingSpeedBonusText;
     private System.Windows.Controls.TextBox SpellDamageBonusText => OverlayView!.SpellDamageBonusText;
     private System.Windows.Controls.CheckBox SoundsEnabledCheckbox => OverlayView!.SoundsEnabledCheckbox;
@@ -1032,6 +1035,9 @@ public partial class MainWindow : Window
             DynamicCastSpeedCheckbox.IsChecked = _overlaySettings.DynamicCastSpeedEnabled;
             EstimatedSpellDamageCheckbox.IsChecked = _overlaySettings.EstimatedSpellDamageEnabled;
             OcrReplayCheckbox.IsChecked = _overlaySettings.OcrReplayEnabled;
+            GroupClickHealCheckbox.IsChecked = _overlaySettings.GroupClickHeal;
+            GroupHealSelectKeysText.Text = _overlaySettings.GroupHealSelectKeys;
+            GroupHealActionKeyText.Text = _overlaySettings.GroupHealActionKey;
         }
         finally
         {

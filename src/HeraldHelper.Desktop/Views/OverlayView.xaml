@@ -76,6 +76,14 @@
                                 <TextBox Margin="8,0,0,0" Width="100" x:Name="SpellDamageBonusText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Spell Damage %"
                                          ToolTip="Enter the item spell-damage bonus used by the optional rough damage estimate." />
                             </WrapPanel>
+                            <WrapPanel Margin="0,8,0,0">
+                                <CheckBox x:Name="GroupClickHealCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Click group rows"
+                                          ToolTip="Clicking a group member row sends that member's select key plus the action key to the game — bind 'Select Group Member 1-8' in-game and list the keys below." />
+                                <TextBox Width="170" x:Name="GroupHealSelectKeysText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Select keys 1-8"
+                                         ToolTip="Comma-separated keys matching your in-game 'Select Group Member 1..8' binds (e.g. F1,F2,F3,F4,F5,F6,F7,F8)." />
+                                <TextBox Margin="8,0,0,0" Width="90" x:Name="GroupHealActionKeyText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Action key"
+                                         ToolTip="Key pressed after the select key — your heal/qbind bind (e.g. F9). Empty = select only." />
+                            </WrapPanel>
                             </StackPanel>
                         </GroupBox>
 

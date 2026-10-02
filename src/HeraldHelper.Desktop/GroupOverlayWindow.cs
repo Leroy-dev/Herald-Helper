@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using HeraldHelper.Domain.Enums;
@@ -21,6 +22,11 @@ public sealed class GroupOverlayWindow : Window
     private const double BarWidth = 168;
     private readonly StackPanel _panel;
     private readonly List<MemberRow> _rows = new(MaxRows);
+    private bool _clickable;
+    private HwndSource? _source;
+
+    /// <summary>Row index clicked — only fires while member-click mode is on.</summary>
+    public event Action<int>? MemberClicked;
 
     public GroupOverlayWindow()
     {
@@ -40,6 +46,11 @@ public sealed class GroupOverlayWindow : Window
         {
             var row = new MemberRow();
             row.Root.Visibility = Visibility.Collapsed;
+            row.Root.MouseLeftButtonDown += (_, e) =>
+            {
+                e.Handled = true;
+                MemberClicked?.Invoke(row.Slot);
+            };
             _rows.Add(row);
             _panel.Children.Add(row.Root);
         }
@@ -62,6 +73,75 @@ public sealed class GroupOverlayWindow : Window
         var exStyle = OverlayTextWindowInterop.GetWindowLongPtr(hwnd).ToInt64();
         exStyle |= OverlayTextWindowInterop.WsExLayered | OverlayTextWindowInterop.WsExTransparent | OverlayTextWindowInterop.WsExNoActivate | OverlayTextWindowInterop.WsExToolWindow;
         OverlayTextWindowInterop.SetWindowLongPtr(hwnd, new IntPtr(exStyle));
+        _source = (HwndSource?)PresentationSource.FromVisual(this);
+        _source?.AddHook(WndProc);
+    }
+
+    /// <summary>
+    /// Click-to-heal mode: clears WS_EX_TRANSPARENT so the window gets real
+    /// hit tests, then gates them to the member rows via WM_NCHITTEST.
+    /// WS_EX_NOACTIVATE stays set — clicking a row never steals focus from
+    /// the game, so injected keys go straight to it.
+    /// </summary>
+    public void SetMemberClickable(bool enabled)
+    {
+        if (enabled == _clickable)
+        {
+            return;
+        }
+        _clickable = enabled;
+
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd == IntPtr.Zero)
+        {
+            return;
+        }
+        var exStyle = OverlayTextWindowInterop.GetWindowLongPtr(hwnd).ToInt64();
+        if (enabled)
+        {
+            exStyle &= ~OverlayTextWindowInterop.WsExTransparent;
+        }
+        else
+        {
+            exStyle |= OverlayTextWindowInterop.WsExTransparent;
+        }
+        OverlayTextWindowInterop.SetWindowLongPtr(hwnd, new IntPtr(exStyle));
+        IsHitTestVisible = enabled;
+    }
+
+    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        const int WmNcHitTest = 0x0084;
+        const int HtClient = 1;
+        const int HtTransparent = -1;
+
+        if (msg == WmNcHitTest)
+        {
+            // Clicks always pass through outside the member rows.
+            var passThrough = new IntPtr(HtTransparent);
+            if (!_clickable)
+            {
+                handled = true;
+                return passThrough;
+            }
+            var screenX = (short)(lParam.ToInt32() & 0xFFFF);
+            var screenY = (short)(lParam.ToInt32() >> 16);
+            try
+            {
+                var client = PointFromScreen(new System.Windows.Point(screenX, screenY));
+                var origin = _panel.TranslatePoint(new System.Windows.Point(0, 0), this);
+                var rows = new Rect(origin, _panel.RenderSize);
+                handled = true;
+                return rows.Contains(client) ? new IntPtr(HtClient) : passThrough;
+            }
+            catch (InvalidOperationException)
+            {
+                // Source not ready — treat as pass-through.
+                handled = true;
+                return passThrough;
+            }
+        }
+        return IntPtr.Zero;
     }
 
     public void Update(
@@ -109,6 +189,9 @@ public sealed class GroupOverlayWindow : Window
     private sealed class MemberRow
     {
         public readonly Border Root;
+        /// <summary>The adapter slot (group member index) this row renders —
+        /// drives the select key when the row is clicked.</summary>
+        public int Slot;
         private readonly TextBlock _nameText;
         private readonly TextBlock _zoneText;
         private readonly Border _hpFill;
@@ -204,12 +287,14 @@ public sealed class GroupOverlayWindow : Window
             Root = new Border
             {
                 Padding = new Thickness(0, 2, 0, 2),
+                Background = MediaBrushes.Transparent,
                 Child = stack
             };
         }
 
         public void Update(GroupMemberState member, int fontSize, FontFamily family)
         {
+            Slot = member.Index;
             _nameText.FontSize = fontSize;
             _nameText.FontFamily = family;
             var nameLine = string.IsNullOrWhiteSpace(member.Class)

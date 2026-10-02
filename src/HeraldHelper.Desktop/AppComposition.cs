@@ -6,6 +6,7 @@ using HeraldHelper.Desktop.Models;
 using HeraldHelper.Desktop.Repositories;
 using HeraldHelper.Desktop.Services;
 using HeraldHelper.Infrastructure.Auth;
+using HeraldHelper.Infrastructure.Capture;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HeraldHelper.Desktop;
@@ -52,10 +53,19 @@ internal static class AppServiceProvider
         services.AddSingleton<HttpClient>(sp =>
             new HttpClient { Timeout = TimeSpan.FromSeconds(8) });
 
+        services.AddSingleton<IGameInputSender>(sp =>
+            new GameInputSender(diagnostics: sp.GetRequiredService<IResponseDiagnostics>()));
+        services.AddSingleton<GroupMemberActionService>(sp =>
+            new GroupMemberActionService(
+                () => sp.GetRequiredService<OverlaySettingsController>().Load(),
+                sp.GetRequiredService<IGameInputSender>(),
+                sp.GetRequiredService<IResponseDiagnostics>()));
+
         services.AddSingleton<DesktopOverlayRenderer>(sp =>
             new DesktopOverlayRenderer(
                 () => sp.GetRequiredService<OverlaySettingsController>().Load(),
-                () => sp.GetRequiredService<SettingsController>().LoadMap()));
+                () => sp.GetRequiredService<SettingsController>().LoadMap(),
+                i => sp.GetRequiredService<GroupMemberActionService>().OnMemberClicked(i)));
         services.AddSingleton<IOverlayRenderer>(sp => sp.GetRequiredService<DesktopOverlayRenderer>());
 
         services.AddSingleton<HeraldHelper.Application.Contracts.IAlertSound>(sp =>
