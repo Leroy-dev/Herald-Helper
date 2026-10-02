@@ -22,6 +22,7 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
     private readonly OverlayTextWindow _buffWindow;
     private readonly OverlayTextWindow _petWindow;
     private readonly OverlayTextWindow _cooldownsWindow;
+    private readonly HealZoneOverlayWindow _healZoneWindow;
     /// <summary>Live drag/resize previews keyed by element ("target",
     /// "timers", "castbar", "resists", "group", "selfcc", "peel", "buffs",
     /// "pet") — the Overlay settings table drives these.</summary>
@@ -47,9 +48,13 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _buffWindow = new OverlayTextWindow();
         _petWindow = new OverlayTextWindow();
         _cooldownsWindow = new OverlayTextWindow();
+        _healZoneWindow = new HealZoneOverlayWindow();
         if (onGroupMemberClick is not null)
         {
             _groupWindow.MemberClicked += onGroupMemberClick;
+            // Heal-zone rows are the in-game window's SelectGroupMemberN
+            // rows — zone index IS the group member slot.
+            _healZoneWindow.ZoneClicked += onGroupMemberClick;
         }
     }
 
@@ -159,6 +164,21 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
             _groupWindow.Update(
                 groupMembers,
                 gx, gy, groupSize, overlay.EffectiveGroupFontFamily, outlineColor);
+
+            if (overlay.HealZoneEnabled)
+            {
+                _healZoneWindow.Opacity = opacity;
+                _healZoneWindow.SetClickable(true);
+                _healZoneWindow.SetRegion(
+                    overlay.HealZoneX, overlay.HealZoneY,
+                    overlay.HealZoneWidth, 8, overlay.HealZoneRowHeight,
+                    overlay.HealZoneDebug);
+            }
+            else
+            {
+                _healZoneWindow.SetClickable(false);
+                _healZoneWindow.HideZone();
+            }
 
             _selfCcWindow.Update(
                 overlay.ShowSelfCc && snapshot.SelfCc is not null
@@ -708,5 +728,6 @@ public sealed class DesktopOverlayRenderer : IOverlayRenderer, IDisposable
         _peelWindow.Close();
         _buffWindow.Close();
         _petWindow.Close();
+        _healZoneWindow.Close();
     }
 }

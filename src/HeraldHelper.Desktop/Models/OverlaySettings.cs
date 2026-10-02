@@ -65,6 +65,12 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     private bool _groupClickHeal;
     private string _groupHealSelectKeys = string.Empty;
     private string _groupHealActionKey = string.Empty;
+    private bool _healZoneEnabled;
+    private bool _healZoneDebug;
+    private int _healZoneX = 100;
+    private int _healZoneY = 300;
+    private int _healZoneWidth = 240;
+    private int _healZoneRowHeight = 26;
     private string _targetFontFamily = "Segoe UI";
     private string _timerFontFamily = "Segoe UI";
     private string _castbarFontFamily = "Segoe UI";
@@ -148,6 +154,19 @@ public sealed class OverlaySettings : INotifyPropertyChanged
     /// <summary>Key fired after the select key (the heal/qbind key, e.g. "F9").
     /// Empty = select only.</summary>
     public string GroupHealActionKey { get => _groupHealActionKey; set { _groupHealActionKey = value; OnPropertyChanged(nameof(GroupHealActionKey)); } }
+    /// <summary>Invisible click zones parked over the in-game heal window —
+    /// row N sends SelectGroupMemberN + the action key. Works purely on
+    /// geometry — no memory read. Same select/action keys as GroupClickHeal.</summary>
+    public bool HealZoneEnabled { get => _healZoneEnabled; set { _healZoneEnabled = value; OnPropertyChanged(nameof(HealZoneEnabled)); } }
+    /// <summary>Paint the zones semi-transparent for alignment.</summary>
+    public bool HealZoneDebug { get => _healZoneDebug; set { _healZoneDebug = value; OnPropertyChanged(nameof(HealZoneDebug)); } }
+    /// <summary>Screen X/Y of the heal window's first row area.</summary>
+    public int HealZoneX { get => _healZoneX; set { _healZoneX = value; OnPropertyChanged(nameof(HealZoneX)); } }
+    public int HealZoneY { get => _healZoneY; set { _healZoneY = value; OnPropertyChanged(nameof(HealZoneY)); } }
+    public int HealZoneWidth { get => _healZoneWidth; set { _healZoneWidth = Math.Clamp(value, 20, 1000); OnPropertyChanged(nameof(HealZoneWidth)); } }
+    /// <summary>Pixels per member row in the in-game window (26 in the test
+    /// package — name label + health bar row).</summary>
+    public int HealZoneRowHeight { get => _healZoneRowHeight; set { _healZoneRowHeight = Math.Clamp(value, 4, 80); OnPropertyChanged(nameof(HealZoneRowHeight)); } }
     public string TargetFontFamily { get => _targetFontFamily; set { _targetFontFamily = value; OnPropertyChanged(nameof(TargetFontFamily)); } }
     public string TimerFontFamily { get => _timerFontFamily; set { _timerFontFamily = value; OnPropertyChanged(nameof(TimerFontFamily)); } }
     public string CastbarFontFamily { get => _castbarFontFamily; set { _castbarFontFamily = value; OnPropertyChanged(nameof(CastbarFontFamily)); } }

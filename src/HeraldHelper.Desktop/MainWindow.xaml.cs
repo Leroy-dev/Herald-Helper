@@ -80,6 +80,12 @@ public partial class MainWindow : Window
     private System.Windows.Controls.CheckBox GroupClickHealCheckbox => OverlayView!.GroupClickHealCheckbox;
     private System.Windows.Controls.TextBox GroupHealSelectKeysText => OverlayView!.GroupHealSelectKeysText;
     private System.Windows.Controls.TextBox GroupHealActionKeyText => OverlayView!.GroupHealActionKeyText;
+    private System.Windows.Controls.CheckBox HealZoneEnabledCheckbox => OverlayView!.HealZoneEnabledCheckbox;
+    private System.Windows.Controls.CheckBox HealZoneDebugCheckbox => OverlayView!.HealZoneDebugCheckbox;
+    private System.Windows.Controls.TextBox HealZoneXText => OverlayView!.HealZoneXText;
+    private System.Windows.Controls.TextBox HealZoneYText => OverlayView!.HealZoneYText;
+    private System.Windows.Controls.TextBox HealZoneWidthText => OverlayView!.HealZoneWidthText;
+    private System.Windows.Controls.TextBox HealZoneRowHeightText => OverlayView!.HealZoneRowHeightText;
     private System.Windows.Controls.TextBox CastingSpeedBonusText => OverlayView!.CastingSpeedBonusText;
     private System.Windows.Controls.TextBox SpellDamageBonusText => OverlayView!.SpellDamageBonusText;
     private System.Windows.Controls.CheckBox SoundsEnabledCheckbox => OverlayView!.SoundsEnabledCheckbox;
@@ -1038,6 +1044,12 @@ public partial class MainWindow : Window
             GroupClickHealCheckbox.IsChecked = _overlaySettings.GroupClickHeal;
             GroupHealSelectKeysText.Text = _overlaySettings.GroupHealSelectKeys;
             GroupHealActionKeyText.Text = _overlaySettings.GroupHealActionKey;
+            HealZoneEnabledCheckbox.IsChecked = _overlaySettings.HealZoneEnabled;
+            HealZoneDebugCheckbox.IsChecked = _overlaySettings.HealZoneDebug;
+            HealZoneXText.Text = _overlaySettings.HealZoneX.ToString();
+            HealZoneYText.Text = _overlaySettings.HealZoneY.ToString();
+            HealZoneWidthText.Text = _overlaySettings.HealZoneWidth.ToString();
+            HealZoneRowHeightText.Text = _overlaySettings.HealZoneRowHeight.ToString();
         }
         finally
         {

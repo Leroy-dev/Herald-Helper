@@ -84,6 +84,16 @@
                                 <TextBox Margin="8,0,0,0" Width="90" x:Name="GroupHealActionKeyText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Action key"
                                          ToolTip="Key pressed after the select key — your heal/qbind bind (e.g. F9). Empty = select only." />
                             </WrapPanel>
+                            <WrapPanel Margin="0,8,0,0">
+                                <CheckBox x:Name="HealZoneEnabledCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Heal window click zone"
+                                          ToolTip="Invisible row zones parked over the in-game heal window — clicking row N sends SelectGroupMemberN + the action key. Pure geometry, no memory read." />
+                                <CheckBox x:Name="HealZoneDebugCheckbox" x:FieldModifier="public" Margin="0,0,16,0" VerticalAlignment="Center" Content="Show zones"
+                                          ToolTip="Paint the zones semi-transparent so you can align them over the in-game window." />
+                                <TextBox Width="52" x:Name="HealZoneXText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="X" />
+                                <TextBox Margin="4,0,0,0" Width="52" x:Name="HealZoneYText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Y" />
+                                <TextBox Margin="4,0,0,0" Width="52" x:Name="HealZoneWidthText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Width" />
+                                <TextBox Margin="4,0,0,0" Width="52" x:Name="HealZoneRowHeightText" x:FieldModifier="public" Style="{StaticResource CompactInputTextBoxStyle}" materialDesign:HintAssist.Hint="Row H" />
+                            </WrapPanel>
                             </StackPanel>
                         </GroupBox>
 

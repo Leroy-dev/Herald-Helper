@@ -420,6 +420,12 @@ public partial class MainWindow : Window
         HookOverlayCheck(GroupClickHealCheckbox, (s, v) => s.GroupClickHeal = v);
         HookOverlayText(GroupHealSelectKeysText, (s, v) => s.GroupHealSelectKeys = v);
         HookOverlayText(GroupHealActionKeyText, (s, v) => s.GroupHealActionKey = v);
+        HookOverlayCheck(HealZoneEnabledCheckbox, (s, v) => s.HealZoneEnabled = v);
+        HookOverlayCheck(HealZoneDebugCheckbox, (s, v) => s.HealZoneDebug = v);
+        HookOverlayInt(HealZoneXText, (s, v) => s.HealZoneX = v);
+        HookOverlayInt(HealZoneYText, (s, v) => s.HealZoneY = v);
+        HookOverlayInt(HealZoneWidthText, (s, v) => s.HealZoneWidth = v);
+        HookOverlayInt(HealZoneRowHeightText, (s, v) => s.HealZoneRowHeight = v);
 
         OverlayOpacityText.TextChanged += (_, _) =>
         {
@@ -476,6 +482,24 @@ public partial class MainWindow : Window
                 return;
             }
             setter(_overlaySettings, box.Text.Trim());
+            ScheduleOverlaySave();
+        };
+    }
+
+    private void HookOverlayInt(WpfTextBox? box, Action<OverlaySettings, int> setter)
+    {
+        if (box is null)
+        {
+            return;
+        }
+
+        box.TextChanged += (_, _) =>
+        {
+            if (_isBindingControls || !int.TryParse(box.Text.Trim(), out var value))
+            {
+                return;
+            }
+            setter(_overlaySettings, value);
             ScheduleOverlaySave();
         };
     }
