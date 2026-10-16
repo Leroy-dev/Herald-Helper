@@ -82,8 +82,9 @@ if (-not $SkipBrowserInstall) {
         Remove-Item Env:PLAYWRIGHT_BROWSERS_PATH -ErrorAction SilentlyContinue
     }
 
-    # Only the headed Chromium is used (shard login); drop the rest.
-    foreach ($name in @("chromium_headless_shell-*", "ffmpeg-*", "winldd-*", ".links")) {
+    # Only the headed Chromium is used (shard login); drop the rest — but KEEP
+    # winldd-*: the driver runs its PrintDeps.exe on every browser launch.
+    foreach ($name in @("chromium_headless_shell-*", "ffmpeg-*", ".links")) {
         Get-ChildItem $browserDir -Force -ErrorAction SilentlyContinue |
             Where-Object { $_.Name -like $name } |
             ForEach-Object {
