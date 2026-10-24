@@ -21,11 +21,11 @@ public sealed class GroupMemberActionServiceTests
         bool enabled = true,
         string selectKeys = "F1,F2,F3,F4,F5,F6,F7,F8",
         string actionKey = "F9") => new()
-    {
-        GroupClickHeal = enabled,
-        GroupHealSelectKeys = selectKeys,
-        GroupHealActionKey = actionKey
-    };
+        {
+            GroupClickHeal = enabled,
+            GroupHealSelectKeys = selectKeys,
+            GroupHealActionKey = actionKey
+        };
 
     [Fact]
     public void Click_member0_sends_select_key_then_action_key()
